@@ -1,0 +1,17 @@
+# Database files
+*.db*
+
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+*$py.class
+
+# TeX files
+manual/*.pdf
+*.bbl
+*.log
+*.out
+*.toc
+*.aux
+*.blg
+*.synctex.gz

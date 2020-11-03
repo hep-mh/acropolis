@@ -5,7 +5,7 @@ import sys
 
 # pprint
 from acropolis.pprint import print_error
-# models
+# Dependent classes
 from acropolis.models import DecayModel
 
 # Extact the number of command line arguments...
@@ -20,13 +20,18 @@ if N != 7:
                 + "       4. The number density of the decaying particle\n"
                 + "          (relative to photons) at T0\n"
                 + "       5. The branching ratio into electron-positron pairs\n"
-                + "       6. The branching ratio into two photons.\n",
-                "")
+                + "       6. The branching ratio into two photons.\n")
 
 # Extract the input parameters
 [mphi, tau, temp0, n0a, bree, braa] = [float(arg) for arg in sys.argv[1:]]
 
-# Run the code...
+# Run the code
 Yf = DecayModel(mphi, tau, temp0, n0a, bree, braa).run_disintegration()
-# ... and print the result
-print(Yf)
+
+# Print the result
+Yf[Yf <= 1e-99] = 0
+labels = ['n', 'p', 'H2', 'H3', 'He3', 'He4', 'Li6', 'Li7', 'Be7']
+print( "{:^4} | \x1B[34m{:^11}\x1B[0m | \x1B[34m{:^11}\x1B[0m | \x1B[34m{:^11}\x1B[0m".format("", "mean", "high", "low") )
+print("----------------------------------------------")
+for i, l in enumerate(labels):
+    print( "\x1B[35m{:>4}\x1B[0m | {:11.5e} | {:11.5e} | {:11.5e}".format(l, *Yf[i]) )
