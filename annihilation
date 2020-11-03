@@ -5,7 +5,7 @@ import sys
 
 # pprint
 from acropolis.pprint import print_error
-# Dependent classes
+# models
 from acropolis.models import AnnihilationModel
 
 # Extact the number of command line arguments...
