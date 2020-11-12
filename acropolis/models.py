@@ -120,7 +120,7 @@ class DecayModel(AbstractModel):
         # The lifetime of the decaying particle
         self._sTau  = tau  # in s
         # The injection energy
-        self._sE0   = self._sMphi/2.
+        self._sE0   = mphi/2.
 
         # The number density of the mediator
         # (relative to photons) ...
@@ -154,16 +154,16 @@ class DecayModel(AbstractModel):
 
     def _temperature_range(self):
         # The number of degrees-of-freedom to span
-        dof = 2.
+        mag = 2.
         # Calculate the approximate decay temperature
         Td = self._sII.temperature( self._sTau )
         # Calculate Tmin and Tmax from Td
         Td_ofm = log10(Td)
-        # Here we choose -0.5 (+1.5) orders of magnitude
+        # Here we choose -1.5 (+0.5) orders of magnitude
         # below (above) the approx. decay temperature,
         # since the main part happens after t = \tau
-        Tmin = 10.**(Td_ofm - 3.*dof/4.)
-        Tmax = 10.**(Td_ofm + 1.*dof/4.)
+        Tmin = 10.**(Td_ofm - 3.*mag/4.)
+        Tmax = 10.**(Td_ofm + 1.*mag/4.)
 
         return (Tmin, Tmax)
 
@@ -207,7 +207,7 @@ class AnnihilationModel(AbstractModel):
         # kinetic equilibrium with the SM heat bath
         self._sTkd   = tempkd  # in MeV
         # The injection energy
-        self._sE0    = self._sMchi
+        self._sE0    = mchi
 
         # The branching ratio into electron-positron pairs
         self._sBRee  = bree
@@ -250,14 +250,14 @@ class AnnihilationModel(AbstractModel):
 
     def _temperature_range(self):
         # The number of degrees-of-freedom to span
-        dof = 4.
+        mag = 4.
         # Tmax is determined by the Be7 threshold
         # (The factor 0.5 takes into account effects
         # of the high-energy tail)
         Tmax = me2/(22.*.5*Emin)
         # For smaller T the annihilation rate is suppressed
         # --> falls off at least with T^(-6)
-        Tmin = 10.**(log10(Tmax) - dof)
+        Tmin = 10.**(log10(Tmax) - mag)
 
         return (Tmin, Tmax)
 

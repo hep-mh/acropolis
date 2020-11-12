@@ -147,7 +147,7 @@ class BufferedScanner(object):
                 matpb = model.get_matp_buffer()
                 matpf = matpb is not None
                 # matpb might still be None if E0 < Emin
-                
+
                 fastp = scanp_set_id_0
 
             # For the output, use the following format
@@ -163,7 +163,7 @@ class BufferedScanner(object):
         return results
 
 
-    def perform_scan(self, cores=-1):
+    def perform_scan(self, cores=1):
         num_cpus = cpu_count() if cores == -1 else cores
         with Pool(processes=num_cpus) as pool:
             # Loop over all possible combinations, by...

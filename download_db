@@ -1,0 +1,19 @@
+#! /usr/bin/env python3
+
+# os
+import os
+
+# pprint
+from acropolis.pprint import print_info
+
+# Set the path
+path = "https://www.desy.de/~depta/acropolis"
+args = "-q --show-progress -P ./data/"
+
+print_info("Downloading rates.db.gz")
+os.system("wget {0}/rates.db.gz {1}".format(path, args))
+print_info("Done!")
+
+print_info("Downloading kernels.db.gz")
+os.system("wget {0}/kernels.db.gz {1}".format(path, args))
+print_info("Done!")
