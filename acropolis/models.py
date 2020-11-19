@@ -31,15 +31,15 @@ class AbstractModel(ABC):
         # Calculate the relevant physical quantities, i.e. ...
         # ...the 'delta' source terms and...
         self._sS0 = [
-            self._source_photon,
-            self._source_electron,
-            self._source_positron
+            self._source_photon_0,
+            self._source_electron_0,
+            self._source_positron_0
         ]
         # ...the ISR source terms
         self._sSfsr = [
-            self._fsr_source_photon,
-            lambda E, T: 0.,
-            lambda E, T: 0.
+            self._source_photon_fsr,
+            self._source_electron_fsr,
+            self._source_positron_fsr
         ]
 
         # A buffer for high-performance scans
@@ -91,22 +91,31 @@ class AbstractModel(ABC):
 
 
     @abstractmethod
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         pass
 
 
     @abstractmethod
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         pass
 
 
-    def _source_positron(self, T):
-        return self._source_electron(T)
+    def _source_positron_0(self, T):
+        return self._source_electron_0(T)
 
 
     @abstractmethod
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_fsr(self, E, T):
         pass
+
+
+    @abstractmethod
+    def _source_electron_fsr(self, E, T):
+        return 0.
+
+
+    def _source_positron_fsr(self, E, T):
+        return self._source_electron_fsr(E, T)
 
 
 class DecayModel(AbstractModel):
@@ -168,15 +177,15 @@ class DecayModel(AbstractModel):
         return (Tmin, Tmax)
 
 
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         return self._sBRaa * 2. * self._number_density(T) * (hbar/self._sTau)
 
 
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         return self._sBRee * self._number_density(T) * (hbar/self._sTau)
 
 
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_fsr(self, E, T):
         EX = self._sE0
 
         x = E/EX
@@ -185,10 +194,14 @@ class DecayModel(AbstractModel):
         if 1. - y < x:
             return 0.
 
-        _sp = self._source_electron(T)
+        _sp = self._source_electron_0(T)
 
         # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
+
+
+    def _source_electron_fsr(self, E, T):
+        return 0
 
 
 class AnnihilationModel(AbstractModel):
@@ -262,15 +275,15 @@ class AnnihilationModel(AbstractModel):
         return (Tmin, Tmax)
 
 
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         return self._sBRaa * (self._number_density(T)**2.) * self._sigma_v(T)
 
 
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         return self._sBRee * .5 * (self._number_density(T)**2.) * self._sigma_v(T)
 
 
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_fsr(self, E, T):
         EX = self._sE0
 
         x = E/EX
@@ -279,7 +292,11 @@ class AnnihilationModel(AbstractModel):
         if 1. - y < x:
             return 0.
 
-        _sp = self._source_electron(T)
+        _sp = self._source_electron_0(T)
 
         # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
+
+
+    def _source_electron_fsr(self, E, T):
+        return 0
