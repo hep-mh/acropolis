@@ -81,7 +81,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sfsr):
+def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc):
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of points in energy.
@@ -107,7 +107,7 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sfsr):
             B[j,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
 
             # Calculate a
-            a[j] = Sfsr[X,i]/G[X,i]
+            a[j] = Sc[X,i]/G[X,i]
 
             a0  = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
             for k in range(i+1, NE-2):
@@ -695,7 +695,7 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def universal_spectrum(self, E0, S0, Sfsr, T):
+    def universal_spectrum(self, E0, S0, Sc, T):
         # Define EC and EX as in 'astro-ph/0211258'
         EC = me2/(22.*T)
         EX = me2/(80.*T)
@@ -734,7 +734,7 @@ class SpectrumGenerator(object):
         return res
 
 
-    def nonuniversal_spectrum(self, E0, S0, Sfsr, T, allX=False):
+    def nonuniversal_spectrum(self, E0, S0, Sc, T, allX=False):
         # Define the dimension of the grid
         # as defined in 'params.py'...
         NE = int(log10(E0/Emin)*NE_pd)
@@ -757,11 +757,11 @@ class SpectrumGenerator(object):
 
         # Generate the grids for the source terms
         # injection + final-state radiation
-        S0   = np.array([S(T) for S in S0])
-        Sfsr = np.array([[SfsrX(E, T) for E in E_rt] for SfsrX in Sfsr])
+        S0 = np.array([S(T) for S in S0])
+        Sc = np.array([[ScX(E, T) for E in E_rt] for ScX in Sc])
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sfsr)
+        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc)
 
         return res[0:2,:] if allX == False else res

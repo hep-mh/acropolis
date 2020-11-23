@@ -143,7 +143,7 @@ def _convert_mb_to_iMeV2(f_in_mb):
 
 class NuclearReactor(object):
 
-    def __init__(self, s0, s_fsr, temp_rg, e0, ii):
+    def __init__(self, s0, sc, temp_rg, e0, ii):
         self._sII = ii
 
         # A dictionary containing the BBN parameters
@@ -159,7 +159,7 @@ class NuclearReactor(object):
         self._sS0 = s0
 
         # The FSR source terms
-        self._sSfsr = s_fsr
+        self._sSc = sc
 
         # The approximate decay temperature of the mediator
         self._sTrg  = temp_rg
@@ -353,10 +353,10 @@ class NuclearReactor(object):
 
         # Calculate the spectra for the given temperature
         xsp, ysp = self._sGen.nonuniversal_spectrum(
-                            self._sE0, self._sS0, self._sSfsr, T
+                            self._sE0, self._sS0, self._sSc, T
                         )
         # xsp, ysp = self._sGen.universal_spectrum(
-        #                     self._sE0, self._sS0, self._sSfsr, T
+        #                     self._sE0, self._sS0, self._sSc, T
         #                 )
 
         # Interpolate the photon spectrum (in log-log space)

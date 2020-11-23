@@ -150,14 +150,6 @@ class InputInterface(object):
         return self._interp_cosmo_data(val, xc, yc)
 
 
-    def add_cosmo_column(self, fct, ref_col=1):
-        F = np.array( [ fct(x) for x in self._sCosmoData[:,ref_col] ] )
-
-        self._sCosmoData    = np.column_stack( [self._sCosmoData, F] )
-        self._sCosmoDataLog = np.log10( np.abs(self._sCosmoData) )
-        self._sCosmoDataShp = self._sCosmoData.shape
-
-
     # 2. ABUNDANCE_DATA #######################################################
 
     def bbn_abundances(self):
@@ -171,7 +163,3 @@ class InputInterface(object):
 
     def parameter(self, key):
         return self._sParamData[key]
-
-
-    def add_parameter(self, key, value):
-        self._sParamData[key] = value
