@@ -81,7 +81,7 @@ class InputInterface(object):
         req_param   = ( "eta" in self._sParamData )
         if not req_param:
             print_error(
-                "The mandatory variable 'eta' could not be found 'param_file.dat'",
+                "The mandatory variable 'eta' could not be found in 'param_file.dat'",
                 "Input_Interface::_check_data"
             )
 

@@ -3,7 +3,7 @@
 # multiprocessing
 from multiprocessing import Pool, cpu_count
 # pickle
-import pickle
+#import pickle
 # numpy
 import numpy as np
 # sys
@@ -17,9 +17,8 @@ from acropolis.params import Emin_log, Emax_log, Enum, Tmin_log, Tmax_log, Tnum
 
 cores = cpu_count()
 
-db = None
-phg = _PhotonReactionWrapper  ([], 0., db)
-elg = _ElectronReactionWrapper([], 0., db)
+phg = _PhotonReactionWrapper  ([], 0., None)
+elg = _ElectronReactionWrapper([], 0., None)
 
 Tg = np.logspace(Tmin_log, Tmax_log, Tnum)
 Eg = np.logspace(Emin_log, Emax_log, Enum)
@@ -53,8 +52,9 @@ if mode == 0:
         off = ratedb.shape[0]//Tnum
         ratedb[i*off:(i+1)*off,:] = parallel_results
 
-    with open('data/rates.db.ls', 'wb') as ratefl:
-        pickle.dump(ratedb, ratefl)
+    np.savetxt('data/rates.db.ls', ratedb)
+    # with open('data/rates.db.ls', 'wb') as ratefl:
+    #     pickle.dump(ratedb, ratefl)
 
 # END RATES ###################################################################
 
@@ -84,7 +84,8 @@ if mode == 1:
         off = kerndb.shape[0]//Tnum
         kerndb[i*off:(i+1)*off,:] = parallel_results
 
-    with open('data/kernels.db.ls', 'wb') as kernfl:
-        pickle.dump(kerndb, kernfl)
+    np.savetxt('data/kernels.db.ls', kerndb)
+    # with open('data/kernels.db.ls', 'wb') as kernfl:
+    #     pickle.dump(kerndb, kernfl)
 
 # END KERNELS #################################################################
