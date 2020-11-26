@@ -118,8 +118,8 @@ def _JIT_PH_rate_pair_creation(y, x, T):
     # the center-of-mass energy
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
-    # Return the integrand for the 1d-integral in log-space
+def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
+    # Return the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
     return _JIT_F(E, Ep, x)*x/( pi2*(exp(x/T) - 1.) ) * x
@@ -134,19 +134,19 @@ def _JIT_EL_rate_inverse_compton(y, x, E, T):
 
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_pair_creation(y, E, Ep, T):
-    # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
-
-    return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
-
-
-@nb.jit(cache=True)
 def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
     return _JIT_F(Ep+x-E, Ep, x)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
+
+
+@nb.jit(cache=True)
+def _JIT_EL_kernel_pair_creation(y, E, Ep, T):
+    # Define the integrand for the 1d-integral in log-space; x = Ephb
+    x = exp(y)
+
+    return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
 
 @nb.jit(cache=True)
@@ -392,7 +392,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_EL_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(_JIT_PH_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         # ATTENTION: Kawasaki considers a combined e^+/e^- spectrum
         # Therefore the factor 2 should not be there in our case
