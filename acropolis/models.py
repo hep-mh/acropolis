@@ -109,7 +109,6 @@ class AbstractModel(ABC):
         pass
 
 
-    @abstractmethod
     def _source_electron_c(self, E, T):
         return 0.
 
@@ -125,17 +124,17 @@ class DecayModel(AbstractModel):
         self._sII   = InputInterface("data/sm.tar.gz")
 
         # The mass of the decaying particle
-        self._sMphi = mphi # in MeV
+        self._sMphi = mphi            # in MeV
         # The lifetime of the decaying particle
-        self._sTau  = tau  # in s
+        self._sTau  = tau             # in s
         # The injection energy
-        self._sE0   = mphi/2.
+        self._sE0   = self._sMphi/2.  # in MeV
 
         # The number density of the mediator
         # (relative to photons) ...
         self._sN0a  = n0a
         # ... at T = temp0 ...
-        self._sT0   = temp0
+        self._sT0   = temp0           # in MeV
         # ... corresponding to t = t(temp0)
         self._st0   = self._sII.time(self._sT0)
 
@@ -200,10 +199,6 @@ class DecayModel(AbstractModel):
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
 
 
-    def _source_electron_c(self, E, T):
-        return 0
-
-
 class AnnihilationModel(AbstractModel):
 
     def __init__(self, mchi, a, b, tempkd, bree, braa):
@@ -211,16 +206,16 @@ class AnnihilationModel(AbstractModel):
         self._sII    = InputInterface("data/sm.tar.gz")
 
         # The mass of the dark-matter particle
-        self._sMchi  = mchi    # in MeV
+        self._sMchi  = mchi         # in MeV
         # The s-wave and p-wave parts of <sigma v>
-        self._sSwave = a       # in cm^3/s
-        self._sPwave = b       # in cm^3/s
+        self._sSwave = a            # in cm^3/s
+        self._sPwave = b            # in cm^3/s
         # The dark matter decoupling temperature in MeV
         # For Tkd=0, the dark matter partices stays in
         # kinetic equilibrium with the SM heat bath
-        self._sTkd   = tempkd  # in MeV
+        self._sTkd   = tempkd       # in MeV
         # The injection energy
-        self._sE0    = mchi
+        self._sE0    = self._sMchi  # in MeV
 
         # The branching ratio into electron-positron pairs
         self._sBRee  = bree
@@ -275,7 +270,7 @@ class AnnihilationModel(AbstractModel):
         return (Tmin, Tmax)
 
 
-    def _source_photon_z(self, T):
+    def _source_photon_0(self, T):
         return self._sBRaa * (self._number_density(T)**2.) * self._sigma_v(T)
 
 
@@ -296,7 +291,3 @@ class AnnihilationModel(AbstractModel):
 
         # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
-
-
-    def _source_electron_c(self, E, T):
-        return 0
