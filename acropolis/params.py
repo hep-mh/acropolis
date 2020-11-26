@@ -62,8 +62,8 @@ pi2 = pi**2.
 # INTERPOLATION-SPECIFIC PARAMETERS #################################
 
 # Boundery values
-Emin_log, Tmin_log = 0, -5
-Emax_log, Tmax_log = 2, -1
+Emin_log, Tmin_log = 0, -6
+Emax_log, Tmax_log = 3, -1
 # Number of entries...
 num_pd = 150 # ...per decade
 Enum = (Emax_log - Emin_log)*num_pd
@@ -71,6 +71,7 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 # The minimal ratio of E and Ep
 # leading to an acceptable accuracy
 # Default: 0.01
+# DEPRECATED (no longer used)
 Ep_E_ip_log =  0.01
 
 

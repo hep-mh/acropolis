@@ -6,6 +6,8 @@ from multiprocessing import Pool, cpu_count
 import pickle
 # numpy
 import numpy as np
+# sys
+import sys
 
 # cascade
 from acropolis.cascade import _PhotonReactionWrapper, _ElectronReactionWrapper
@@ -13,9 +15,9 @@ from acropolis.cascade import _PhotonReactionWrapper, _ElectronReactionWrapper
 from acropolis.params import Emin_log, Emax_log, Enum, Tmin_log, Tmax_log, Tnum
 
 
-cores = 48
+cores = cpu_count()
 
-db = (None, None)
+db = None
 phg = _PhotonReactionWrapper  ([], 0., db)
 elg = _ElectronReactionWrapper([], 0., db)
 
@@ -25,7 +27,7 @@ Eg = np.logspace(Emin_log, Emax_log, Enum)
 ratedb = np.zeros((Tnum*Enum            , 4))
 kerndb = np.zeros((Tnum*Enum*(Enum+1)//2, 6))
 
-mode = 0 # 0: rates, 1: kernels
+mode = int( sys.argv[1] ) # 0: rates, 1: kernels
 
 
 # RATES #######################################################################
@@ -33,7 +35,7 @@ mode = 0 # 0: rates, 1: kernels
 def get_rates(params):
     (T, E) = params
 
-    ph_rpc = phg._rate_pair_creation    (E, T)
+    ph_rpc = phg._rate_pair_creation  (E, T)
     el_ric = elg._rate_inverse_compton(E, T)
 
     return [T, E, ph_rpc, el_ric]
