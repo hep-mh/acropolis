@@ -82,7 +82,7 @@ class InputInterface(object):
         if not req_param:
             print_error(
                 "The mandatory variable 'eta' could not be found in 'param_file.dat'",
-                "Input_Interface::_check_data"
+                "acropolis.input.InputInterface::_check_data"
             )
 
         # Check if abundance_file.dat has the correct dimensions
@@ -90,7 +90,7 @@ class InputInterface(object):
         if not abund_shape:
             print_error(
                 "The content of 'abundance_file.dat' does not have the required shape.",
-                "Input_Interface::_check_data"
+                "acropolis.input.InputInterface::_check_data"
             )
 
         # Check if cosmo_file.dat has the correct number of columns
@@ -98,7 +98,7 @@ class InputInterface(object):
         if not cosmo_shape:
             print_error(
                 "The content of 'cosmo_file.dat' does not have the required shape.",
-                "Input_Interface::_check_data"
+                "acropolis.input.InputInterface::_check_data"
             )
 
 

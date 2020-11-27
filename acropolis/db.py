@@ -17,7 +17,6 @@ from .pprint import print_info
 from .params import usedb
 from .params import Emin_log, Emax_log, Enum
 from .params import Tmin_log, Tmax_log, Tnum
-from .params import Ep_E_ip_log
 
 
 def import_data_from_db():
@@ -55,8 +54,7 @@ def in_kernel_db(E_log, Ep_log, T_log):
     if (Emin_log <= E_log <= Emax_log) \
       and (Emin_log <= Ep_log <= Emax_log) \
       and (Tmin_log <= T_log <= Tmax_log):
-        if Ep_log > Ep_E_ip_log + E_log:
-            return True
+        return True
 
     return False
 
