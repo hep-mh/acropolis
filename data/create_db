@@ -1,13 +1,13 @@
 #! /usr/bin/python3
 
+# sys
+import sys; sys.path.append('..')
 # multiprocessing
 from multiprocessing import Pool, cpu_count
 # pickle
 #import pickle
 # numpy
 import numpy as np
-# sys
-import sys
 
 # cascade
 from acropolis.cascade import _PhotonReactionWrapper, _ElectronReactionWrapper
@@ -52,7 +52,7 @@ if mode == 0:
         off = ratedb.shape[0]//Tnum
         ratedb[i*off:(i+1)*off,:] = parallel_results
 
-    np.savetxt('data/rates.db.ls', ratedb)
+    np.savetxt('rates.db.ls', ratedb)
     # with open('data/rates.db.ls', 'wb') as ratefl:
     #     pickle.dump(ratedb, ratefl)
 
@@ -84,7 +84,7 @@ if mode == 1:
         off = kerndb.shape[0]//Tnum
         kerndb[i*off:(i+1)*off,:] = parallel_results
 
-    np.savetxt('data/kernels.db.ls', kerndb)
+    np.savetxt('kernels.db.ls', kerndb)
     # with open('data/kernels.db.ls', 'wb') as kernfl:
     #     pickle.dump(kerndb, kernfl)
 
