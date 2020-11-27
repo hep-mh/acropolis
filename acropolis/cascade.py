@@ -601,13 +601,13 @@ class _PositronReactionWrapper(object):
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    def _rate_inverse_compton(self, E, T):
+    def _rate_inverse_compton_db(self, E, T):
         return self._sER._rate_inverse_compton_db(E, T)
 
 
     # TOTAL RATE ##############################################################
     def total_rate(self, E, T):
-        return self._rate_inverse_compton(E, T)
+        return self._rate_inverse_compton_db(E, T)
 
 
     # INTEGRAL KERNELS ########################################################
