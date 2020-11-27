@@ -1,3 +1,6 @@
+# Exclude scan results
+/plots/data/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__
 *.py[cod]
