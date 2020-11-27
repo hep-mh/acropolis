@@ -30,7 +30,7 @@ Within the ACROPOLIS main directory there are two executables, ``decay`` and ``a
 ./decay 10 1e5 10 1e-10 0 1
 ```
 
-On a similar note, the following command runs the process of photodisintegration for residual s-wave annihilations of a dark matter particle with a mass of 10MeV that annihialtes exclusively into photons
+On a similar note, the following command runs the process of photodisintegration for residual s-wave annihilations of a dark matter particle with a mass of 10MeV and a cross-section of 10e-25 cm³/s that annihialtes exclusively into photons
 
 ```
 ./annihilation 10 1e-25 0 0 0 1
