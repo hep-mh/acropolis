@@ -1,5 +1,6 @@
 # Exclude scan results
 /plots/data/*
+/plots/*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__
