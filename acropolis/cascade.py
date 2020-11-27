@@ -194,7 +194,9 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc):
     F_rt = np.zeros( (3, NE) )
 
     # Calculate F_X(E_S), NE-1
-    F_rt[:,-1] = [np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)]
+    F_rt[:,-1] = [
+        Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
+    ]
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
     while i >= 0:
