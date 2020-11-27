@@ -365,7 +365,7 @@ class NuclearReactor(object):
         lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
         # Revert the transformation (to lin-lin space)
         # and multiply with the cross-section
-        def Fph_xs(rid, log_E):
+        def Fph_xs(log_E, rid):
             E = exp( log_E )
 
             return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
@@ -383,7 +383,7 @@ class NuclearReactor(object):
                 # Perform the integration from the threshold energy to Emax
                 with warnings.catch_warnings(record=True) as w:
                     log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                    I_Fxs = quad(lambda E: Fph_xs(rid, E), log_Emin, log_Emax, epsrel=eps, epsabs=0)
+                    I_Fxs = quad(Fph_xs, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
 
                     if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
                         print_warning(
