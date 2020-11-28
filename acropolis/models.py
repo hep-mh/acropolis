@@ -14,6 +14,8 @@ from .nucl import NuclearReactor, MatrixGenerator
 # params
 from .params import hbar, c_si, me2, alpha
 from .params import Emin
+# pprint
+from .pprint import print_info, print_warning
 
 
 class AbstractModel(ABC):
@@ -47,9 +49,22 @@ class AbstractModel(ABC):
 
 
     def run_disintegration(self):
+        # Print a warning of the injection energy
+        # is larger than 1GeV, as this might lead
+        # to wrong results
+        if self._sE0 > 1e3:
+            print_warning(
+                "Injection energy > 1GeV. Results cannot be trusted.",
+                "acropolis.models.AbstractMode.run_disintegration"
+            )
+
         # If the energy is below all thresholds,
         # simply return the initial abundances
         if self._sE0 <= Emin:
+            print_info(
+                "Injection energy is below threshold. No calculation required.",
+                "acropolis.models.AbstractMode.run_disintegration"
+            )
             return self._sII.bbn_abundances()
 
         if self._sMatpBuffer is not None:
