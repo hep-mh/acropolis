@@ -100,6 +100,7 @@ def _JIT_G(Ee, Eph, Ephb):
 
     return sud
 
+
 # _PhotonReactionWrapper ######################################################
 
 @nb.jit(cache=True)
@@ -116,6 +117,7 @@ def _JIT_PH_rate_pair_creation(y, x, T):
     # (the written limit is unitless, which must be wrong)
     # This limit is a consequence of the constraint on
     # the center-of-mass energy
+
 
 @nb.jit(cache=True)
 def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
