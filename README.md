@@ -2,6 +2,17 @@
 
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
+![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
+![Version: 1.1](https://img.shields.io/badge/current_version-1.1-blue.svg?style=flat-square)
+
+When using this code, please cite the following papers
+
+- https://arxiv.org/abs/2011.06518
+- https://arxiv.org/abs/2011.06519
+- https://arxiv.org/abs/1808.09324
+
+The most recent version of the manual can always be found on GitHub at manual/manual.pdf. The respective publication of arXiv might be out-of-date.
+
 # Abstract
 
 The remarkable agreement between observations of the primordial light element abundances and the corresponding theoretical predictions within the standard cosmological history provides a powerful method to constrain physics beyond the standard model of particle physics (BSM). For a given BSM model these primordial element abundances are generally determined by (i) Big Bang Nucleosynthesis and (ii) possible subsequent disintegration processes. The latter potentially change the abundance values due to late-time high-energy injections which may be present in these scenarios. While there are a number of public codes for the first part, no such code is currently available for the second. Here we close this gap and present ACROPOLIS, A generiC fRamework fOr Photodisintegration Of LIght elementS. The widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. Furthermore, due to its modular structure, ACROPOLIS can easily be extended also to other scenarios.
