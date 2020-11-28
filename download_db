@@ -1,0 +1,9 @@
+#! /usr/bin/env python3
+
+# pprint
+from acropolis.pprint import print_info
+
+print_info(
+    "Since v1.1 this operation is no longer needed. Simply proceed with the next step!",
+    ""
+)
