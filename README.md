@@ -11,7 +11,7 @@ When using this code, please cite the following papers
 - https://arxiv.org/abs/2011.06519
 - https://arxiv.org/abs/1808.09324
 
-The most recent version of the manual can always be found on GitHub at manual/manual.pdf. The respective publication of arXiv might be out-of-date.
+The most recent version of the manual can always be found on GitHub at manual/manual.pdf. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.
 
 # Abstract
 

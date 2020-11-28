@@ -1,7 +1,5 @@
 # numpy
 import numpy as np
-# pickle
-#import pickle
 # gzip
 import gzip
 # os
@@ -26,7 +24,7 @@ def import_data_from_db():
 
     start_time = time()
     print_info(
-        "Extracting/Reading data files.",
+        "Extracting and reading database files.",
         "acropolis.db.import_data_from_db"
     )
 
