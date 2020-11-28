@@ -46,3 +46,16 @@ On a similar note, the following command runs the process of photodisintegration
 ```
 ./annihilation 10 1e-25 0 0 0 1
 ```
+
+# Supported platforms
+
+ACROPOLIS has been tested on the following platforms (but lets be honest, it should run on every OS with a Python implementation)
+
+| OS              | Version   | Arch   |
+| --------------- | :-------: | :----: |
+| Ubuntu          |  20.04    | x86_64 |
+| KDE neon        |  5.20     | x86_64 |
+| Kali GNU/Linux  |  2020.04  | x86_64 |
+| macOS           |  10.15    | x86_64 |
+| Windows 10      |  20H2     | x86_64 |
+| Android         |  10.0     | arm64  |
