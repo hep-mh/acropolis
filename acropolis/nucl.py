@@ -42,7 +42,7 @@ _nuclei = {
 # A dictionary containing all relevant reactions
 # This dict can be modified if new reactions are added
 # In this case, also remember to modify the function
-# 'NuclearReactor.get_cross_section(self, reaction_id, E)'
+# 'NuclearReactor.get_cross_section(reaction_id, E)'
 _reactions = {
     1 : "d+a>n+p",
     2 : "t+a>n+d",
@@ -343,9 +343,11 @@ class NuclearReactor(object):
 
 
     def _thermal_rates_at(self, T):
-        EC   = me2/(22.*T)
+        EC = me2/(22.*T)
         # Calculate the maximal energy
         Emax = min( self._sE0, 10.*EC )
+        # For E > me2/T >> EC, the spectrum
+        # is strongly suppressed
 
         # Define a dict containing all thermal rates
         # key = reaction_id (from _reactions)
@@ -355,9 +357,6 @@ class NuclearReactor(object):
         xsp, ysp = self._sGen.nonuniversal_spectrum(
                             self._sE0, self._sS0, self._sSc, T
                         )
-        # xsp, ysp = self._sGen.universal_spectrum(
-        #                     self._sE0, self._sS0, self._sSc, T
-        #                 )
 
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform

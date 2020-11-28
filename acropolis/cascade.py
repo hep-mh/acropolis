@@ -20,8 +20,8 @@ from .pprint import print_warning, print_error
 # params
 from .params import me, me2, alpha, re
 from .params import zeta3, pi2
-from .params import approx_zero, eps, Ephb_T_max
 from .params import Emin
+from .params import approx_zero, eps, Ephb_T_max, E_EC_cut
 from .params import NE_pd, NE_min
 
 
@@ -181,7 +181,19 @@ def _JIT_dsdE_Z2(Ee, Eph):
 # SpectrumGenerator ###########################################################
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc):
+def _JIT_set_spectra(F, i, Fi, cond):
+    F[:,i] = Fi
+    # In the strongly compressed regime, manually
+    # set the photon spectrum to zero in order to
+    # avoid floating-point errors
+    if cond: F[0, i] = 0.
+
+
+@nb.jit(cache=True)
+def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
+    EC   = me2/(22.*T)
+    Ecut = E_EC_cut*EC
+
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of points in energy.
@@ -194,9 +206,9 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc):
     F_rt = np.zeros( (3, NE) )
 
     # Calculate F_X(E_S), NE-1
-    F_rt[:,-1] = [
+    _JIT_set_spectra(F_rt, -1, np.array([
         Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
-    ]
+    ]), E_rt[-1] > Ecut)
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
     while i >= 0:
@@ -219,7 +231,9 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc):
                 a[j] += a0i/G[X,i]
 
         # Solve the system of linear equations for F
-        F_rt[:,i] = np.linalg.solve(np.identity(NX)-B, a)
+        _JIT_set_spectra(F_rt, i,
+            np.linalg.solve(np.identity(NX)-B, a)
+        , E_rt[i] > Ecut)
 
         i -= 1
 
@@ -739,7 +753,7 @@ class SpectrumGenerator(object):
             # first index: X, second index according to energy E
 
         # Generate the grid for the kernels
-        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep > E else 0. for Ep in E_rt] for E in E_rt] for Xp in range(self._sNX)] for X in range(self._sNX)])
+        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_rt] for E in E_rt] for Xp in range(self._sNX)] for X in range(self._sNX)])
             # first index: X, second index: Xp
             # third index according to energy E
             # fourth index according to energy Ep;
@@ -752,6 +766,6 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc)
+        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T)
 
         return res[0:2,:] if allX == False else res

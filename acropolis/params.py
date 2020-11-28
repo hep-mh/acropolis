@@ -7,6 +7,13 @@ from scipy.special import zetac
 # FLAGS #############################################################
 
 # If this flag is set to 'True',
+# the pregenerated databases
+# will be used to interpolate
+# the different reaction rates
+# Default: True
+usedb = True
+
+# If this flag is set to 'True',
 # additional output is printed
 # to the screen
 # Default: True
@@ -17,14 +24,6 @@ verbose = True
 # is printed to the screen
 # Default: False
 debug = False
-
-# If this flag is set to 'True',
-# the pregenerated databases
-# (if available) will be used
-# to interpolate the different
-# (differential) reaction rates
-# Default: True
-usedb = True
 
 
 # PHYSICAL CONSTANTS ################################################
@@ -49,6 +48,7 @@ hbar = 6.582119514e-22
 
 # The speed of light (in cm/s)
 c_si = 2.99792458e10
+
 
 # MATHEMATICAL CONSTANTS ############################################
 
@@ -98,6 +98,11 @@ eps = 1e-3
 # overflow in the exponential function
 # Default: 200
 Ephb_T_max = 200.
+
+# The energy in units of EC at which to
+# cutoff strongly suppressed spectra
+# Default: 500.
+E_EC_cut = 500.
 
 # The number of points per decade for
 # the energy grid, which is used within
