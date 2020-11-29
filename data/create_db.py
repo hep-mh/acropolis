@@ -24,7 +24,9 @@ Eg = np.logspace(Emin_log, Emax_log, Enum)
 ratedb = np.zeros((Tnum*Enum            , 4))
 kerndb = np.zeros((Tnum*Enum*(Enum+1)//2, 6))
 
-mode = int( sys.argv[1] ) # 0: rates, 1: kernels
+# Get the mode as a command-line argument
+# 0: rates, 1: kernels
+mode = int( sys.argv[1] ) if len(sys.argv) != 1 else 0
 
 
 # RATES #######################################################################
@@ -51,11 +53,6 @@ if mode == 0:
         ratedb[i*off:(i+1)*off,:] = parallel_results
 
     np.savetxt('rates.db.ls', ratedb)
-    # with open('data/rates.db.ls', 'wb') as ratefl:
-    #     pickle.dump(ratedb, ratefl)
-
-# END RATES ###################################################################
-
 
 
 # KERNELS #####################################################################
@@ -83,7 +80,3 @@ if mode == 1:
         kerndb[i*off:(i+1)*off,:] = parallel_results
 
     np.savetxt('kernels.db.ls', kerndb)
-    # with open('data/kernels.db.ls', 'wb') as kernfl:
-    #     pickle.dump(kerndb, kernfl)
-
-# END KERNELS #################################################################
