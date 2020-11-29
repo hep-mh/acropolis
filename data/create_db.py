@@ -4,8 +4,6 @@
 import sys; sys.path.append('..')
 # multiprocessing
 from multiprocessing import Pool, cpu_count
-# pickle
-#import pickle
 # numpy
 import numpy as np
 

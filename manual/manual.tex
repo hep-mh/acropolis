@@ -170,7 +170,7 @@ Hence, we parameterize the source terms via
 S_\X(E) = S_\X^{(0)} \delta(E-E_0) + S_\X^{(\text{c})}(E)\eqsp,
 \label{eq:SXE_definition}
 \end{align}
-where $E_0$ is the injection energy and $S_\X^{(0)}$ ($S_\X^{(\text{c})}(E)$) encode the discrete (continuous) part of the injection spectrum.
+where $E_0$ is the injection energy and $S_\X^{(0)}$ ($S_\X^{(\text{c})}(E)$) encodes the discrete (continuous) part of the injection spectrum.
 
 %and the final-state radiation part $S_\X^{(\text{FSR})}$ is zero for electron-positron pairs ($S_{e^\pm}^{(\text{FSR})} \equiv 0$) and proportional to the monochromatic injection for photons ($S_{\gamma}^{(\text{FSR})} \propto S_{e^\pm}^{(0)}$).
 
@@ -380,7 +380,7 @@ The most recent versions of these dependencies can be collectively installed at 
 \cmd{python3 -m pip install numpy, scipy, numba --user}
 If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
 
-Inside of the git repository there also is an optional database file \texttt{data/rates.db.gz}, which contains pre-calculated values for some of the computationally expensive reaction rates. By default, \acropolis uses this file to speed up the calculation by up to $\sim 10\%$,\footnote{Several benchmark points that show the runtime of the code with and without the additional database files, can be found in appendix~\ref{sec:benchmarks_single}.}. However, if this behavior is not desired for some reason, i.e. when running on a batch system, \acropolis also allows to disable the usage of this file (cf.~sec.~\ref{sec:params}).
+Inside of the git repository there also is an optional database file \texttt{data/rates.db.gz}, which contains pre-calculated values for some of the computationally expensive reaction rates. By default, \acropolis uses this file to speed up the calculation by $\sim \mathcal{O}(10\%)$\footnote{Several benchmark points that show the runtime of the code with and without the additional database files, can be found in appendix~\ref{sec:benchmarks_single}.}. However, if this behavior is not desired for some reason, i.e. when running on a batch system, \acropolis also allows to disable the usage of this file (cf.~sec.~\ref{sec:params}).
 
 
 \subsection{Using the predefined models}
@@ -396,27 +396,7 @@ For example, the command\\[4mm]
 \cmd{./decay 10 1e5 10 1e-10 0 1}
 calculates the abundances after photodisintegration in the presence of an unstable particle $\phi$ with mass $m_\phi=10\,\mathrm{MeV}$, lifetime $\tau_\phi=10^5\,\mathrm{s}$, and number density $ n_\phi/n_\gamma|_{T_0} = 10^{-10}$ at $T_0=10\,\mathrm{MeV}$ decaying exclusively into two photons (so $\text{BR}_{ee} = 0$ and $\text{BR}_{\gamma\gamma}=1$).
 
-Running the executables, information regarding the current state of the calculation is provided and the final output is given by a 9x3 matrix comprising the final abundances after photodisintegration for the given parameter point. For our example above the corresponding output roughly looks as follows:\footnote{In case the database files have not been downloaded, the first two lines will not be present and the second step will take significantly longer.}
-%\begin{lstlisting}[language=bash, backgroundcolor=\color{white}]
-%INFO   : Extracting/Reading data files.
-%INFO   : Finished after 6.6s.
-%INFO   : Calculating non-thermal spectra and reaction rates.
-%INFO   : Finished after 25.1s.
-%INFO   : Running non-thermal nucleosynthesis.
-%INFO   : Finished after 25.0s.
-%
-%    |    mean     |    high     |     low
-%----------------------------------------------
-%  n | 1.27835e-08 | 1.24894e-08 | 1.31176e-08
-%  p | 7.53096e-01 | 7.53161e-01 | 7.53036e-01
-% H2 | 1.92535e-05 | 1.88105e-05 | 1.97567e-05
-% H3 | 5.53065e-08 | 2.28921e-08 | 3.76285e-07
-%He3 | 7.63949e-06 | 3.27977e-06 | 7.82619e-06
-%He4 | 6.17092e-02 | 6.16965e-02 | 6.17237e-02
-%Li6 | 8.39044e-15 | 2.70471e-14 | 1.30028e-15
-%Li7 | 1.98144e-11 | 7.64333e-12 | 6.47316e-11
-%Be7 | 3.24951e-10 | 1.29786e-10 | 3.05213e-10
-%\end{lstlisting}
+Running the executables, information regarding the current state of the calculation is provided and the final output is given by a 9x3 matrix comprising the final abundances after photodisintegration for the given parameter point. For our example above the corresponding output roughly looks as follows:
 \begin{lstlisting}[language=bash, backgroundcolor=\color{white}]
 INFO   : Extracting and reading database files.
 INFO   : Finished after 1.5s.
@@ -478,7 +458,7 @@ In this code snippet, the relevant model is first loaded from the module \texttt
 
 \subsubsection{Running parameter scans}
 \label{sec:scans}
-\acropolis provides two classes for parameter scans, \texttt{acropolis.scans.BufferedScanner} and \texttt{acropolis.scans.ScanParameter}. In order to understand how these two classes work we show the following code snippet, which performs a parameter scan for the model from sec~\ref{sec:decay_model} with $m_\phi=50\,\mathrm{MeV}$, $T_0 = 10\,\mathrm{MeV}$, $\text{BR}_{ee} = 0$, and $\text{BR}_{\gamma\gamma}=1$ in the $\tau_\phi - n_\phi/n_\gamma|_{T_0}$ parameter plane.
+\acropolis provides two classes for parameter scans, \texttt{acropolis.scans.BufferedScanner} and \texttt{acropolis.scans.ScanParameter}. In order to understand how these two classes work we show the following code snippet, which performs a parameter scan for the model from sec~\ref{sec:decay_model} with $m_\phi=50\,\mathrm{MeV}$, $T_0 = 10\,\mathrm{MeV}$, $\text{BR}_{ee} = 0$, and $\text{BR}_{\gamma\gamma}=1$ in the $\tau_\phi - n_\phi/n_\gamma|_{T_0}$ parameter plane.\newpage
 \begin{lstlisting}
 #! /usr/bin/env python3
 
@@ -501,7 +481,7 @@ res = BufferedScanner( DecayModel,
 [...]
 \end{lstlisting}
 Here, the previously mentioned classes are first loaded from the module \texttt{acropolis.scans} together with the model that is used for the scan, in this case \texttt{DecayModel}. Then a new instance of \texttt{BufferedScanner} is initiated, which takes as a first argument the model that is used for the calculation and afterwards a set of keyword arguments with names that are identical to the ones in the constructor of the model. These keyword arguments can either be a \texttt{float} or an instance of \texttt{ScanParameter}. While the \texttt{float} parameters are kept constant, instances of \texttt{ScanParameter} are scanned over. The range for the scan is defined by the arguments of \texttt{ScanParameter(ivalue, fvalue, num, spacing)} and is constructed internally using \texttt{NumPy} functions by either calling \texttt{np.logspace(ivalue, fvalue, num)} for \texttt{spacing="log"} (default) or \texttt{np.linspace(ivalue, fvalue, num)} for \texttt{spacing="lin"}. Hence, the above code performs a scan over $\tau_\phi \in [10^3\,\mathrm{s}, 10^{10}\,\mathrm{s}]$ and $n_\phi/n_\gamma|_{T_0} \in [10^{-14}, 10^{-3}]$ with 200 data points in each direction, distributed equidistantly on a log-scale. There is one additional argument that can be passed to \texttt{ScanParameter},  \texttt{fast}, which can either be \texttt{True} or \texttt{False}. To understand the importance of this parameter, let us note that according to eq.~\eqref{eq:cascade_full}, the spectra $\kappa F_x(E)$ with some constant $\kappa$ are a solution of the cascade equation with source terms $\kappa S_x(E)$ if the spectra $F_x(E)$ are valid solutions of the cascade equation with source terms $S_x(E)$. In these two cases, the corresponding matrices in eq.~\eqref{eq:rate_matrix} are then $\kappa \mathcal{R}(T)$ and $\mathcal{R}(T)$, respectively. Hence, for each parameter that simply scales the source terms, it is not necesary to recalculate the non-thermal spectra and nuclear rates for each parameter point. Instead, we can simply rescale previously obtained solutions.
-The argument \texttt{fast} is used to determine whether this procedure is used or not. In the example above with \texttt{fast=True} for \texttt{n0a} this means that for a given value of $\tau_\phi$, $\mathcal{R}(T)$ is calculated only once for $n_\phi/n_\gamma|_{T_0} = 10^{-14}$ and then simply rescaled for other values of $n_\phi/n_\gamma|_{T_0}$. This way, the initial calculation for each \texttt{tau} takes $\sim \mathcal{O}(1-10\,\mathrm{min})$, while the calculation of different points for \texttt{n0a} then merely takes $\sim \mathcal{O}(1\,\mu\mathrm{s})$.
+The argument \texttt{fast} is used to determine whether this procedure is used or not. In the example above with \texttt{fast=True} for \texttt{n0a} this means that for a given value of $\tau_\phi$, $\mathcal{R}(T)$ is calculated only once for $n_\phi/n_\gamma|_{T_0} = 10^{-14}$ and then simply rescaled for other values of $n_\phi/n_\gamma|_{T_0}$. This way, the initial calculation for each \texttt{tau} takes $\sim \mathcal{O}(1\,\mathrm{min})$, while the calculation of different points for \texttt{n0a} then merely takes $\sim \mathcal{O}(1\,\mu\mathrm{s})$.
 The following tables show which parameters can be used with \texttt{fast=True} without spoiling the calculation (i.e.\ those parameters that only enter the source terms as a prefactor and do not appear elsewhere in the calculation):
 \begin{center}
 \begin{minipage}{0.495\textwidth}
@@ -566,7 +546,7 @@ we also indicate the parts of parameter space that are excluded due to an underp
 	\centering
 	\includegraphics[width=0.495\textwidth]{plots/annih_swave.pdf}
 	\includegraphics[width=0.495\textwidth]{plots/annih_pwave_1MeV.pdf}
-	\caption{95\% C.L.\ constraints for residual annihilations of DM (implemented in \texttt{AnnihilationModel}) into two photons ($\text{BR}_{\gamma \gamma} = 1 - \text{BR}_{e^+ e^-} = 1$) for purely $s$-wave annihilations (left, $b = 0$) and purely $p$-wave annihilations (right, $a = 0$, $T_\mathrm{kd} = 1 \, \mathrm{MeV}$). For the explanation of the colour-coding see figure~\ref{fig:scan_decay}. Using $(n_\phi/n_\gamma)|_{T=T_0}$, i.e.\ \texttt{n0a}, as a \texttt{fast} parameter on a single computing node with two \texttt{AMD EPYC 7402 24-Core Processors} the scans took $\sim 85$ min each for a $200 \times 200$ grid.}
+	\caption{95\% C.L.\ constraints for residual annihilations of DM (implemented in \texttt{AnnihilationModel}) into electron-positron pairs ($\text{BR}_{\gamma \gamma} = 1 - \text{BR}_{e^+ e^-} = 0$) for purely $s$-wave annihilations (left, $b = 0$) and purely $p$-wave annihilations (right, $a = 0$, $T_\mathrm{kd} = 1 \, \mathrm{MeV}$). For the explanation of the colour-coding see figure~\ref{fig:scan_decay}. Using $(n_\phi/n_\gamma)|_{T=T_0}$, i.e.\ \texttt{n0a}, as a \texttt{fast} parameter on a single computing node with two \texttt{AMD EPYC 7402 24-Core Processors} the scans took $\sim 85$ min each for a $200 \times 200$ grid.}
 	\label{fig:scan_annih}
 \end{figure}
 
@@ -576,7 +556,7 @@ In the right panel of figure~\ref{fig:scan_decay} we show the constraints for fi
 The scans for figure~\ref{fig:scan_decay} took $\sim 25$ min (left) and $\sim 35$ min (right) for a $200 \times 200$ grid on two \texttt{AMD EPYC 7402 24-Core Processors}, clearly highlighting the performance improvement due to the \texttt{fast} parameter $(n_\phi/n_\gamma)|_{T=T_0}$, i.e.\ \texttt{n0a}, making the number of points in this direction computationally inexpensive (cf.\ also appendix~\ref{sec:benchmarks_single}). The runtime is thus determined mostly by the number of points in the direction of $\tau_\phi$ or $m_\phi$ (not \texttt{fast}).
 %Note that the longer runtime for the right panel is a result of the database files for the electromagnetic cascade reaction rates having an upper limit on the energy of $m_\phi/2 = E_0 = 100 \, \mathrm{MeV}$, which often corresponds to the most interesting region in parameter space. For masses above the pion threshold in particular, $m_\phi \gtrsim 280 \, \mathrm{MeV}$, hadrodisintegration may become relevant if $\phi$ has non-vanishing couplings to quarks, implying that $\text{BR}_{\gamma \gamma} + \text{BR}_{e^+ e^-} < 1$ in general. Also muons are kinematically available in the mass region (which are currently not implemented in \texttt{ACROPOLIS}).
 
-In figure~\ref{fig:scan_annih} we show the constraints for residual annihilations of DM into two photons ($\text{BR}_{\gamma \gamma} = 1 - \text{BR}_{e^+ e^-} = 1$) for purely $s$-wave annihilations (left, $b = 0$) and purely $p$-wave annihilations (right, $a = 0$, $T_\mathrm{kd} = 1 \, \mathrm{MeV}$) as implemented in \texttt{AnnihilationModel}. These limits start at the disintegration threshold of deuterium, $m_\chi = E_\mathrm{D}^\mathrm{th} \approx 2.2 \, \mathrm{MeV}$, and closely resemble those presented in~\cite{Depta:2019lbe}, albeit with updated observationally inferred primordial abundances. We therefore refer to~\cite{Depta:2019lbe} for a detailed discussion. The scans took $\sim 85$ min each for a $200 \times 200$ grid on the aforementioned computing node.
+In figure~\ref{fig:scan_annih} we show the constraints for residual annihilations of DM into electron-positron pairs ($\text{BR}_{\gamma \gamma} = 1 - \text{BR}_{e^+ e^-} = 0$) for purely $s$-wave annihilations (left, $b = 0$) and purely $p$-wave annihilations (right, $a = 0$, $T_\mathrm{kd} = 1 \, \mathrm{MeV}$) as implemented in \texttt{AnnihilationModel}. These limits start at the disintegration threshold of deuterium, $m_\chi = E_\mathrm{D}^\mathrm{th} \approx 2.2 \, \mathrm{MeV}$, and closely resemble those presented in~\cite{Depta:2019lbe}, albeit with updated observationally inferred primordial abundances. We therefore refer to~\cite{Depta:2019lbe} for a detailed discussion. The scans took $\sim 85$ min each for a $200 \times 200$ grid on the aforementioned computing node.
 %At his point it is also worth noting injections of electron-positron pair usually takes a little more time, due to the final-state radiation of photons, which lead to a non-vanishing, continuouse injection spectum.
 
 \section{Implementing your own models}
@@ -718,7 +698,7 @@ This file encodes the cosmological evolution of the background plasma. It must c
 \item neutrino temperature $T_\nu$ [in MeV]
 \item Hubble rate $H$ [in MeV]
 \end{itemize}
-The grids needs to be equidistantly spaced on a log-scale of time $t$. Given an instance of \texttt{InputInterface}, the interpolated data of these mandatory entries is accessible via the predefined methods
+The grids need to be equidistantly spaced on a log-scale of time $t$. Given an instance of \texttt{InputInterface}, the interpolated data of these mandatory entries is accessible via the predefined methods
 \begin{center}
 \begin{tabular}{rl}
 	$T(t)$ & \texttt{InputInterface.temperature(t)} \\[0.2cm]
@@ -984,7 +964,7 @@ Benchmarking the annihilation model, we ran the script \texttt{annihilation} for
 \end{center}
 Again we find that the runtime is increased for larger values of $m_\chi$, which determines the energy range $[E_\text{min}, m_\chi]$.
 
-We thus conclude that, depending on the model and choice of parameters, the runtime (with database files) can easily vary between $\mathcal{O}(10\,\mathrm{s})$ and $\mathcal{O}(10\,\mathrm{min})$. In order to still enable efficient (and fast) parameter scans, \acropolis comes with a dedicated scanning framework, cf.\ section~\ref{sec:scans}.
+We thus conclude that, depending on the model and choice of parameters, the runtime (with database files) can easily vary between $\mathcal{O}(10\,\mathrm{s})$ and $\mathcal{O}(1\,\mathrm{min})$. In order to still enable efficient (and fast) parameter scans, \acropolis comes with a dedicated scanning framework, cf.\ section~\ref{sec:scans}.
 
 \bibliography{references}
 \bibliographystyle{JHEP}
