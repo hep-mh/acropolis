@@ -62,7 +62,7 @@ class AbstractModel(ABC):
         # simply return the initial abundances
         if self._sE0 <= Emin:
             print_info(
-                "Injection energy is below threshold. No calculation required.",
+                "Injection energy is below all thresholds. No calculation required.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
             return self._sII.bbn_abundances()
