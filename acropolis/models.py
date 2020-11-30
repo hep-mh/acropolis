@@ -86,11 +86,15 @@ class AbstractModel(ABC):
             # ...and buffer the result
             self._sMatpBuffer = matp
 
-        # Calculate the final abundances
+        # Calculate the transfer matrix
         fmat = expm(matp)
-
-        Yf = np.column_stack( list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() ) )
-        # Initiate the full decay of all (unstable) particles
+        
+        # Calculate the final abundances
+        Yf = np.column_stack(
+            list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
+        )
+        # If desired, perform the full (T>Tmax) decay
+        # of all unstable particles, i.e. n, t, Be7
         if fdecay: self._squeeze_decays(Yf)
 
         return Yf

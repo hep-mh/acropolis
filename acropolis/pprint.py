@@ -2,7 +2,7 @@
 from sys import stdout, stderr
 
 # params
-from .params import verbose, debug
+from .params import fdecay, verbose, debug
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
@@ -31,7 +31,10 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
         for i in range(NYf):
             line += " | {:11.5e}"
 
-        print( line.format(l, *Yf[j]) )
+        if l in ['n', 'H3', 'Be7']:
+            line += "  [\x1B[36m{:7}\x1B[0m]" if fdecay else ""
+
+        print( line.format(l, *Yf[j], 'decayed') )
 
 
 def print_error(error, loc="", eol="\n"):
