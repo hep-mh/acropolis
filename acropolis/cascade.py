@@ -274,12 +274,12 @@ class _ReactionWrapperScaffold(object):
 
 
     def _ne(self, T):
-        # 1: p; 5: He4 (see 'Nuclear_Reactor._sNuclei' for all identifiers)
+        # 1: p; 5: He4 (see 'NuclearReactor._nuclei' for all identifiers)
         return ( self._sY0[1] + 2.*self._sY0[5] ) * self._nb(T)
 
 
     def _nNZ2(self, T):
-        # 1: p; 5: He4 (see 'Nuclear_Reactor._sNuclei' for all identifiers)
+        # 1: p; 5: He4 (see 'NuclearReactor._nuclei' for all identifiers)
         return ( self._sY0[1] + 4.*self._sY0[5] ) * self._nb(T)
 
 

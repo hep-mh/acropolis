@@ -472,14 +472,15 @@ class MatrixGenerator(object):
     def _matrix_kernel(self, i, j, T):
         # Generate an empty matrix
         mat = np.zeros( (_nnuc, _nnuc) )
-        # Extract the signatures of all reactions
+        # Extract the signatures of all
+        # disintegration reactions
         rsig = { rid:_get_reaction_signature(rid) for rid in _lrid }
 
         # Rows: Loop over all relevant nuclei
         for nr in range(_nnuc):
             # Columns: Loop over all relevant nuclei
             for nc in range(_nnuc):
-                # Loop over all possible reactions
+                # Loop over all disintegration reactions
                 for rid in rsig:
                     th_rate_rid = lambda T: 10.**self._sTR[rid]( log10(T) )
 
