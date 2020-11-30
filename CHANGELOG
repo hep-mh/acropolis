@@ -1,0 +1,11 @@
+v1.1
+ - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
+ - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
+ - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (~900MB -> ~20MB)
+ - Fixed a bug, which could lead to NaNs when calculating heavily suppressed spectra with E0 >> me2/(22*T)
+ - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ACROPOLIS
+ - Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines
+ - Added additional info and warning messages for the user's convenience
+
+v1.0
+ - Initial release

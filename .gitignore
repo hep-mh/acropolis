@@ -1,5 +1,7 @@
-# Database files
-*.db*
+# Exclude scan results
+/plots/data/*
+/plots/*.pdf
+/plots/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__

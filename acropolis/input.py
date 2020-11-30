@@ -81,8 +81,8 @@ class InputInterface(object):
         req_param   = ( "eta" in self._sParamData )
         if not req_param:
             print_error(
-                "The mandatory variable 'eta' could not be found 'param_file.dat'",
-                "Input_Interface::_check_data"
+                "The mandatory variable 'eta' could not be found in 'param_file.dat'",
+                "acropolis.input.InputInterface::_check_data"
             )
 
         # Check if abundance_file.dat has the correct dimensions
@@ -90,7 +90,7 @@ class InputInterface(object):
         if not abund_shape:
             print_error(
                 "The content of 'abundance_file.dat' does not have the required shape.",
-                "Input_Interface::_check_data"
+                "acropolis.input.InputInterface::_check_data"
             )
 
         # Check if cosmo_file.dat has the correct number of columns
@@ -98,7 +98,7 @@ class InputInterface(object):
         if not cosmo_shape:
             print_error(
                 "The content of 'cosmo_file.dat' does not have the required shape.",
-                "Input_Interface::_check_data"
+                "acropolis.input.InputInterface::_check_data"
             )
 
 
@@ -150,14 +150,6 @@ class InputInterface(object):
         return self._interp_cosmo_data(val, xc, yc)
 
 
-    def add_cosmo_column(self, fct, ref_col=1):
-        F = np.array( [ fct(x) for x in self._sCosmoData[:,ref_col] ] )
-
-        self._sCosmoData    = np.column_stack( [self._sCosmoData, F] )
-        self._sCosmoDataLog = np.log10( np.abs(self._sCosmoData) )
-        self._sCosmoDataShp = self._sCosmoData.shape
-
-
     # 2. ABUNDANCE_DATA #######################################################
 
     def bbn_abundances(self):
@@ -171,7 +163,3 @@ class InputInterface(object):
 
     def parameter(self, key):
         return self._sParamData[key]
-
-
-    def add_parameter(self, key, value):
-        self._sParamData[key] = value

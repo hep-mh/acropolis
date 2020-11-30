@@ -1,5 +1,5 @@
-# pickle
-import pickle
+# numpy
+import numpy as np
 # gzip
 import gzip
 # os
@@ -15,38 +15,30 @@ from .pprint import print_info
 from .params import usedb
 from .params import Emin_log, Emax_log, Enum
 from .params import Tmin_log, Tmax_log, Tnum
-from .params import Ep_E_ip_log
 
 
 def import_data_from_db():
-    ratedb, kerndb = None, None
-    if not usedb:
-        return (ratedb, kerndb)
-    
+    ratedb = None
+    if not usedb or not path.exists("data/rates.db.gz"):
+        return ratedb
+
     start_time = time()
     print_info(
-        "Extracting/Reading data files.",
+        "Extracting and reading database files.",
         "acropolis.db.import_data_from_db"
     )
 
-    # Read the data for the rates
-    if path.exists("data/rates.db.gz"):
-        ratefl = gzip.open("data/rates.db.gz", "rb")
-        ratedb = pickle.load(ratefl)
-        ratefl.close()
-
-    # Read the data for the kernels
-    if path.exists("data/kernels.db.gz"):
-        kernfl = gzip.open("data/kernels.db.gz", "rb")
-        kerndb = pickle.load(kernfl)
-        kernfl.close()
+    ratefl = gzip.open("data/rates.db.gz", "rb")
+    #ratedb = pickle.load(ratefl)
+    ratedb = np.loadtxt(ratefl)
+    ratefl.close()
 
     end_time = time()
     print_info(
         "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
     )
 
-    return (ratedb, kerndb)
+    return ratedb
 
 
 def in_rate_db(E_log, T_log):
@@ -60,8 +52,7 @@ def in_kernel_db(E_log, Ep_log, T_log):
     if (Emin_log <= E_log <= Emax_log) \
       and (Emin_log <= Ep_log <= Emax_log) \
       and (Tmin_log <= T_log <= Tmax_log):
-        if Ep_log > Ep_E_ip_log + E_log:
-            return True
+        return True
 
     return False
 

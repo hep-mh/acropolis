@@ -14,6 +14,8 @@ from .nucl import NuclearReactor, MatrixGenerator
 # params
 from .params import hbar, c_si, me2, alpha
 from .params import Emin
+# pprint
+from .pprint import print_info, print_warning
 
 
 class AbstractModel(ABC):
@@ -31,15 +33,15 @@ class AbstractModel(ABC):
         # Calculate the relevant physical quantities, i.e. ...
         # ...the 'delta' source terms and...
         self._sS0 = [
-            self._source_photon,
-            self._source_electron,
-            self._source_positron
+            self._source_photon_0  ,
+            self._source_electron_0,
+            self._source_positron_0
         ]
         # ...the ISR source terms
-        self._sSfsr = [
-            self._fsr_source_photon,
-            lambda E, T: 0.,
-            lambda E, T: 0.
+        self._sSc = [
+            self._source_photon_c  ,
+            self._source_electron_c,
+            self._source_positron_c
         ]
 
         # A buffer for high-performance scans
@@ -47,16 +49,29 @@ class AbstractModel(ABC):
 
 
     def run_disintegration(self):
+        # Print a warning of the injection energy
+        # is larger than 1GeV, as this might lead
+        # to wrong results
+        if self._sE0 > 1e3:
+            print_warning(
+                "Injection energy > 1GeV. Results cannot be trusted.",
+                "acropolis.models.AbstractMode.run_disintegration"
+            )
+
         # If the energy is below all thresholds,
         # simply return the initial abundances
         if self._sE0 <= Emin:
+            print_info(
+                "Injection energy is below all thresholds. No calculation required.",
+                "acropolis.models.AbstractMode.run_disintegration"
+            )
             return self._sII.bbn_abundances()
 
         if self._sMatpBuffer is not None:
             matp = self._sMatpBuffer
         else:
             # Initialize the nuclear reactor
-            nr = NuclearReactor(self._sS0, self._sSfsr, self._sTrg, self._sE0, self._sII)
+            nr = NuclearReactor(self._sS0, self._sSc, self._sTrg, self._sE0, self._sII)
 
             # Calculate the thermal rates
             (temp, rate_mat) = nr.get_thermal_rates()
@@ -91,22 +106,30 @@ class AbstractModel(ABC):
 
 
     @abstractmethod
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         pass
 
 
     @abstractmethod
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         pass
 
 
-    def _source_positron(self, T):
-        return self._source_electron(T)
+    def _source_positron_0(self, T):
+        return self._source_electron_0(T)
 
 
     @abstractmethod
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_c(self, E, T):
         pass
+
+
+    def _source_electron_c(self, E, T):
+        return 0.
+
+
+    def _source_positron_c(self, E, T):
+        return self._source_electron_c(E, T)
 
 
 class DecayModel(AbstractModel):
@@ -116,17 +139,17 @@ class DecayModel(AbstractModel):
         self._sII   = InputInterface("data/sm.tar.gz")
 
         # The mass of the decaying particle
-        self._sMphi = mphi # in MeV
+        self._sMphi = mphi            # in MeV
         # The lifetime of the decaying particle
-        self._sTau  = tau  # in s
+        self._sTau  = tau             # in s
         # The injection energy
-        self._sE0   = mphi/2.
+        self._sE0   = self._sMphi/2.  # in MeV
 
         # The number density of the mediator
         # (relative to photons) ...
         self._sN0a  = n0a
         # ... at T = temp0 ...
-        self._sT0   = temp0
+        self._sT0   = temp0           # in MeV
         # ... corresponding to t = t(temp0)
         self._st0   = self._sII.time(self._sT0)
 
@@ -168,15 +191,15 @@ class DecayModel(AbstractModel):
         return (Tmin, Tmax)
 
 
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         return self._sBRaa * 2. * self._number_density(T) * (hbar/self._sTau)
 
 
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         return self._sBRee * self._number_density(T) * (hbar/self._sTau)
 
 
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_c(self, E, T):
         EX = self._sE0
 
         x = E/EX
@@ -185,7 +208,7 @@ class DecayModel(AbstractModel):
         if 1. - y < x:
             return 0.
 
-        _sp = self._source_electron(T)
+        _sp = self._source_electron_0(T)
 
         # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
@@ -198,16 +221,16 @@ class AnnihilationModel(AbstractModel):
         self._sII    = InputInterface("data/sm.tar.gz")
 
         # The mass of the dark-matter particle
-        self._sMchi  = mchi    # in MeV
+        self._sMchi  = mchi         # in MeV
         # The s-wave and p-wave parts of <sigma v>
-        self._sSwave = a       # in cm^3/s
-        self._sPwave = b       # in cm^3/s
+        self._sSwave = a            # in cm^3/s
+        self._sPwave = b            # in cm^3/s
         # The dark matter decoupling temperature in MeV
         # For Tkd=0, the dark matter partices stays in
         # kinetic equilibrium with the SM heat bath
-        self._sTkd   = tempkd  # in MeV
+        self._sTkd   = tempkd       # in MeV
         # The injection energy
-        self._sE0    = mchi
+        self._sE0    = self._sMchi  # in MeV
 
         # The branching ratio into electron-positron pairs
         self._sBRee  = bree
@@ -262,15 +285,15 @@ class AnnihilationModel(AbstractModel):
         return (Tmin, Tmax)
 
 
-    def _source_photon(self, T):
+    def _source_photon_0(self, T):
         return self._sBRaa * (self._number_density(T)**2.) * self._sigma_v(T)
 
 
-    def _source_electron(self, T):
+    def _source_electron_0(self, T):
         return self._sBRee * .5 * (self._number_density(T)**2.) * self._sigma_v(T)
 
 
-    def _fsr_source_photon(self, E, T):
+    def _source_photon_c(self, E, T):
         EX = self._sE0
 
         x = E/EX
@@ -279,7 +302,7 @@ class AnnihilationModel(AbstractModel):
         if 1. - y < x:
             return 0.
 
-        _sp = self._source_electron(T)
+        _sp = self._source_electron_0(T)
 
         # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )

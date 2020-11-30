@@ -42,7 +42,7 @@ _nuclei = {
 # A dictionary containing all relevant reactions
 # This dict can be modified if new reactions are added
 # In this case, also remember to modify the function
-# 'NuclearReactor.get_cross_section(self, reaction_id, E)'
+# 'NuclearReactor.get_cross_section(reaction_id, E)'
 _reactions = {
     1 : "d+a>n+p",
     2 : "t+a>n+d",
@@ -143,7 +143,7 @@ def _convert_mb_to_iMeV2(f_in_mb):
 
 class NuclearReactor(object):
 
-    def __init__(self, s0, s_fsr, temp_rg, e0, ii):
+    def __init__(self, s0, sc, temp_rg, e0, ii):
         self._sII = ii
 
         # A dictionary containing the BBN parameters
@@ -159,7 +159,7 @@ class NuclearReactor(object):
         self._sS0 = s0
 
         # The FSR source terms
-        self._sSfsr = s_fsr
+        self._sSc = sc
 
         # The approximate decay temperature of the mediator
         self._sTrg  = temp_rg
@@ -343,9 +343,11 @@ class NuclearReactor(object):
 
 
     def _thermal_rates_at(self, T):
-        EC   = me2/(22.*T)
+        EC = me2/(22.*T)
         # Calculate the maximal energy
         Emax = min( self._sE0, 10.*EC )
+        # For E > me2/T >> EC, the spectrum
+        # is strongly suppressed
 
         # Define a dict containing all thermal rates
         # key = reaction_id (from _reactions)
@@ -353,11 +355,8 @@ class NuclearReactor(object):
 
         # Calculate the spectra for the given temperature
         xsp, ysp = self._sGen.nonuniversal_spectrum(
-                            self._sE0, self._sS0, self._sSfsr, T
+                            self._sE0, self._sS0, self._sSc, T
                         )
-        # xsp, ysp = self._sGen.universal_spectrum(
-        #                     self._sE0, self._sS0, self._sSfsr, T
-        #                 )
 
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
@@ -365,7 +364,7 @@ class NuclearReactor(object):
         lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
         # Revert the transformation (to lin-lin space)
         # and multiply with the cross-section
-        def Fph_xs(rid, log_E):
+        def Fph_xs(log_E, rid):
             E = exp( log_E )
 
             return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
@@ -383,7 +382,7 @@ class NuclearReactor(object):
                 # Perform the integration from the threshold energy to Emax
                 with warnings.catch_warnings(record=True) as w:
                     log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                    I_Fxs = quad(lambda E: Fph_xs(rid, E), log_Emin, log_Emax, epsrel=eps, epsabs=0)
+                    I_Fxs = quad(Fph_xs, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
 
                     if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
                         print_warning(
@@ -473,14 +472,15 @@ class MatrixGenerator(object):
     def _matrix_kernel(self, i, j, T):
         # Generate an empty matrix
         mat = np.zeros( (_nnuc, _nnuc) )
-        # Extract the signatures of all reactions
+        # Extract the signatures of all
+        # disintegration reactions
         rsig = { rid:_get_reaction_signature(rid) for rid in _lrid }
 
         # Rows: Loop over all relevant nuclei
         for nr in range(_nnuc):
             # Columns: Loop over all relevant nuclei
             for nc in range(_nnuc):
-                # Loop over all possible reactions
+                # Loop over all disintegration reactions
                 for rid in rsig:
                     th_rate_rid = lambda T: 10.**self._sTR[rid]( log10(T) )
 
