@@ -18,6 +18,7 @@ import warnings
 from .pprint import print_error, print_warning, print_info
 # params
 from .params import me, me2, hbar
+from .params import Emin
 from .params import approx_zero, eps
 from .params import NT_pd
 # cascade
@@ -420,12 +421,6 @@ class NuclearReactor(object):
 
 
     def get_pdi_grids(self):
-        start_time = time()
-        print_info(
-            "Calculating non-thermal spectra and reaction rates.",
-            "acropolis.nucl.NuclearReactor.get_thermal_rates"
-        )
-
         (Tmin, Tmax) = self._sTrg
 
         NT = int(log10(Tmax/Tmin)*NT_pd)
@@ -436,13 +431,28 @@ class NuclearReactor(object):
 
         # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        pdi_grids = {rid:np.zeros(NT) for rid in _lrid}
+        pdi_grids = {rid:np.full(NT, approx_zero) for rid in _lrid}
+
+        if self._sE0 < Emin:
+            print_info(
+                "Injection energy is below all thresholds.",
+                "acropolis.nucl.NuclearReactor.get_thermal_rates"
+            )
+            return (Tr, pdi_grids)
+
+        start_time = time()
+        print_info(
+            "Calculating non-thermal spectra and reaction rates.",
+            "acropolis.nucl.NuclearReactor.get_thermal_rates"
+        )
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
         for i, Ti in enumerate(Tr):
             print_info(
-                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%", eol="\r"
+                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
+                "acropolis.nucl.NuclearReactor.get_thermal_rates",
+                eol="\r"
             )
             rates_at_i = self._pdi_rates(Ti)
             # Loop over the different reactions
@@ -545,14 +555,14 @@ class MatrixGenerator(object):
 
 
     def get_matp(self, T):
+        # Generate an empty matrix
+        mat = np.zeros( (_nnuc, _nnuc) )
+
         start_time = time()
         print_info(
             "Running non-thermal nucleosynthesis.",
             "acropolis.nucl.MatrixGenerator.get_matp"
         )
-
-        # Generate an empty matrix
-        mat = np.zeros( (_nnuc, _nnuc) )
 
         nt = 0
         # Rows: Loop over all relevant nuclei
@@ -561,7 +571,9 @@ class MatrixGenerator(object):
             for nc in range(_nnuc):
                 nt += 1
                 print_info(
-                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%", eol="\r"
+                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%",
+                    "acropolis.nucl.MatrixGenerator.get_matp",
+                    eol="\r"
                 )
 
                 # Define the kernel for the integration

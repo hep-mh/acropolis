@@ -59,16 +59,6 @@ class AbstractModel(ABC):
                 "acropolis.models.AbstractMode.run_disintegration"
             )
 
-        # If the energy is below all thresholds,
-        # simply return the initial abundances
-        if self._sE0 <= Emin:
-            # TODO
-            print_info(
-                "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractMode.run_disintegration"
-            )
-            return self._sII.bbn_abundances()
-
         if self._sMatpBuffer is not None:
             matp = self._sMatpBuffer
         else:
@@ -88,7 +78,7 @@ class AbstractModel(ABC):
 
         # Calculate the transfer matrix
         fmat = expm(matp)
-        
+
         # Calculate the final abundances
         Yf = np.column_stack(
             list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
