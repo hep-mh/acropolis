@@ -65,7 +65,7 @@ class AbstractModel(ABC):
                 "Injection energy is below all thresholds. No calculation required.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
-            return self._sII.bbn_abundances()
+            return self._squeeze_decays( self._sII.bbn_abundances() )
 
         if self._sMatpBuffer is not None:
             matp = self._sMatpBuffer
@@ -91,14 +91,14 @@ class AbstractModel(ABC):
         Yf = np.column_stack(
             list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
         )
-        # Perform the full (T>Tmax) decay
-        # of all unstable particles
-        self._squeeze_decays(Yf)
-
-        return Yf
+        # Perform the full (T>Tmax) decay of
+        # all unstable particles and return
+        return self._squeeze_decays(Yf)
 
 
-    def _squeeze_decays(self, Yf):
+    def _squeeze_decays(self, Yf0):
+        Yf = Yf0.copy()
+
         NYf = Yf.shape[1]
         for i in range(NYf):
             # n > p
@@ -107,6 +107,8 @@ class AbstractModel(ABC):
             Yf[3,i], Yf[4,i] = 0., Yf[3,i] + Yf[4,i]
             # Be7 > Li7
             Yf[8,i], Yf[7,i] = 0., Yf[8,i] + Yf[7,i]
+
+        return Yf
 
 
     def set_matp_buffer(self, matp):

@@ -517,7 +517,7 @@ class MatrixGenerator(object):
                     if ris == nc and rfs[nr] != 0:
                         mat[nr, nc] += rfs[nr] * pdi_rate(T)
 
-                    # Find all reaction that have
+                    # Find all reactions that have
                     # nc = nr in the initial state
                     # (diagonal entries)
                     elif nc == nr and ris == nc:
@@ -525,6 +525,8 @@ class MatrixGenerator(object):
 
                 # DECAYS ######################################################
                 for did in _ldid:
+                    continue # Skip for now
+                    
                     decay_rate = hbar/_tau[did]
 
                     dis = dsig[did][0] # initial state of the decay
