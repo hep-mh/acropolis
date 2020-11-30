@@ -1,3 +1,7 @@
+v1.2
+ - Added the decay of n, t and Be7 to the calculation
+ - Included a new script 'data/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+
 v1.1
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)

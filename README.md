@@ -3,7 +3,7 @@
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.1](https://img.shields.io/badge/current_version-1.1-blue.svg?style=flat-square)
+![Version: 1.2](https://img.shields.io/badge/current_dev_version-1.2-blue.svg?style=flat-square)
 
 When using this code, please cite the following papers
 

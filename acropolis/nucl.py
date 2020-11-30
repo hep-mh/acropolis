@@ -26,6 +26,7 @@ from .cascade import SpectrumGenerator
 
 # A dictionary containing all relevant nuclei, or more precisely
 # all nuclei that appear in the reactions specified in '_reactions'
+# or in the decays specified in '_decays'
 _nuclei = {
     "n"  : 0,
     "p"  : 1,
@@ -39,7 +40,7 @@ _nuclei = {
 }
 
 
-# A dictionary containing all relevant reactions
+# A dictionary containing all relevant pdi reactions
 # This dict can be modified if new reactions are added
 # In this case, also remember to modify the function
 # 'NuclearReactor.get_cross_section(reaction_id, E)'
@@ -62,9 +63,7 @@ _reactions = {
     16: "Be7+a>p+Li6",
     17: "Be7+a>p+p+n+He4"
 }
-
-
-# A dictionary containing all accosiated threshold
+# A dictionary containing all accociated threshold
 # energies. All energies are given in MeV
 _eth = {
     1 :  2.224573,
@@ -87,14 +86,33 @@ _eth = {
 }
 
 
+# A dictionary containing all relevant decays
+_decays = {
+    1: "n>p",
+    2: "t>He3",
+    3: "Be7>Li7"
+}
+# A dictionary containing all accociated lifetimes.
+# All lifetimes are given in s
+_tau = {
+    1: 8.802e2,
+    2: 3.885e8,
+    3: 4.598e6
+}
+
+
 # The number of relevant nucleons
 _nnuc = len( _nuclei )
 # The number of relevant reaction
 _nrec = len( _reactions )
+# The number of relevant decays
+_ndec = len( _decays )
 
 
-# A list containing all reactions_id's
-_lrid= list( _reactions.keys() )
+# A list containing all reactions id's
+_lrid = list( _reactions.keys() )
+# A list containing all decay id's
+_ldid = list( _decays.keys() )
 
 
 def _extract_signature(reaction_str):
