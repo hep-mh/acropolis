@@ -523,7 +523,6 @@ class MatrixGenerator(object):
 
                 # DECAYS ######################################################
                 for did in _ldid:
-                    continue
                     decay_rate = hbar/_tau[did]
 
                     dis = dsig[did][0] # initial state of the decay
