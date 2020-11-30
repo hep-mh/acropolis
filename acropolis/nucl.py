@@ -96,8 +96,8 @@ _decays = {
 # All lifetimes are given in s
 _tau = {
     1: 8.802e2,
-    2: 3.885e8,
-    3: 4.598e6
+    2: 5.605e8, # T_(1/2) = 3.885e8
+    3: 6.634e6  # T_(1/2) = 4.598e6
 }
 
 
@@ -360,16 +360,17 @@ class NuclearReactor(object):
         )
 
 
-    def _thermal_rates_at(self, T):
+    def _pdi_rates(self, T):
         EC = me2/(22.*T)
         # Calculate the maximal energy
         Emax = min( self._sE0, 10.*EC )
         # For E > me2/T >> EC, the spectrum
         # is strongly suppressed
 
-        # Define a dict containing all thermal rates
+        # Define a dict containing the rates
+        # for the photodisintegration reactions
         # key = reaction_id (from _reactions)
-        thermal_rates = {rid:approx_zero for rid in _reactions}
+        pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
         xsp, ysp = self._sGen.nonuniversal_spectrum(
@@ -382,44 +383,43 @@ class NuclearReactor(object):
         lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
         # Revert the transformation (to lin-lin space)
         # and multiply with the cross-section
-        def Fph_xs(log_E, rid):
-            E = exp( log_E )
-
-            return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
+        def Fph_s(log_E, rid):
+            E = exp( log_E ); return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
 
         # Define the total rate of interactions altering the photon spectrum,
         # evaluated at the relevant injection energy E0
         rate_photon_E0 = self._sGen.rate_photon(self._sE0, T)
 
         # Calculate the different rates by looping over all available reaction_id's
-        for rid in _reactions:
-            # Do not perform the integral for energies
-            # below threshold or those with strongly
-            # suppressed spectra
-            if _eth[rid] < Emax:
-                # Perform the integration from the threshold energy to Emax
-                with warnings.catch_warnings(record=True) as w:
-                    log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                    I_Fxs = quad(Fph_xs, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
+        for rid in _lrid:
+            # Do not perform the integral for energies below
+            # threshold or for strongly suppressed spectra
+            if _eth[rid] > Emax:
+                continue
 
-                    if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
-                        print_warning(
-                            "Slow convergence when calculating the thermal rates " +
-                            "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
-                            "acropolis.nucl.NuclearReactor._thermal_rates_at"
-                        )
+            # Perform the integration from the threshold energy to Emax
+            with warnings.catch_warnings(record=True) as w:
+                log_Emin, log_Emax = log(_eth[rid]), log(Emax)
+                I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
 
-                # Calculate the 'delta-term'
-                I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+                if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
+                    print_warning(
+                        "Slow convergence when calculating the pdi rates " +
+                        "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
+                        "acropolis.nucl.NuclearReactor._thermal_rates_at"
+                    )
 
-                # Add the delta term and save the result
-                thermal_rates[rid] = I_dt + I_Fxs[0]
+            # Calculate the 'delta-term'
+            I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+
+            # Add the delta term and save the result
+            pdi_rates[rid] = I_dt + I_Fs[0]
 
         # Go home and play
-        return thermal_rates
+        return pdi_rates
 
 
-    def get_thermal_rates(self):
+    def get_pdi_grids(self):
         start_time = time()
         print_info(
             "Calculating non-thermal spectra and reaction rates.",
@@ -434,9 +434,9 @@ class NuclearReactor(object):
         # temperature points ('log spacing')
         Tr = np.logspace( log10(Tmin), log10(Tmax), NT )
 
-        # Create a matrix to store the thermal
+        # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        rate_mat = np.zeros( (_nrec, NT) )
+        pdi_grids = {rid:np.zeros(NT) for rid in _lrid}
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
@@ -444,10 +444,10 @@ class NuclearReactor(object):
             print_info(
                 "Progress: " + str( int( 1e3*i/NT )/10 ) + "%", eol="\r"
             )
-            rates_at_Ti = self._thermal_rates_at(Ti)
+            rates_at_i = self._pdi_rates(Ti)
             # Loop over the different reactions
-            for rid in rates_at_Ti:
-                rate_mat[rid-1, i] = rates_at_Ti[rid]
+            for rid in _lrid:
+                pdi_grids[rid][i] = rates_at_i[rid]
 
         end_time = time()
         print_info(
@@ -455,52 +455,56 @@ class NuclearReactor(object):
         )
 
         # Go get some sun
-        return (Tr, rate_mat)
+        return (Tr, pdi_grids)
 
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp, rate_mat, ii):
+    def __init__(self, temp, pdi_grids, ii):
         self._sII = ii
 
         # Save the thermal rates
-        self._sTemp    = temp
-        self._sRateMat = rate_mat
+        self._sTemp     = temp
+        self._sPdiGrids = pdi_grids
 
         # Save the appropriate temperature range
         (self._sTmin, self._sTmax) = temp[0], temp[-1]
 
         # Interpolate the thermal rates
-        self._sTR = self._interp_thermal_rates()
+        self._sPdiInterp = self._interp_pdi_grids()
 
 
-    def _interp_thermal_rates(self):
+    def _interp_pdi_grids(self):
         # A dict containing all interp. rates; key = reaction_id (from _sReactions)
-        interp_rates = {}
-        for rid in range(self._sRateMat.shape[0]):
-            temp_log     = np.log10(self._sTemp          )
-            rate_mat_log = np.log10(self._sRateMat[rid,:])
+        interp_grids = {}
+        for rid in _lrid:
+            temp_log     = np.log10(self._sTemp         )
+            pdi_grid_log = np.log10(self._sPdiGrids[rid])
 
             # Interpolate the rates between Tmin and Tmax
-            interp_rates[rid+1] = interp1d( temp_log, rate_mat_log, kind="linear", fill_value=0. )
+            # in log-log space...
+            interp_grids[rid] = interp1d( temp_log, pdi_grid_log, kind="linear", fill_value=0. )
 
-        return interp_rates
+        return interp_grids
 
 
     def _matrix_kernel(self, i, j, T):
         # Generate an empty matrix
         mat = np.zeros( (_nnuc, _nnuc) )
         # Extract the signatures of all
-        # disintegration reactions
+        # disintegration reactions...
         rsig = { rid:_get_reaction_signature(rid) for rid in _lrid }
+        # ...and decays
+        dsig = { did:_get_reaction_signature(did) for did in _ldid }
 
         # Rows: Loop over all relevant nuclei
         for nr in range(_nnuc):
             # Columns: Loop over all relevant nuclei
             for nc in range(_nnuc):
-                # Loop over all disintegration reactions
-                for rid in rsig:
-                    th_rate_rid = lambda T: 10.**self._sTR[rid]( log10(T) )
+
+                # PDI REACTIONS ###############################################
+                for rid in _lrid:
+                    pdi_rate = lambda T: 10.**self._sPdiInterp[rid]( log10(T) )
 
                     ris = rsig[rid][0] # initial state of the reaction
                     rfs = rsig[rid][1] # final state of the reaction
@@ -508,13 +512,15 @@ class MatrixGenerator(object):
                     # 1. the nucleid 'nr' in the final state
                     # 2. the nucleid 'nc' in the initial state
                     if ris == nc and rfs[nr] != 0:
-                        mat[nr, nc] += rfs[nr] * th_rate_rid(T)
+                        mat[nr, nc] += rfs[nr] * pdi_rate(T)
 
                     # Find all reaction that have
                     # nc = nr in the initial state
                     # (diagonal entries)
                     elif nc == nr and ris == nc:
-                        mat[nr, nc] -= th_rate_rid(T)
+                        mat[nr, nc] -= pdi_rate(T)
+
+                # DECAYS ######################################################
 
         # Incorporate the time-temperature relation and return
         return mat[i, j]/( self._sII.dTdt(T) )

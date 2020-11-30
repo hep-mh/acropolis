@@ -54,7 +54,7 @@ class AbstractModel(ABC):
         # to wrong results
         if self._sE0 > 1e3:
             print_warning(
-                "Injection energy > 1GeV. Results cannot be trusted.",
+                "Injection energy > 1 GeV. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
 
@@ -74,10 +74,10 @@ class AbstractModel(ABC):
             nr = NuclearReactor(self._sS0, self._sSc, self._sTrg, self._sE0, self._sII)
 
             # Calculate the thermal rates
-            (temp, rate_mat) = nr.get_thermal_rates()
+            (temp, pdi_grids) = nr.get_pdi_grids()
 
             # Initialize the linear system solver
-            mg = MatrixGenerator(temp, rate_mat, self._sII)
+            mg = MatrixGenerator(temp, pdi_grids, self._sII)
 
             # Generate the final matrix power...
             matp = mg.get_final_matp()
