@@ -17,7 +17,7 @@ import warnings
 # pprint
 from .pprint import print_error, print_warning, print_info
 # params
-from .params import me, me2
+from .params import me, me2, hbar
 from .params import approx_zero, eps
 from .params import NT_pd
 # cascade
@@ -89,15 +89,15 @@ _eth = {
 # A dictionary containing all relevant decays
 _decays = {
     1: "n>p",
-    2: "t>He3",
-    3: "Be7>Li7"
+    2: "t>He3"
+    #3: "Be7>Li7"
 }
 # A dictionary containing all accociated lifetimes.
 # All lifetimes are given in s
 _tau = {
     1: 8.802e2,
-    2: 5.605e8, # T_(1/2) = 3.885e8
-    3: 6.634e6  # T_(1/2) = 4.598e6
+    2: 5.605e8          # T_(1/2) = 3.885e8
+    #3: 6.634e6         # T_(1/2) = 4.598e6
 }
 
 
@@ -141,10 +141,10 @@ def _get_reaction_signature(reaction_id):
     if reaction_id in _reactions:
         return _extract_signature( _reactions[ reaction_id ] )
 
-    # If the reaction_id does not exist, return an empty dictionary
+    # If the reaction id does not exist, return an empty dictionary
     # Such a dictionary should not contribute to the generation of
     # the matrix involving the coefficient of the differential equation
-    return -1, {i:0 for i in _reactions}
+    return -1, {i:0 for i in _nuclei}
 
 
 def _convert_mb_to_iMeV2(f_in_mb):
@@ -493,9 +493,9 @@ class MatrixGenerator(object):
         mat = np.zeros( (_nnuc, _nnuc) )
         # Extract the signatures of all
         # disintegration reactions...
-        rsig = { rid:_get_reaction_signature(rid) for rid in _lrid }
+        rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
         # ...and decays
-        dsig = { did:_get_reaction_signature(did) for did in _ldid }
+        dsig = { did:_extract_signature( _decays[ did] )   for did in _ldid }
 
         # Rows: Loop over all relevant nuclei
         for nr in range(_nnuc):
@@ -508,6 +508,7 @@ class MatrixGenerator(object):
 
                     ris = rsig[rid][0] # initial state of the reaction
                     rfs = rsig[rid][1] # final state of the reaction
+
                     # Find all reactions that have
                     # 1. the nucleid 'nr' in the final state
                     # 2. the nucleid 'nc' in the initial state
@@ -521,6 +522,24 @@ class MatrixGenerator(object):
                         mat[nr, nc] -= pdi_rate(T)
 
                 # DECAYS ######################################################
+                for did in _ldid:
+                    continue
+                    decay_rate = hbar/_tau[did]
+
+                    dis = dsig[did][0] # initial state of the decay
+                    dfs = dsig[did][1] # final state of the decay
+
+                    # Find all decays that have
+                    # 1. the nucleid 'nr' in the final state
+                    # 2. the nucleid 'nc' in the initial state
+                    if dis == nc and dfs[nr] != 0:
+                        mat[nr, nc] += dfs[nr] * decay_rate
+
+                    # Find all decays that have
+                    # nc = nr in the initial state
+                    # (diagonal entries)
+                    elif nc == nr and dis == nc:
+                        mat[nr, nc] -= decay_rate
 
         # Incorporate the time-temperature relation and return
         return mat[i, j]/( self._sII.dTdt(T) )

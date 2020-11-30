@@ -12,6 +12,7 @@ from .input import InputInterface
 # nucl
 from .nucl import NuclearReactor, MatrixGenerator
 # params
+from .params import fdecay
 from .params import hbar, c_si, me2, alpha
 from .params import Emin
 # pprint
@@ -61,6 +62,7 @@ class AbstractModel(ABC):
         # If the energy is below all thresholds,
         # simply return the initial abundances
         if self._sE0 <= Emin:
+            # TODO
             print_info(
                 "Injection energy is below all thresholds. No calculation required.",
                 "acropolis.models.AbstractMode.run_disintegration"
@@ -87,7 +89,22 @@ class AbstractModel(ABC):
         # Calculate the final abundances
         fmat = expm(matp)
 
-        return np.column_stack( list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() ) )
+        Yf = np.column_stack( list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() ) )
+        # Initiate the full decay of all (unstable) particles
+        if fdecay: self._squeeze_decays(Yf)
+
+        return Yf
+
+
+    def _squeeze_decays(self, Yf):
+        NYf = Yf.shape[1]
+        for i in range(NYf):
+            # n > p
+            Yf[0,i], Yf[1,i] = 0., Yf[0,i] + Yf[1,i]
+            # t > He3
+            Yf[3,i], Yf[4,i] = 0., Yf[3,i] + Yf[4,i]
+            # Be7 > Li7
+            Yf[8,i], Yf[7,i] = 0., Yf[8,i] + Yf[7,i]
 
 
     def set_matp_buffer(self, matp):
