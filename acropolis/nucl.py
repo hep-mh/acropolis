@@ -18,7 +18,6 @@ import warnings
 from .pprint import print_error, print_warning, print_info
 # params
 from .params import me, me2, hbar
-from .params import Emin
 from .params import approx_zero, eps
 from .params import NT_pd
 # cascade
@@ -431,14 +430,7 @@ class NuclearReactor(object):
 
         # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        pdi_grids = {rid:np.full(NT, approx_zero) for rid in _lrid}
-
-        if self._sE0 < Emin:
-            print_info(
-                "Injection energy is below all thresholds.",
-                "acropolis.nucl.NuclearReactor.get_thermal_rates"
-            )
-            return (Tr, pdi_grids)
+        pdi_grids = {rid:np.zeros(NT) for rid in _lrid}
 
         start_time = time()
         print_info(

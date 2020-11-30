@@ -11,7 +11,7 @@ from scipy.special import zetac
 # for n, t and Be7 are performed
 # for T < Tmin
 # Default: True
-fdecay = True
+#fdecay = True
 
 # If this flag is set to 'True',
 # the pregenerated databases
