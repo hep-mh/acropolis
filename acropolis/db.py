@@ -18,8 +18,11 @@ from acropolis.params import Tmin_log, Tmax_log, Tnum
 
 
 def import_data_from_db():
+    pkg_dir, _ = path.split(__file__)
+    db_file    = path.join(pkg_dir, "data", "rates.db.gz")
+
     ratedb = None
-    if not usedb or not path.exists("data/rates.db.gz"):
+    if not usedb or not path.exists(db_file):
         return ratedb
 
     start_time = time()
@@ -28,7 +31,7 @@ def import_data_from_db():
         "acropolis.db.import_data_from_db"
     )
 
-    ratefl = gzip.open("data/rates.db.gz", "rb")
+    ratefl = gzip.open(db_file, "rb")
     #ratedb = pickle.load(ratefl)
     ratedb = np.loadtxt(ratefl)
     ratefl.close()

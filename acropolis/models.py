@@ -8,7 +8,7 @@ from scipy.linalg import expm
 from abc import ABC, abstractmethod
 
 # input
-from acropolis.input import InputInterface
+from acropolis.input import InputInterface, locate_sm_file
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
@@ -157,7 +157,7 @@ class DecayModel(AbstractModel):
 
     def __init__(self, mphi, tau, temp0, n0a, bree, braa):
         # Initialize the Input_Interface
-        self._sII   = InputInterface("data/sm.tar.gz")
+        self._sII   = InputInterface( locate_sm_file() )
 
         # The mass of the decaying particle
         self._sMphi = mphi            # in MeV
@@ -239,7 +239,7 @@ class AnnihilationModel(AbstractModel):
 
     def __init__(self, mchi, a, b, tempkd, bree, braa):
         # Initialize the Input_Interface
-        self._sII    = InputInterface("data/sm.tar.gz")
+        self._sII    = InputInterface( locate_sm_file() )
 
         # The mass of the dark-matter particle
         self._sMchi  = mchi         # in MeV

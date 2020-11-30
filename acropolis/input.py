@@ -1,3 +1,5 @@
+# os
+from os import path
 # math
 from math import log10
 # numpy
@@ -33,6 +35,13 @@ def _cumsimp(x_grid, y_grid):
             last_even_int = integral[ie]
 
     return integral
+
+
+def locate_sm_file():
+    pkg_dir, _  = path.split(__file__)
+    sm_file     = path.join(pkg_dir, "data", "sm.tar.gz")
+
+    return sm_file
 
 
 class InputInterface(object):
