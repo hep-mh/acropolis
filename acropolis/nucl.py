@@ -15,13 +15,13 @@ from time import time
 import warnings
 
 # pprint
-from .pprint import print_error, print_warning, print_info
+from acropolis.pprint import print_error, print_warning, print_info
 # params
-from .params import me, me2, hbar
-from .params import approx_zero, eps
-from .params import NT_pd
+from acropolis.params import me, me2, hbar
+from acropolis.params import approx_zero, eps
+from acropolis.params import NT_pd
 # cascade
-from .cascade import SpectrumGenerator
+from acropolis.cascade import SpectrumGenerator
 
 
 # A dictionary containing all relevant nuclei, or more precisely
@@ -526,7 +526,7 @@ class MatrixGenerator(object):
                 # DECAYS ######################################################
                 for did in _ldid:
                     continue # Skip for now
-                    
+
                     decay_rate = hbar/_tau[did]
 
                     dis = dsig[did][0] # initial state of the decay

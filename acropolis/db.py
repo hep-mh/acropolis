@@ -10,11 +10,11 @@ import numba as nb
 from time import time
 
 # pprint
-from .pprint import print_info
+from acropolis.pprint import print_info
 # params
-from .params import usedb
-from .params import Emin_log, Emax_log, Enum
-from .params import Tmin_log, Tmax_log, Tnum
+from acropolis.params import usedb
+from acropolis.params import Emin_log, Emax_log, Enum
+from acropolis.params import Tmin_log, Tmax_log, Tnum
 
 
 def import_data_from_db():

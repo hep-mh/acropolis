@@ -8,14 +8,14 @@ from scipy.linalg import expm
 from abc import ABC, abstractmethod
 
 # input
-from .input import InputInterface
+from acropolis.input import InputInterface
 # nucl
-from .nucl import NuclearReactor, MatrixGenerator
+from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
-from .params import hbar, c_si, me2, alpha
-from .params import Emin
+from acropolis.params import hbar, c_si, me2, alpha
+from acropolis.params import Emin
 # pprint
-from .pprint import print_info, print_warning
+from acropolis.pprint import print_info, print_warning
 
 
 class AbstractModel(ABC):

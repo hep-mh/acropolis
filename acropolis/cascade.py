@@ -11,18 +11,18 @@ import numba as nb
 import warnings
 
 # db
-from .db import import_data_from_db
-from .db import in_rate_db, interp_rate_db
+from acropolis.db import import_data_from_db
+from acropolis.db import in_rate_db, interp_rate_db
 # cache
-from .cache import cached_member
+from acropolis.cache import cached_member
 # pprint
-from .pprint import print_warning, print_error
+from acropolis.pprint import print_warning, print_error
 # params
-from .params import me, me2, alpha, re
-from .params import zeta3, pi2
-from .params import Emin
-from .params import approx_zero, eps, Ephb_T_max, E_EC_cut
-from .params import NE_pd, NE_min
+from acropolis.params import me, me2, alpha, re
+from acropolis.params import zeta3, pi2
+from acropolis.params import Emin
+from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
+from acropolis.params import NE_pd, NE_min
 
 
 # _ReactionWrapperScaffold ####################################################

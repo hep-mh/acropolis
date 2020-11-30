@@ -9,10 +9,10 @@ from scipy.integrate import cumtrapz
 import tarfile
 
 # pprint
-from .pprint import print_error
+from acropolis.pprint import print_error
 # params
-from .params import hbar
-from .params import NY, NC
+from acropolis.params import hbar
+from acropolis.params import NY, NC
 
 
 def _cumsimp(x_grid, y_grid):

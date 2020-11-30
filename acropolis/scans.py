@@ -6,11 +6,11 @@ from itertools import product
 from multiprocessing import Pool, cpu_count
 
 # pprint
-from .pprint import print_error
+from acropolis.pprint import print_error
 # params
-from .params import NY
+from acropolis.params import NY
 # models
-from .models import AbstractModel
+from acropolis.models import AbstractModel
 
 
 class ScanParameter(object):

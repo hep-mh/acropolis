@@ -2,7 +2,7 @@
 from sys import stdout, stderr
 
 # params
-from .params import verbose, debug
+from acropolis.params import verbose, debug
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):

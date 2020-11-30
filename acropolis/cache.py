@@ -11,7 +11,8 @@ def cached_member(f_uncached):
     @wraps(f_uncached)
     def f_cached(*args):
         T     = args[-1]
-        # Drop the 'self' arguments
+        # Drop the first argument 'self'
+        # ! only for member functions !
         pargs = args[1:]
 
         # For each new temperature,
