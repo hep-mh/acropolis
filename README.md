@@ -33,7 +33,7 @@ v1.0
 
 # Install the dependencies
 
-ACROPOLIS is written in Python3.7 (remember that Python2 is dead) and depends on the following packages (older versions might work, but have not been thoroughly testes)
+ACROPOLIS is written in Python3.7 (remember that Python2 is dead) and depends on the following packages (older versions might work, but have not been thoroughly tested)
 
  - NumPy (> 1.19.1)
  - SciPy (>1.5.2)
@@ -47,9 +47,19 @@ python3 -m pip install numpy, scipy, numba --user
 
 If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
 
+# Install ACROPOLIS using pip
+
+ACROPOLIS also comes with a ``setup.py`` file, which allows to simply install it via pip. For this simply run the following command in the root of the cloned repository
+
+```
+python3 -m pip install .
+```
+
+Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and also makes sure that all dependencies are fulfilled.
+
 # Use the example models
 
-Within the ACROPOLIS main directory there are two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. On that note, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 1e5s that decays exclusively into photons and has an abundance of 1e-10 relative to photons at a reference temperature of 10MeV
+Within the ACROPOLIS main directory there are two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. On that note, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 1e5s that decays exclusively into photons and has an abundance of 1e-10 relative to photons at a reference temperature of 10MeV (**if you installed ACROPOLIS using pip, you can drop the ``./`` at the beginning, since the executables are in your ``PATH``.**)
 
 ```
 ./decay 10 1e5 10 1e-10 0 1
