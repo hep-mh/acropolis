@@ -11,7 +11,7 @@ from scipy.integrate import cumtrapz
 import tarfile
 
 # util
-from acropolis.util import cumsimp
+from acropolis.utils import cumsimp
 # pprint
 from acropolis.pprint import print_error
 # params

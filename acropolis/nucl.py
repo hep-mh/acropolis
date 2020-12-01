@@ -15,7 +15,7 @@ from time import time
 import warnings
 
 # util
-from acropolis.util import LogInterp
+from acropolis.utils import LogInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
