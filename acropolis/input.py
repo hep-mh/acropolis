@@ -10,31 +10,13 @@ from scipy.integrate import cumtrapz
 # tarfilfe
 import tarfile
 
+# util
+from acropolis.util import cumsimp
 # pprint
 from acropolis.pprint import print_error
 # params
 from acropolis.params import hbar
 from acropolis.params import NY, NC
-
-
-def _cumsimp(x_grid, y_grid):
-    n = len(x_grid)
-    Delta_z = np.log(x_grid[-1] / x_grid[0])/(n-1)
-    g_grid = x_grid*y_grid
-
-    integral = np.zeros(n)
-
-    last_even_int = 0.
-    for i in range(1, int(n/2 + 1)):
-        ie = 2 * i
-        io = 2 * i - 1
-
-        integral[io] = last_even_int + 0.5 * Delta_z * (g_grid[io-1] + g_grid[io])
-        if ie < n:
-            integral[ie] = last_even_int + Delta_z * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
-            last_even_int = integral[ie]
-
-    return integral
 
 
 def locate_sm_file():
@@ -64,7 +46,7 @@ class InputInterface(object):
                                          )
 
         # Calculate the scale factor and add it
-        sf = np.exp( _cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
+        sf = np.exp( cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
         self._sCosmoData   = np.column_stack( [self._sCosmoData, sf] )
 
         # Log the cosmo data for the interpolation

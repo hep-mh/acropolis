@@ -14,6 +14,8 @@ from time import time
 # warnings
 import warnings
 
+# util
+from acropolis.util import LogInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
@@ -380,11 +382,11 @@ class NuclearReactor(object):
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
         # a linear interpolation, which also has less side effects
-        lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
-        # Revert the transformation (to lin-lin space)
-        # and multiply with the cross-section
+        # lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
+        Fph = LogInterp(xsp, ysp)
+        # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
-            E = exp( log_E ); return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
+            E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
 
         # Define the total rate of interactions altering the photon spectrum,
         # evaluated at the relevant injection energy E0
