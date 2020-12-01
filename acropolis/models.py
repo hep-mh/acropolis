@@ -14,6 +14,7 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import hbar, c_si, me2, alpha
 from acropolis.params import Emin
+from acropolis.params import NY
 # pprint
 from acropolis.pprint import print_info, print_warning
 
@@ -63,7 +64,7 @@ class AbstractModel(ABC):
         if self._sE0 <= Emin:
             print_info(
                 "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractMode.run_disintegration"
+                "acropolis.models.AbstractModel.run_disintegration"
             )
             return self._squeeze_decays( self._sII.bbn_abundances() )
 
@@ -85,6 +86,7 @@ class AbstractModel(ABC):
             self._sMatpBuffer = matp
 
         # Calculate the transfer matrix
+        # (for photodisintegration only)
         fmat = expm(matp)
 
         # Calculate the final abundances
@@ -96,19 +98,16 @@ class AbstractModel(ABC):
         return self._squeeze_decays(Yf)
 
 
-    def _squeeze_decays(self, Yf0):
-        Yf = Yf0.copy()
+    def _squeeze_decays(self, Yf):
+        smat = np.identity(NY)
 
-        NYf = Yf.shape[1]
-        for i in range(NYf):
-            # n > p
-            Yf[0,i], Yf[1,i] = 0., Yf[0,i] + Yf[1,i]
-            # t > He3
-            Yf[3,i], Yf[4,i] = 0., Yf[3,i] + Yf[4,i]
-            # Be7 > Li7
-            Yf[8,i], Yf[7,i] = 0., Yf[8,i] + Yf[7,i]
+        smat[0,0], smat[1,0] = 0., 1. # n   > p
+        smat[3,3], smat[4,3] = 0., 1. # t   > He3
+        smat[8,8], smat[7,8] = 0., 1. # Be7 > Li7
 
-        return Yf
+        return np.column_stack(
+            list( smat.dot( Yi ) for Yi in Yf.transpose() )
+        )
 
 
     def set_matp_buffer(self, matp):

@@ -482,14 +482,32 @@ class MatrixGenerator(object):
         # A dict containing all interp. rates; key = reaction_id (from _sReactions)
         interp_grids = {}
         for rid in _lrid:
-            temp_log     = np.log10(self._sTemp         )
-            pdi_grid_log = np.log10(self._sPdiGrids[rid])
-
-            # Interpolate the rates between Tmin and Tmax
-            # in log-log space...
-            interp_grids[rid] = interp1d( temp_log, pdi_grid_log, kind="linear", fill_value=0. )
+            # Interpolate the rates between
+            # Tmin and Tmax in log-log space
+            interp_grids[rid] = LogInterp(
+                self._sTemp, self._sPdiGrids[rid], base=10. # fill_value=0.
+            )
 
         return interp_grids
+
+
+    def _add_to_matrix(self, mat, rate, ris, rfs):
+        # Rows: Loop over all relevant nuclei
+        for nr in range(_nnuc):
+            # Columns: Loop over all relevant nuclei
+            for nc in range(_nnuc):
+
+                # Find all reactions that have
+                # 1. the nucleid 'nr' in the final state
+                # 2. the nucleid 'nc' in the initial state
+                if ris == nc and rfs[nr] != 0:
+                    mat[nr, nc] += rfs[nr] * rate
+
+                # Find all reactions that have
+                # nc = nr in the initial state
+                # (diagonal entries)
+                elif nc == nr and ris == nc:
+                    mat[nr, nc] -= rate
 
 
     def _matrix_kernel(self, i, j, T):
@@ -501,50 +519,24 @@ class MatrixGenerator(object):
         # ...and decays
         dsig = { did:_extract_signature( _decays[ did] )   for did in _ldid }
 
-        # Rows: Loop over all relevant nuclei
-        for nr in range(_nnuc):
-            # Columns: Loop over all relevant nuclei
-            for nc in range(_nnuc):
+        # PDI REACTIONS ###############################################
+        for rid in _lrid:
+            pdi_rate = self._sPdiInterp[rid](T)
 
-                # PDI REACTIONS ###############################################
-                for rid in _lrid:
-                    pdi_rate = lambda T: 10.**self._sPdiInterp[rid]( log10(T) )
+            ris = rsig[rid][0] # initial state of the reaction
+            rfs = rsig[rid][1] # final state of the reaction
 
-                    ris = rsig[rid][0] # initial state of the reaction
-                    rfs = rsig[rid][1] # final state of the reaction
+            self._add_to_matrix(mat, pdi_rate, ris, rfs)
 
-                    # Find all reactions that have
-                    # 1. the nucleid 'nr' in the final state
-                    # 2. the nucleid 'nc' in the initial state
-                    if ris == nc and rfs[nr] != 0:
-                        mat[nr, nc] += rfs[nr] * pdi_rate(T)
+        # DECAYS ######################################################
+        for did in _ldid:
+            decay_rate = hbar/_tau[did]
 
-                    # Find all reactions that have
-                    # nc = nr in the initial state
-                    # (diagonal entries)
-                    elif nc == nr and ris == nc:
-                        mat[nr, nc] -= pdi_rate(T)
+            dis = dsig[did][0] # initial state of the decay
+            dfs = dsig[did][1] # final state of the decay
 
-                # DECAYS ######################################################
-                for did in _ldid:
-                    continue # Skip for now
-
-                    decay_rate = hbar/_tau[did]
-
-                    dis = dsig[did][0] # initial state of the decay
-                    dfs = dsig[did][1] # final state of the decay
-
-                    # Find all decays that have
-                    # 1. the nucleid 'nr' in the final state
-                    # 2. the nucleid 'nc' in the initial state
-                    if dis == nc and dfs[nr] != 0:
-                        mat[nr, nc] += dfs[nr] * decay_rate
-
-                    # Find all decays that have
-                    # nc = nr in the initial state
-                    # (diagonal entries)
-                    elif nc == nr and dis == nc:
-                        mat[nr, nc] -= decay_rate
+            continue # Skip for now
+            self._add_to_matrix(mat, decay_rate, dis, dfs)
 
         # Incorporate the time-temperature relation and return
         return mat[i, j]/( self._sII.dTdt(T) )

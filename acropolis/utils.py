@@ -6,9 +6,11 @@ import numpy as np
 
 class LogInterp(object):
 
-    def __init__(self, x_grid, y_grid, base=np.e):
+    def __init__(self, x_grid, y_grid, base=np.e, fill_value=None):
         self._sBase    = base
         self._sLogBase = log(self._sBase)
+
+        self._sFillValue = fill_value
 
         self._sXLog = np.log(x_grid)/self._sLogBase
         self._sYLog = np.log(y_grid)/self._sLogBase
@@ -25,9 +27,12 @@ class LogInterp(object):
         x_log = log(x)/self._sLogBase
 
         if not (self._sXminLog <= x_log <= self._sXmaxLog):
-            raise ValueError(
-                "The given value does not lie within the interpolation range."
-            )
+            if self._sFillValue is None:
+                raise ValueError(
+                    "The given value does not lie within the interpolation range."
+                )
+
+            return self._sFillValue
 
         ix = int( ( x_log - self._sXminLog )*( self._sN - 1 )/( self._sXmaxLog - self._sXminLog ) )
 
