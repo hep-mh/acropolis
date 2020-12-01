@@ -1,7 +1,7 @@
-# numpy
-import numpy as np
 # gzip
 import gzip
+# pickle
+import pickle
 # os
 from os import path
 # numba
@@ -32,13 +32,12 @@ def import_data_from_db():
     )
 
     ratefl = gzip.open(db_file, "rb")
-    #ratedb = pickle.load(ratefl)
-    ratedb = np.loadtxt(ratefl)
+    ratedb = pickle.load(ratefl)
     ratefl.close()
 
     end_time = time()
     print_info(
-        "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
+        "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
     )
 
     return ratedb

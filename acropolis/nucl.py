@@ -139,6 +139,14 @@ def _extract_signature(reaction_str):
     return istate, fstate
 
 
+# A dictionary containing the signatures
+# for the different pdi reactions
+_rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
+# A dictionary containing the signatures
+# for the different decays
+_dsig = { did:_extract_signature( _decays[ did]   ) for did in _ldid }
+
+
 def _get_reaction_signature(reaction_id):
     if reaction_id in _reactions:
         return _extract_signature( _reactions[ reaction_id ] )
@@ -475,7 +483,7 @@ class MatrixGenerator(object):
         (self._sTmin, self._sTmax) = temp[0], temp[-1]
 
         # Interpolate the thermal rates
-        self._sPdiInterp = self._interp_pdi_grids()
+        self._sPdiIp = self._interp_pdi_grids()
 
 
     def _interp_pdi_grids(self):
@@ -491,55 +499,40 @@ class MatrixGenerator(object):
         return interp_grids
 
 
-    def _add_to_matrix(self, mat, rate, ris, rfs):
-        # Rows: Loop over all relevant nuclei
-        for nr in range(_nnuc):
-            # Columns: Loop over all relevant nuclei
-            for nc in range(_nnuc):
+    def _get_pref_ij(self, state, nr, nc):
+        ris = state[0] # initial state of the reaction
+        rfs = state[1] # final state of the reaction
 
-                # Find all reactions that have
-                # 1. the nucleid 'nr' in the final state
-                # 2. the nucleid 'nc' in the initial state
-                if ris == nc and rfs[nr] != 0:
-                    mat[nr, nc] += rfs[nr] * rate
+        # Find reactions/decays that have
+        # 1. the nucleid 'nr' in the final state
+        # 2. the nucleid 'nc' in the initial state
+        if ris == nc and rfs[nr] != 0:
+            return rfs[nr]
 
-                # Find all reactions that have
-                # nc = nr in the initial state
-                # (diagonal entries)
-                elif nc == nr and ris == nc:
-                    mat[nr, nc] -= rate
+        # Find reactions/decays that have
+        # nc = nr in the initial state
+        # (diagonal entries)
+        if nc == nr and ris == nc:
+            return -1.
+
+        return 0.
 
 
     def _matrix_kernel(self, i, j, T):
-        # Generate an empty matrix
-        mat = np.zeros( (_nnuc, _nnuc) )
-        # Extract the signatures of all
-        # disintegration reactions...
-        rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
-        # ...and decays
-        dsig = { did:_extract_signature( _decays[ did] )   for did in _ldid }
+        # Only calculate the requested entry
+        matij = 0. #np.zeros( (_nnuc, _nnuc) )
 
         # PDI REACTIONS ###############################################
         for rid in _lrid:
-            pdi_rate = self._sPdiInterp[rid](T)
-
-            ris = rsig[rid][0] # initial state of the reaction
-            rfs = rsig[rid][1] # final state of the reaction
-
-            self._add_to_matrix(mat, pdi_rate, ris, rfs)
+            matij += self._get_pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
 
         # DECAYS ######################################################
         for did in _ldid:
-            decay_rate = hbar/_tau[did]
-
-            dis = dsig[did][0] # initial state of the decay
-            dfs = dsig[did][1] # final state of the decay
-
             continue # Skip for now
-            self._add_to_matrix(mat, decay_rate, dis, dfs)
+            matij += self._get_pref_ij(_dsig[did], i, j) * hbar/_tau[did]
 
         # Incorporate the time-temperature relation and return
-        return mat[i, j]/( self._sII.dTdt(T) )
+        return matij/( self._sII.dTdt(T) )
 
 
     def get_matp(self, T):
@@ -574,7 +567,7 @@ class MatrixGenerator(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
+            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
         )
 
         return mat
