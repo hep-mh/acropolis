@@ -53,7 +53,7 @@ class AbstractModel(ABC):
         # Print a warning of the injection energy
         # is larger than 1GeV, as this might lead
         # to wrong results
-        if self._sE0 > 1e3:
+        if int( self._sE0 ) > 1e3:
             print_warning(
                 "Injection energy > 1 GeV. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"

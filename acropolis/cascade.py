@@ -79,7 +79,7 @@ def _JIT_G(Ee, Eph, Ephb):
 # _PhotonReactionWrapper ######################################################
 
 @nb.jit(cache=True)
-def _JIT_PH_rate_pair_creation(y, x, T):
+def _JIT_ph_rate_pair_creation(y, x, T):
     # Define beta as a function of y
     b = sqrt(1. - 4.*me2/y)
 
@@ -95,7 +95,7 @@ def _JIT_PH_rate_pair_creation(y, x, T):
 
 
 @nb.jit(cache=True)
-def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_ph_kernel_inverse_compton(y, E, Ep, T):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -105,13 +105,13 @@ def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
 # _ElectronReactionWrapper ####################################################
 
 @nb.jit(cache=True)
-def _JIT_EL_rate_inverse_compton(y, x, E, T):
+def _JIT_el_rate_inverse_compton(y, x, E, T):
     # Return the integrand for the 2d-integral; y = Eph, x = Ephb
     return _JIT_F(y, E, x)*x/( (pi**2.)*(exp(x/T) - 1.) )
 
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_el_kernel_inverse_compton(y, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -119,7 +119,7 @@ def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
 
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_pair_creation(y, E, Ep, T):
+def _JIT_el_kernel_pair_creation(y, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -159,7 +159,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 
 @nb.jit(cache=True)
 def _JIT_set_spectra(F, i, Fi, cond):
-    F[:,i] = Fi
+    F[:, i] = Fi
     # In the strongly compressed regime, manually
     # set the photon spectrum to zero in order to
     # avoid floating-point errors
@@ -315,7 +315,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # CHECKED!
 
         # Perform the integration in lin space
-        I_fso_E2 = dblquad(_JIT_PH_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
+        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
 
         return I_fso_E2[0]/( 8.*E**2. )
 
@@ -385,7 +385,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_PH_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(_JIT_ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         # ATTENTION: Kawasaki considers a combined e^+/e^- spectrum
         # Therefore the factor 2 should not be there in our case
@@ -434,7 +434,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         # ATTENTION:
         # The integral over \epsilon_\gamma should start at 0.
         # In fact, for \epsilon_\gamma > \epsilon_e, we have q < 0.
-        I_fF_E = dblquad(_JIT_EL_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T))
+        I_fF_E = dblquad(_JIT_el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(E**2.)
 
@@ -467,11 +467,12 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Calculate appropriate integration limits
-        pf = .25*me2/Ep - E                     # <= 0.
-        qf = .25*me2*(Ep-E)/Ep                  # >= 0.
+        pf = .25*me2/Ep - E               # <= 0.
+        qf = .25*me2*(Ep-E)/Ep            # >= 0.
 
-        z1 = -pf/2. - sqrt( (pf/2.)**2 - qf )  # smaller
-        z2 = -pf/2. + sqrt( (pf/2.)**2 - qf )  # larger
+        sqrt_d = sqrt( (pf/2.)**2. - qf )
+        z1 = -pf/2. - sqrt_d              # smaller
+        z2 = -pf/2. + sqrt_d              # larger
 
         # Define the integration limits from
         # the range that is specified in '_JIT_F'
@@ -488,7 +489,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_EL_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(_JIT_el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(Ep**2.)
 
@@ -561,7 +562,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fG_E2 = quad(_JIT_EL_kernel_pair_creation, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fG_E2 = quad(_JIT_el_kernel_pair_creation, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         return 0.25*pi*(alpha**2.)*me2*I_fG_E2[0]/(Ep**3.)
 
