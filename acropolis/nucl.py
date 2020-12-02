@@ -499,37 +499,37 @@ class MatrixGenerator(object):
         return interp_grids
 
 
-    def _get_pref_ij(self, state, nr, nc):
+    def _pref_ij(self, state, i, j):
         ris = state[0] # initial state of the reaction
         rfs = state[1] # final state of the reaction
 
         # Find reactions/decays that have
-        # 1. the nucleid 'nr' in the final state
-        # 2. the nucleid 'nc' in the initial state
-        if ris == nc and rfs[nr] != 0:
-            return rfs[nr]
+        # 1. the nucleid 'nr=i' in the final state
+        # 2. the nucleid 'nc=j' in the initial state
+        if ris == j and rfs[i] != 0:
+            return rfs[i]
 
         # Find reactions/decays that have
         # nc = nr in the initial state
         # (diagonal entries)
-        if nc == nr and ris == nc:
+        if i == j and ris == j:
             return -1.
 
         return 0.
 
 
-    def _matrix_kernel(self, i, j, T):
+    def _matrix_kernel_ij(self, i, j, T):
         # Only calculate the requested entry
         matij = 0. #np.zeros( (_nnuc, _nnuc) )
 
         # PDI REACTIONS ###############################################
         for rid in _lrid:
-            matij += self._get_pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
+            matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
 
         # DECAYS ######################################################
         for did in _ldid:
             continue # Skip for now
-            matij += self._get_pref_ij(_dsig[did], i, j) * hbar/_tau[did]
+            matij += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
 
         # Incorporate the time-temperature relation and return
         return matij/( self._sII.dTdt(T) )
@@ -559,7 +559,7 @@ class MatrixGenerator(object):
 
                 # Define the kernel for the integration
                 # in log-log space (IMPORTANT!)
-                Ik = lambda y: self._matrix_kernel( nr, nc, exp(y) ) * exp(y)
+                Ik = lambda y: self._matrix_kernel_ij( nr, nc, exp(y) ) * exp(y)
 
                 # Perform the integration (in log-log space)
                 # and assign the result to the predefined matrix

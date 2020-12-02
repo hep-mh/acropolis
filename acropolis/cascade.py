@@ -54,8 +54,9 @@ def _JIT_G(Ee, Eph, Ephb):
     # ATTENTION: This range is absent in 'astro-ph/9412055'
     # Here we adopt the original result from
     # 'link.springer.com/content/pdf/10.1007/BF01005624.pdf'
-    Ee_lim_m = ( Eph + Ephb - (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) ) )/2.
-    Ee_lim_p = ( Eph + Ephb + (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) ) )/2.
+    dE_sqrt  = (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) )
+    Ee_lim_m = ( Eph + Ephb - dE_sqrt )/2.
+    Ee_lim_p = ( Eph + Ephb + dE_sqrt )/2.
 
     if not ( me < Ee_lim_m <= Ee <= Ee_lim_p ):
         # CHECKED to never happen, since the intergration
@@ -85,13 +86,13 @@ def _JIT_ph_rate_pair_creation(y, x, T):
 
     # Define the kernel for the 2d-integral; y = s, x = epsilon_bar
     #                     f/E^2                              s   \sigma_DP
-    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
     # ATTENTION: There is an error in 'astro-ph/9412055.pdf'
     # In the integration for \bar{\epsilon}_\gamma the lower
     # limit of integration should be me^2/\epsilon_\gamma
     # (the written limit is unitless, which must be wrong)
     # This limit is a consequence of the constraint on
     # the center-of-mass energy
+    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
 
 
 @nb.jit(cache=True)

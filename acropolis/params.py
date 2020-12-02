@@ -88,7 +88,7 @@ NY = 9
 NC = 5
 
 # Minimum energy for the different spectra (in MeV)
-# This value should be smaller than the minimal
+# This value should not be larger than the minimal
 # nucleon-interaction threshold of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
 Emin = 1.5
