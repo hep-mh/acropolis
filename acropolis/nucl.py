@@ -5,7 +5,6 @@ from math import sqrt, log10, log, exp
 # numpy
 import numpy as np
 # scipy
-from scipy.interpolate import interp1d
 from scipy.integrate import quad
 from scipy.integrate import IntegrationWarning
 from scipy.linalg import expm
@@ -147,6 +146,7 @@ _rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
 _dsig = { did:_extract_signature( _decays[ did]   ) for did in _ldid }
 
 
+# DEPRECATED !
 def _get_reaction_signature(reaction_id):
     if reaction_id in _reactions:
         return _extract_signature( _reactions[ reaction_id ] )

@@ -305,7 +305,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # In general, the threshold is E ~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
         # in order to guarantee a smooth transition
-        if E < me2/(30.*T):
+        if E < me2/(50.*T):
             return 0.
 
         # Define the integration limits from the
@@ -322,7 +322,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     def _rate_pair_creation_db(self, E, T):
-        if E < me2/(30.*T):
+        if E < me2/(50.*T):
             return 0.
 
         E_log, T_log = log10(E), log10(T)
@@ -536,7 +536,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         # However, here we use a slighlty smaller threshold
         # in acordance with the implementation we use in
         # '_PhotonReactionWrapper._rate_pair_creation'
-        if Ep < me2/(30.*T):
+        if Ep < me2/(50.*T):
             return 0.
 
         dE, E2 = Ep - E, E**2.
