@@ -21,8 +21,7 @@ The remarkable agreement between observations of the primordial light element ab
 
 v1.2
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
- - Modified the directory structure by moving ./data to ./acropolis/data
- - The former step allowed to transform ACROPOLIS into a PyPI package, which can be installed without git via ``python3 -m pip install ACROPOLIS`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
 

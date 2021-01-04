@@ -292,7 +292,7 @@ class AnnihilationModel(AbstractModel):
         # The branching ratio into two photons
         self._sBRaa  = braa
 
-        # The dark matter abundance today
+        # The density parameter of dark matter
         self._sOmgh2 = omegah2
 
         # Call the super constructor
