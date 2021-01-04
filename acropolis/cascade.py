@@ -648,6 +648,19 @@ class _PositronReactionWrapper(object):
         )
 
 
+# TODO
+class _MuonReactionWrapper(_ReactionWrapperScaffold):
+    pass
+
+    # RATES ###################################################################
+    # E is the energy of the incoming particle
+    # T is the temperature of the background photons
+
+    # MUON DECAY #############################################################
+    def _rate_muon_decay(self, E, T):
+        return 0.
+
+
 class SpectrumGenerator(object):
 
     def __init__(self, Y0, eta):
