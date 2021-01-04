@@ -1,6 +1,9 @@
 v1.2
- - Added the decay of n, t and Be7 to the calculation
- - Included a new script 'data/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+ - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
+ - Modified the directory structure by moving ./data to ./acropolis/data
+ - The former step allowed to transform ACROPOLIS into a PyPI package, which can be installed without git via ``python3 -m pip install ACROPOLIS`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Added the decay of neutrons and tritium to the calculation
+ - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
 
 v1.1
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons

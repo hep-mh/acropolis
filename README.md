@@ -19,6 +19,14 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
+v1.2
+ - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
+ - Modified the directory structure by moving ./data to ./acropolis/data
+ - The former step allowed to transform ACROPOLIS into a PyPI package, which can be installed without git via ``python3 -m pip install ACROPOLIS`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Added the decay of neutrons and tritium to the calculation
+ - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+
+
 v1.1
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
@@ -49,13 +57,17 @@ If these dependencies conflict with those for other programs in your work enviro
 
 # Install ACROPOLIS using pip
 
-ACROPOLIS also comes with a ``setup.py`` file, which allows to simply install it via pip. For this simply run the following command in the root of the cloned repository
+ACROPOLIS also comes with a ``setup.py`` file, which allows to simply install it via pip. To do this, simply run the following command in the root of the cloned repository
 
 ```
 python3 -m pip install .
 ```
 
-Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and also makes sure that all dependencies are fulfilled.
+Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and also makes sure that all dependencies are fulfilled. **In the future**, we also plan to make ACROPOLIS available via PyPI, in which case it can be installed from everywhere by running
+
+```
+python3 -m pip install ACROPOLIS
+```
 
 # Use the example models
 
