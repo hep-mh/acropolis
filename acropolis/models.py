@@ -271,7 +271,7 @@ class DecayModel(AbstractModel):
 
 class AnnihilationModel(AbstractModel):
 
-    def __init__(self, mchi, a, b, tempkd, bree, braa):
+    def __init__(self, mchi, a, b, tempkd, bree, braa, omegah2=0.12):
         # Initialize the Input_Interface
         self._sII    = InputInterface( locate_sm_file() )
 
@@ -292,14 +292,17 @@ class AnnihilationModel(AbstractModel):
         # The branching ratio into two photons
         self._sBRaa  = braa
 
+        # The dark matter abundance today
+        self._sOmgh2 = omegah2
+
         # Call the super constructor
         super(AnnihilationModel, self).__init__(self._sE0, self._sII)
 
     # DEPENDENT QUANTITIES ##############################################################
 
     def _number_density(self, T):
-        rho_d0 = 0.12*8.095894680377574e-35   # DM density today in MeV^4
-        T0     = 2.72548*8.6173324e-11        # CMB temperature today in MeV
+        rho_d0 = 8.095894680377574e-35 * self._sOmgh2  # DM density today in MeV^4
+        T0     = 2.72548*8.6173324e-11                 # CMB temperature today in MeV
 
         sf_ratio = self._sII.scale_factor(T0) / self._sII.scale_factor(T)
 

@@ -42,7 +42,7 @@ def print_error(error, loc="", eol="\n"):
     if debug == True and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
-    stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + " Stop!" + locf + eol)
+    stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + locf + eol)
     exit(1)
 
 
