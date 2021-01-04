@@ -56,6 +56,16 @@ hbar = 6.582119514e-22
 # The speed of light (in cm/s)
 c_si = 2.99792458e10
 
+# The muon lifetime (in s)
+tau_m = 2.1969811e-6
+
+# The neutron lifetime (in s)
+tau_n = 8.802e2
+
+# The lifetime of tritium (in s)
+# T_(1/2) = 3.885e8
+tau_t = 5.605e8
+
 
 # MATHEMATICAL CONSTANTS ############################################
 

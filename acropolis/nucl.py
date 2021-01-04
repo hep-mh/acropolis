@@ -18,7 +18,7 @@ from acropolis.utils import LogInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
-from acropolis.params import me, me2, hbar
+from acropolis.params import me, me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps
 from acropolis.params import NT_pd
 # cascade
@@ -96,8 +96,8 @@ _decays = {
 # A dictionary containing all accociated lifetimes.
 # All lifetimes are given in s
 _tau = {
-    1: 8.802e2,
-    2: 5.605e8          # T_(1/2) = 3.885e8
+    1: tau_n,
+    2: tau_t
     #3: 6.634e6         # T_(1/2) = 4.598e6
 }
 
@@ -528,7 +528,6 @@ class MatrixGenerator(object):
 
         # DECAYS ######################################################
         for did in _ldid:
-            continue # Skip for now
             matij += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
 
         # Incorporate the time-temperature relation and return

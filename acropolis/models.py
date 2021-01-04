@@ -12,7 +12,7 @@ from acropolis.input import InputInterface, locate_sm_file
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
-from acropolis.params import hbar, c_si, me2, alpha
+from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin
 from acropolis.params import NY
 # pprint
@@ -68,6 +68,28 @@ class AbstractModel(ABC):
             )
             return self._squeeze_decays( self._sII.bbn_abundances() )
 
+        # Calculate the different transfer matrices
+        ###########################################
+
+        # 1. pre-decay
+        pred_mat   = self._pred_matrix()
+        # 2. photodisintegration
+        pdi_mat    = self._pdi_matrix()
+        # 3. post-decay
+        postd_mat  = self._postd_matrix()
+
+        # Combine
+        transf_mat = postd_mat.dot( pdi_mat.dot( pred_mat ) )
+
+        # Calculate the final abundances
+        Yf = np.column_stack(
+            list( transf_mat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
+        )
+
+        return Yf
+
+
+    def _pdi_matrix(self):
         if self._sMatpBuffer is not None:
             matp = self._sMatpBuffer
         else:
@@ -85,28 +107,41 @@ class AbstractModel(ABC):
             # ...and buffer the result
             self._sMatpBuffer = matp
 
-        # Calculate the transfer matrix
-        # (for photodisintegration only)
-        fmat = expm(matp)
+        return expm(matp)
 
-        # Calculate the final abundances
-        Yf = np.column_stack(
-            list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
-        )
-        # Perform the full (T>Tmax) decay of
-        # all unstable particles and return
-        return self._squeeze_decays(Yf)
+
+    def _pred_matrix(self):
+        dmat = np.identity(NY)
+
+        # n   > p
+        dmat[0,0], dmat[1,0] = 0., 1.
+
+        # t > He3
+        Tmax = max( self._sTrg )
+        tmax = self._sII.time( Tmax )
+
+        expf = exp( -tmax/tau_t )
+
+        dmat[3,3], dmat[4, 3] = expf, 1. - expf
+
+        return dmat
+
+
+    def _postd_matrix(self):
+        dmat = np.identity(NY)
+
+        dmat[0,0], dmat[1,0] = 0., 1. # n   > p
+        dmat[3,3], dmat[4,3] = 0., 1. # t   > He3
+        dmat[8,8], dmat[7,8] = 0., 1. # Be7 > Li7
+
+        return dmat
 
 
     def _squeeze_decays(self, Yf):
-        smat = np.identity(NY)
-
-        smat[0,0], smat[1,0] = 0., 1. # n   > p
-        smat[3,3], smat[4,3] = 0., 1. # t   > He3
-        smat[8,8], smat[7,8] = 0., 1. # Be7 > Li7
+        dmat = self._post_decay_matrix()
 
         return np.column_stack(
-            list( smat.dot( Yi ) for Yi in Yf.transpose() )
+            list( dmat.dot( Yi ) for Yi in Yf.transpose() )
         )
 
 
