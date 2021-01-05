@@ -90,24 +90,24 @@ class AbstractModel(ABC):
 
 
     def _pdi_matrix(self):
-        if self._sMatpBuffer is not None:
-            matp = self._sMatpBuffer
-        else:
-            # Initialize the nuclear reactor
+        if self._sMatpBuffer is None:
+            # Initialize the NuclearReactor
             nr = NuclearReactor(self._sS0, self._sSc, self._sTrg, self._sE0, self._sII)
 
             # Calculate the thermal rates
             (temp, pdi_grids) = nr.get_pdi_grids()
 
-            # Initialize the linear system solver
+            # Initialize the MatrixGenerator
             mg = MatrixGenerator(temp, pdi_grids, self._sII)
 
-            # Generate the final matrix power...
-            matp = mg.get_final_matp()
-            # ...and buffer the result
-            self._sMatpBuffer = matp
+            # Calculate the final matrices and set the buffer
+            self._sMatpBuffer = mg.get_final_matp()
 
-        return expm(matp)
+        # Calculate the final matrices
+        matp = self._sMatpBuffer
+
+        # Calculate the final matrix and return
+        return expm( sum(m for m in matp) )
 
 
     def _pred_matrix(self):
@@ -145,12 +145,12 @@ class AbstractModel(ABC):
         )
 
 
-    def set_matp_buffer(self, matp):
-        self._sMatpBuffer = matp
-
-
     def get_matp_buffer(self):
         return self._sMatpBuffer
+
+
+    def set_matp_buffer(self, matp):
+        self._sMatpBuffer = matp
 
 
     # ABSTRACT METHODS ##############################################

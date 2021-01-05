@@ -518,15 +518,19 @@ class MatrixGenerator(object):
         return 0.
 
 
-    def _matrix_kernel_ij(self, i, j, T):
-        # Only calculate the requested entry
-        matij = 0. #np.zeros( (_nnuc, _nnuc) )
+    def _pdi_kernel_ij(self, i, j, T):
+        matij = 0.
 
-        # PDI REACTIONS ###############################################
         for rid in _lrid:
             matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
 
-        # DECAYS ######################################################
+        # Incorporate the time-temperature relation and return
+        return matij/( self._sII.dTdt(T) )
+
+
+    def _dcy_kernel_ij(self, i, j, T):
+        matij = 0.
+
         for did in _ldid:
             matij += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
 
@@ -536,7 +540,7 @@ class MatrixGenerator(object):
 
     def get_matp(self, T):
         # Generate an empty matrix
-        mat = np.zeros( (_nnuc, _nnuc) )
+        mpdi, mdcy = np.zeros( (_nnuc, _nnuc) ), np.zeros( (_nnuc, _nnuc) )
 
         start_time = time()
         print_info(
@@ -556,20 +560,20 @@ class MatrixGenerator(object):
                     eol="\r"
                 )
 
-                # Define the kernel for the integration
-                # in log-log space (IMPORTANT!)
-                Ik = lambda y: self._matrix_kernel_ij( nr, nc, exp(y) ) * exp(y)
+                # Define the kernels for the integration in log-log space
+                Ik_pdi = lambda y: self._pdi_kernel_ij( nr, nc, exp(y) ) * exp(y)
+                Ik_dcy = lambda y: self._dcy_kernel_ij( nr, nc, exp(y) ) * exp(y)
 
                 # Perform the integration (in log-log space)
-                # and assign the result to the predefined matrix
-                mat[nr, nc] = quad(Ik, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
 
         end_time = time()
         print_info(
             "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
         )
 
-        return mat
+        return (mpdi, mdcy)
 
 
     def get_final_matp(self):
