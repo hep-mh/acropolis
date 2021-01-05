@@ -138,7 +138,7 @@ class AbstractModel(ABC):
 
 
     def _squeeze_decays(self, Yf):
-        dmat = self._post_decay_matrix()
+        dmat = self._postd_matrix()
 
         return np.column_stack(
             list( dmat.dot( Yi ) for Yi in Yf.transpose() )

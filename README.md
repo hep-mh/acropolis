@@ -24,6 +24,7 @@ v1.2
  - Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+ - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
 
 
 v1.1
