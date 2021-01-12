@@ -539,7 +539,7 @@ class MatrixGenerator(object):
 
 
     def get_matp(self, T):
-        # Generate an empty matrix
+        # Generate empty matrices
         mpdi, mdcy = np.zeros( (_nnuc, _nnuc) ), np.zeros( (_nnuc, _nnuc) )
 
         start_time = time()
