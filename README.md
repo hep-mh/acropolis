@@ -3,7 +3,7 @@
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.2](https://img.shields.io/badge/current_dev_version-1.2-blue.svg?style=flat-square)
+![Version: 1.2](https://img.shields.io/badge/current_version-1.2-blue.svg?style=flat-square)
 
 When using this code, please cite the following papers
 
@@ -63,11 +63,7 @@ ACROPOLIS also comes with a ``setup.py`` file, which allows to simply install it
 python3 -m pip install .
 ```
 
-Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and also makes sure that all dependencies are fulfilled. **In the future**, we also plan to make ACROPOLIS available via PyPI, in which case it can be installed from everywhere by running
-
-```
-python3 -m pip install ACROPOLIS
-```
+Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and makes sure that all dependencies are fulfilled.
 
 # Use the example models
 

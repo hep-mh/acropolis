@@ -146,17 +146,6 @@ _rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
 _dsig = { did:_extract_signature( _decays[ did]   ) for did in _ldid }
 
 
-# DEPRECATED !
-def _get_reaction_signature(reaction_id):
-    if reaction_id in _reactions:
-        return _extract_signature( _reactions[ reaction_id ] )
-
-    # If the reaction id does not exist, return an empty dictionary
-    # Such a dictionary should not contribute to the generation of
-    # the matrix involving the coefficient of the differential equation
-    return -1, {i:0 for i in _nuclei}
-
-
 def _convert_mb_to_iMeV2(f_in_mb):
     # Define the conversion factor
     cf = 2.56819e-6
