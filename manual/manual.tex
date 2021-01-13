@@ -75,7 +75,7 @@
 \abstract{The remarkable agreement between observations of the primordial light element abundances and the corresponding theoretical predictions within the standard cosmological history provides a powerful method to constrain physics beyond the standard model of particle physics (BSM). For a given BSM model these primordial element abundances are generally determined by {\it (i) Big Bang Nucleosynthesis} and {\it (ii) possible subsequent disintegration processes}. The latter potentially change the abundances due to late-time high-energy injections which may be present in these scenarios. While there are a number of public codes for the first part, no such code is currently available for the second.
 Here we close this gap and present \texttt{ACROPOLIS}, \texttt{A} generi\texttt{C} f\texttt{R}amework f\texttt{O}r \texttt{P}hotodisintegration \texttt{O}f \texttt{LI}ght element\texttt{S}. The widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. Furthermore, due to its modular structure, \texttt{ACROPOLIS} can easily be extended also to other scenarios.\vspace{0.5cm}
 
-\noindent\textbf{For the most recent version of this manual, please download it directly from the GitHub repository at \url{https://github.com/skumblex/acropolis}.}
+\noindent\textbf{For the most recent version of this manual, please visit the GitHub repository at \url{https://github.com/skumblex/acropolis}.}
 }
 \keywords{}
 
@@ -193,12 +193,12 @@ With the previously calculated photon spectra $\fpdi_\gamma$ we can now evaluate
 & - Y_N(t) \sum_{j'} \left[\frac{1}{\tau_{N\rightarrow j'}} + \int_{0}^{\infty} \text{d} E \, \fpdi_\gamma(t, E)\sigma_{N\gamma \rightarrow j'}(E) \right]\eqsp,
 \label{eq:y_pdi}
 \end{align}
-where $Y_N = n_N / n_b$ with $n_N$ $(n_b)$ the number density of $N$ (baryons), $\sigma_r$ the cross section of the reaction $r$, and $\tau_d$ the lifetime of the decay $d$. Here we implement all of the reactions that are shown in tab.~\ref{tab:reactions}.
+where $Y_N = n_N / n_b$ with $n_N$ $(n_b)$ the number density of $N$ (baryons), $\sigma_r$ the cross section of the reaction $r$, and $\tau_d$ the lifetime of the decay $d$. Here we implement all reactions shown in table \ref{tab:reactions}.
 \begin{table}
 	\centering
 	\begin{tabular}{|c|rcrcrcrcr|c|}
 		\hline
-		 Nr. & & & & & & & & & & $E^\text{th}\;\;[\mathrm{MeV}]$\\
+		 No. & & & & & & & & & & $E^\text{th}\;\;[\mathrm{MeV}]$\\
 		\hline\hline
 		1 & $\mathrm{D}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ & $n$ & & & $2.22$\\
 		\hline
@@ -278,12 +278,13 @@ As $\big[ a(\epsilon_i) \big]_{\X}$ and $\big[B(\epsilon_i)\big]_{\X \X'}$ expli
 \subsection{Non-thermal nucleosynthesis}
 For the numerical solution of eq.~\eqref{eq:y_pdi}, we first bring it into the form
 \begin{align}
-\dot{Y}_N(t) & = \sum_{j} Y_{j}(t) \big[\Gamma_{j\gamma \rightarrow N}(t) + \Gamma_{j \rightarrow N}\big] - Y_N(t) \sum_{j'} \big[ \Gamma_{N\gamma \rightarrow j'}(t) + \Gamma_{N \rightarrow j'} \big] \eqsp.
+\dot{Y}_N(t) & = \sum_{j} Y_{j}(t) \big[\Gamma_{j\gamma \rightarrow N}(t) + \Gamma_{j \rightarrow N}\big] - Y_N(t) \sum_{j'} \big[ \Gamma_{N\gamma \rightarrow j'}(t) + \Gamma_{N \rightarrow j'} \big]
 \label{eq:y_pdi_redef}
 \end{align}
 by defining the reaction rates
 \begin{align}
-\Gamma_{N\gamma \rightarrow N'}(t) \ldefine \int_0^\infty \fpdi_\gamma(t, E) \sigma_{N\gamma \rightarrow N'}(E)\,\d E\eqsp, \quad\text{and}\quad \Gamma_{N\rightarrow N'} \ldefine \frac{1}{\tau_{N\rightarrow N'}}
+\Gamma_{N\gamma \rightarrow N'}(t) &\ldefine \int_0^\infty \fpdi_\gamma(t, E) \sigma_{N\gamma \rightarrow N'}(E)\,\d E\eqsp, \\
+\Gamma_{N\rightarrow N'} &\ldefine \frac{1}{\tau_{N\rightarrow N'}}
 \end{align}
 for photodisintegration reactions and decays, respectively.
 Consequently, by also defining $\bar{Y}(t) \ldefine \big[ Y_n(t), Y_p(t), Y_\text{D}(t), ... \big]^T$ and after substituting $t \rightarrow T$ by means of the time-temperature relation, we find
@@ -293,7 +294,7 @@ Consequently, by also defining $\bar{Y}(t) \ldefine \big[ Y_n(t), Y_p(t), Y_\tex
 \end{equation}
 with 
 \begin{align}
-\big[ \mathcal{R}_\text{pdi/decay}(T)\big]_{N N'} \ldefine \frac{\d t}{\d T} \times \left[ \Gamma_{N'\gamma/N \rightarrow N}(T)  - \delta_{N N'} \sum_{j'} \Gamma_{N'\gamma/N\rightarrow j'}(T)\right]\eqsp.
+\big[ \mathcal{R}_\text{pdi/decay}(T)\big]_{N N'} \ldefine \frac{\d t}{\d T} \times \left[ \Gamma_{N'\gamma/N' \rightarrow N}(T)  - \delta_{N N'} \sum_{j'} \Gamma_{N\gamma/N\rightarrow j'}(T)\right]\eqsp.
 \label{eq:rate_matrix}
 \end{align}
 Here, the matrices $\big[ \mathcal{R}_\text{pdi}(T)\big]_{N N'}$ and $\big[ \mathcal{R}_\text{decay}(T)\big]_{N N'}$ can be obtained via numerical integration, and eq.~\eqref{eq:YT} is an ordinary system of differential equations, which is solved by
@@ -396,7 +397,7 @@ Inside of the git repository there also exists an optional database file at the 
 
 \subsubsection{Running the wrapper scripts}
 \label{sec:wrappers}
-Within the \acropolis main directory there are two executables, \texttt{decay} and \texttt{annihilation}, which wrap the scenarios discussed in section~\ref{sec:decay_model} and section~\ref{sec:annihilation_model}, respectively. Both of these files need to be called with six mandatory six command-line arguments each -- with the option to provide the parameter $\Omega_\text{DM} h^2$ as an optional seventh argument when calling \texttt{annihilation} --, a list of which can be obtained by running the command of choice without any arguments at all. Using the notation from section~\ref{sec:example_models}, the requested parameters are
+Within the \acropolis main directory there are two executables, \texttt{decay} and \texttt{annihilation}, which wrap the scenarios discussed in section~\ref{sec:decay_model} and section~\ref{sec:annihilation_model}, respectively. Both of these files need to be called with six mandatory command-line arguments (and an optional seventh argument for $\Omega_\text{DM} h^2$ when calling \texttt{annihilation}), a list of which can be obtained by running the command of choice without any arguments at all. Using the notation from section~\ref{sec:example_models}, the requested parameters are
 \begin{itemize}
 	\item \texttt{decay}: $\hspace{1.4cm} m_\phi\;\,[\mathrm{MeV}] \quad \tau_\phi\;\,[\mathrm{s}] \quad T_0\;\,[\mathrm{MeV}] \quad n_\phi/n_\gamma|_{T_0} \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma}$
 	\item \texttt{annihilation}: $ m_\chi\;\,[\mathrm{MeV}] \quad a\;\,[\mathrm{cm^3/s}] \quad b\;\,[\mathrm{cm^3/s}] \quad T_\text{kd}\;\,[\mathrm{MeV}] \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma} \quad \Omega_\text{DM} h^2$
