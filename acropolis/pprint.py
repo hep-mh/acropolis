@@ -2,7 +2,7 @@
 from sys import stdout, stderr
 
 # params
-from .params import verbose, debug
+from acropolis.params import verbose, debug
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
@@ -31,7 +31,10 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
         for i in range(NYf):
             line += " | {:11.5e}"
 
-        print( line.format(l, *Yf[j]) )
+        if l in ['n', 'H3', 'Be7']:
+            line += "  [\x1B[36m{:7}\x1B[0m]"
+
+        print( line.format(l, *Yf[j], 'decayed') )
 
 
 def print_error(error, loc="", eol="\n"):
@@ -39,7 +42,7 @@ def print_error(error, loc="", eol="\n"):
     if debug == True and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
-    stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + " Stop!" + locf + eol)
+    stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + locf + eol)
     exit(1)
 
 

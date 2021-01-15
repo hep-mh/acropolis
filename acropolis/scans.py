@@ -6,11 +6,11 @@ from itertools import product
 from multiprocessing import Pool, cpu_count
 
 # pprint
-from .pprint import print_error
+from acropolis.pprint import print_error
 # params
-from .params import NY
+from acropolis.params import NY
 # models
-from .models import AbstractModel
+from acropolis.models import AbstractModel
 
 
 class ScanParameter(object):
@@ -106,6 +106,10 @@ class BufferedScanner(object):
             )
 
 
+    def rescale_matp_buffer(self, buffer, factor):
+        return (factor*buffer[0], buffer[1])
+
+
     def _perform_non_parallel_scan(self, pp):
         # Generate all possible parameter combinations, thereby
         # NOT! including the parameter used for the parallelisation
@@ -136,7 +140,7 @@ class BufferedScanner(object):
             # TODO: Only do this if a fast parameter exists
             if count != 0 and matpf == True:
                 factor = scanp_set_id_0/fastp
-                model.set_matp_buffer(matpb*factor)
+                model.set_matp_buffer( self.rescale_matp_buffer(matpb, factor) )
 
             ##############################################################
             Yb = model.run_disintegration()

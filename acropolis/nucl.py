@@ -5,7 +5,6 @@ from math import sqrt, log10, log, exp
 # numpy
 import numpy as np
 # scipy
-from scipy.interpolate import interp1d
 from scipy.integrate import quad
 from scipy.integrate import IntegrationWarning
 from scipy.linalg import expm
@@ -14,18 +13,21 @@ from time import time
 # warnings
 import warnings
 
+# util
+from acropolis.utils import LogInterp
 # pprint
-from .pprint import print_error, print_warning, print_info
+from acropolis.pprint import print_error, print_warning, print_info
 # params
-from .params import me, me2
-from .params import approx_zero, eps
-from .params import NT_pd
+from acropolis.params import me, me2, hbar, tau_n, tau_t
+from acropolis.params import approx_zero, eps
+from acropolis.params import NT_pd
 # cascade
-from .cascade import SpectrumGenerator
+from acropolis.cascade import SpectrumGenerator
 
 
 # A dictionary containing all relevant nuclei, or more precisely
 # all nuclei that appear in the reactions specified in '_reactions'
+# or in the decays specified in '_decays'
 _nuclei = {
     "n"  : 0,
     "p"  : 1,
@@ -39,7 +41,7 @@ _nuclei = {
 }
 
 
-# A dictionary containing all relevant reactions
+# A dictionary containing all relevant pdi reactions
 # This dict can be modified if new reactions are added
 # In this case, also remember to modify the function
 # 'NuclearReactor.get_cross_section(reaction_id, E)'
@@ -62,9 +64,7 @@ _reactions = {
     16: "Be7+a>p+Li6",
     17: "Be7+a>p+p+n+He4"
 }
-
-
-# A dictionary containing all accosiated threshold
+# A dictionary containing all accociated threshold
 # energies. All energies are given in MeV
 _eth = {
     1 :  2.224573,
@@ -87,14 +87,33 @@ _eth = {
 }
 
 
+# A dictionary containing all relevant decays
+_decays = {
+    1: "n>p",
+    2: "t>He3"
+    #3: "Be7>Li7"
+}
+# A dictionary containing all accociated lifetimes.
+# All lifetimes are given in s
+_tau = {
+    1: tau_n,
+    2: tau_t
+    #3: 6.634e6         # T_(1/2) = 4.598e6
+}
+
+
 # The number of relevant nucleons
 _nnuc = len( _nuclei )
 # The number of relevant reaction
 _nrec = len( _reactions )
+# The number of relevant decays
+_ndec = len( _decays )
 
 
-# A list containing all reactions_id's
-_lrid= list( _reactions.keys() )
+# A list containing all reactions id's
+_lrid = list( _reactions.keys() )
+# A list containing all decay id's
+_ldid = list( _decays.keys() )
 
 
 def _extract_signature(reaction_str):
@@ -119,14 +138,12 @@ def _extract_signature(reaction_str):
     return istate, fstate
 
 
-def _get_reaction_signature(reaction_id):
-    if reaction_id in _reactions:
-        return _extract_signature( _reactions[ reaction_id ] )
-
-    # If the reaction_id does not exist, return an empty dictionary
-    # Such a dictionary should not contribute to the generation of
-    # the matrix involving the coefficient of the differential equation
-    return -1, {i:0 for i in _reactions}
+# A dictionary containing the signatures
+# for the different pdi reactions
+_rsig = { rid:_extract_signature( _reactions[rid] ) for rid in _lrid }
+# A dictionary containing the signatures
+# for the different decays
+_dsig = { did:_extract_signature( _decays[ did]   ) for did in _ldid }
 
 
 def _convert_mb_to_iMeV2(f_in_mb):
@@ -342,16 +359,17 @@ class NuclearReactor(object):
         )
 
 
-    def _thermal_rates_at(self, T):
+    def _pdi_rates(self, T):
         EC = me2/(22.*T)
         # Calculate the maximal energy
         Emax = min( self._sE0, 10.*EC )
         # For E > me2/T >> EC, the spectrum
         # is strongly suppressed
 
-        # Define a dict containing all thermal rates
+        # Define a dict containing the rates
+        # for the photodisintegration reactions
         # key = reaction_id (from _reactions)
-        thermal_rates = {rid:approx_zero for rid in _reactions}
+        pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
         xsp, ysp = self._sGen.nonuniversal_spectrum(
@@ -361,53 +379,46 @@ class NuclearReactor(object):
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
         # a linear interpolation, which also has less side effects
-        lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
-        # Revert the transformation (to lin-lin space)
-        # and multiply with the cross-section
-        def Fph_xs(log_E, rid):
-            E = exp( log_E )
-
-            return exp( lgFph( log_E ) ) * E * self.get_cross_section(rid, E)
+        # lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
+        Fph = LogInterp(xsp, ysp)
+        # Calculate the kernel for the integration in log-space
+        def Fph_s(log_E, rid):
+            E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
 
         # Define the total rate of interactions altering the photon spectrum,
         # evaluated at the relevant injection energy E0
         rate_photon_E0 = self._sGen.rate_photon(self._sE0, T)
 
         # Calculate the different rates by looping over all available reaction_id's
-        for rid in _reactions:
-            # Do not perform the integral for energies
-            # below threshold or those with strongly
-            # suppressed spectra
-            if _eth[rid] < Emax:
-                # Perform the integration from the threshold energy to Emax
-                with warnings.catch_warnings(record=True) as w:
-                    log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                    I_Fxs = quad(Fph_xs, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
+        for rid in _lrid:
+            # Do not perform the integral for energies below
+            # threshold or for strongly suppressed spectra
+            if _eth[rid] > Emax:
+                continue
 
-                    if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
-                        print_warning(
-                            "Slow convergence when calculating the thermal rates " +
-                            "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
-                            "acropolis.nucl.NuclearReactor._thermal_rates_at"
-                        )
+            # Perform the integration from the threshold energy to Emax
+            with warnings.catch_warnings(record=True) as w:
+                log_Emin, log_Emax = log(_eth[rid]), log(Emax)
+                I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
 
-                # Calculate the 'delta-term'
-                I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+                if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
+                    print_warning(
+                        "Slow convergence when calculating the pdi rates " +
+                        "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
+                        "acropolis.nucl.NuclearReactor._thermal_rates_at"
+                    )
 
-                # Add the delta term and save the result
-                thermal_rates[rid] = I_dt + I_Fxs[0]
+            # Calculate the 'delta-term'
+            I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+
+            # Add the delta term and save the result
+            pdi_rates[rid] = I_dt + I_Fs[0]
 
         # Go home and play
-        return thermal_rates
+        return pdi_rates
 
 
-    def get_thermal_rates(self):
-        start_time = time()
-        print_info(
-            "Calculating non-thermal spectra and reaction rates.",
-            "acropolis.nucl.NuclearReactor.get_thermal_rates"
-        )
-
+    def get_pdi_grids(self):
         (Tmin, Tmax) = self._sTrg
 
         NT = int(log10(Tmax/Tmin)*NT_pd)
@@ -416,20 +427,28 @@ class NuclearReactor(object):
         # temperature points ('log spacing')
         Tr = np.logspace( log10(Tmin), log10(Tmax), NT )
 
-        # Create a matrix to store the thermal
+        # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        rate_mat = np.zeros( (_nrec, NT) )
+        pdi_grids = {rid:np.zeros(NT) for rid in _lrid}
+
+        start_time = time()
+        print_info(
+            "Calculating non-thermal spectra and reaction rates.",
+            "acropolis.nucl.NuclearReactor.get_thermal_rates"
+        )
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
         for i, Ti in enumerate(Tr):
             print_info(
-                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%", eol="\r"
+                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
+                "acropolis.nucl.NuclearReactor.get_thermal_rates",
+                eol="\r"
             )
-            rates_at_Ti = self._thermal_rates_at(Ti)
+            rates_at_i = self._pdi_rates(Ti)
             # Loop over the different reactions
-            for rid in rates_at_Ti:
-                rate_mat[rid-1, i] = rates_at_Ti[rid]
+            for rid in _lrid:
+                pdi_grids[rid][i] = rates_at_i[rid]
 
         end_time = time()
         print_info(
@@ -437,80 +456,86 @@ class NuclearReactor(object):
         )
 
         # Go get some sun
-        return (Tr, rate_mat)
+        return (Tr, pdi_grids)
 
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp, rate_mat, ii):
+    def __init__(self, temp, pdi_grids, ii):
         self._sII = ii
 
         # Save the thermal rates
-        self._sTemp    = temp
-        self._sRateMat = rate_mat
+        self._sTemp     = temp
+        self._sPdiGrids = pdi_grids
 
         # Save the appropriate temperature range
         (self._sTmin, self._sTmax) = temp[0], temp[-1]
 
         # Interpolate the thermal rates
-        self._sTR = self._interp_thermal_rates()
+        self._sPdiIp = self._interp_pdi_grids()
 
 
-    def _interp_thermal_rates(self):
+    def _interp_pdi_grids(self):
         # A dict containing all interp. rates; key = reaction_id (from _sReactions)
-        interp_rates = {}
-        for rid in range(self._sRateMat.shape[0]):
-            temp_log     = np.log10(self._sTemp          )
-            rate_mat_log = np.log10(self._sRateMat[rid,:])
+        interp_grids = {}
+        for rid in _lrid:
+            # Interpolate the rates between
+            # Tmin and Tmax in log-log space
+            interp_grids[rid] = LogInterp(
+                self._sTemp, self._sPdiGrids[rid], base=10. # fill_value=0.
+            )
 
-            # Interpolate the rates between Tmin and Tmax
-            interp_rates[rid+1] = interp1d( temp_log, rate_mat_log, kind="linear", fill_value=0. )
-
-        return interp_rates
+        return interp_grids
 
 
-    def _matrix_kernel(self, i, j, T):
-        # Generate an empty matrix
-        mat = np.zeros( (_nnuc, _nnuc) )
-        # Extract the signatures of all
-        # disintegration reactions
-        rsig = { rid:_get_reaction_signature(rid) for rid in _lrid }
+    def _pref_ij(self, state, i, j):
+        ris = state[0] # initial state of the reaction
+        rfs = state[1] # final state of the reaction
 
-        # Rows: Loop over all relevant nuclei
-        for nr in range(_nnuc):
-            # Columns: Loop over all relevant nuclei
-            for nc in range(_nnuc):
-                # Loop over all disintegration reactions
-                for rid in rsig:
-                    th_rate_rid = lambda T: 10.**self._sTR[rid]( log10(T) )
+        # Find reactions/decays that have
+        # 1. the nucleid 'nr=i' in the final state
+        # 2. the nucleid 'nc=j' in the initial state
+        if ris == j and rfs[i] != 0:
+            return rfs[i]
 
-                    ris = rsig[rid][0] # initial state of the reaction
-                    rfs = rsig[rid][1] # final state of the reaction
-                    # Find all reactions that have
-                    # 1. the nucleid 'nr' in the final state
-                    # 2. the nucleid 'nc' in the initial state
-                    if ris == nc and rfs[nr] != 0:
-                        mat[nr, nc] += rfs[nr] * th_rate_rid(T)
+        # Find reactions/decays that have
+        # nc = nr in the initial state
+        # (diagonal entries)
+        if i == j and ris == j:
+            return -1.
 
-                    # Find all reaction that have
-                    # nc = nr in the initial state
-                    # (diagonal entries)
-                    elif nc == nr and ris == nc:
-                        mat[nr, nc] -= th_rate_rid(T)
+        return 0.
+
+
+    def _pdi_kernel_ij(self, i, j, T):
+        matij = 0.
+
+        for rid in _lrid:
+            matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
 
         # Incorporate the time-temperature relation and return
-        return mat[i, j]/( self._sII.dTdt(T) )
+        return matij/( self._sII.dTdt(T) )
+
+
+    def _dcy_kernel_ij(self, i, j, T):
+        matij = 0.
+
+        for did in _ldid:
+            matij += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
+
+        # Incorporate the time-temperature relation and return
+        return matij/( self._sII.dTdt(T) )
 
 
     def get_matp(self, T):
+        # Generate empty matrices
+        mpdi, mdcy = np.zeros( (_nnuc, _nnuc) ), np.zeros( (_nnuc, _nnuc) )
+
         start_time = time()
         print_info(
             "Running non-thermal nucleosynthesis.",
             "acropolis.nucl.MatrixGenerator.get_matp"
         )
-
-        # Generate an empty matrix
-        mat = np.zeros( (_nnuc, _nnuc) )
 
         nt = 0
         # Rows: Loop over all relevant nuclei
@@ -519,23 +544,25 @@ class MatrixGenerator(object):
             for nc in range(_nnuc):
                 nt += 1
                 print_info(
-                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%", eol="\r"
+                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%",
+                    "acropolis.nucl.MatrixGenerator.get_matp",
+                    eol="\r"
                 )
 
-                # Define the kernel for the integration
-                # in log-log space (IMPORTANT!)
-                Ik = lambda y: self._matrix_kernel( nr, nc, exp(y) ) * exp(y)
+                # Define the kernels for the integration in log-log space
+                Ik_pdi = lambda y: self._pdi_kernel_ij( nr, nc, exp(y) ) * exp(y)
+                Ik_dcy = lambda y: self._dcy_kernel_ij( nr, nc, exp(y) ) * exp(y)
 
                 # Perform the integration (in log-log space)
-                # and assign the result to the predefined matrix
-                mat[nr, nc] = quad(Ik, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
+            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
         )
 
-        return mat
+        return (mpdi, mdcy)
 
 
     def get_final_matp(self):

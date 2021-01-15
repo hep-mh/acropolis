@@ -8,14 +8,15 @@ from scipy.linalg import expm
 from abc import ABC, abstractmethod
 
 # input
-from .input import InputInterface
+from acropolis.input import InputInterface, locate_sm_file
 # nucl
-from .nucl import NuclearReactor, MatrixGenerator
+from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
-from .params import hbar, c_si, me2, alpha
-from .params import Emin
+from acropolis.params import hbar, c_si, me2, alpha, tau_t
+from acropolis.params import Emin
+from acropolis.params import NY
 # pprint
-from .pprint import print_info, print_warning
+from acropolis.pprint import print_info, print_warning
 
 
 class AbstractModel(ABC):
@@ -52,9 +53,9 @@ class AbstractModel(ABC):
         # Print a warning of the injection energy
         # is larger than 1GeV, as this might lead
         # to wrong results
-        if self._sE0 > 1e3:
+        if int( self._sE0 ) > 1e3:
             print_warning(
-                "Injection energy > 1GeV. Results cannot be trusted.",
+                "Injection energy > 1 GeV. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
 
@@ -63,39 +64,93 @@ class AbstractModel(ABC):
         if self._sE0 <= Emin:
             print_info(
                 "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractMode.run_disintegration"
+                "acropolis.models.AbstractModel.run_disintegration"
             )
-            return self._sII.bbn_abundances()
+            return self._squeeze_decays( self._sII.bbn_abundances() )
 
-        if self._sMatpBuffer is not None:
-            matp = self._sMatpBuffer
-        else:
-            # Initialize the nuclear reactor
+        # Calculate the different transfer matrices
+        ###########################################
+
+        # 1. pre-decay
+        pred_mat   = self._pred_matrix()
+        # 2. photodisintegration
+        pdi_mat    = self._pdi_matrix()
+        # 3. post-decay
+        postd_mat  = self._postd_matrix()
+
+        # Combine
+        transf_mat = postd_mat.dot( pdi_mat.dot( pred_mat ) )
+
+        # Calculate the final abundances
+        Yf = np.column_stack(
+            list( transf_mat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
+        )
+
+        return Yf
+
+
+    def _pdi_matrix(self):
+        if self._sMatpBuffer is None:
+            # Initialize the NuclearReactor
             nr = NuclearReactor(self._sS0, self._sSc, self._sTrg, self._sE0, self._sII)
 
             # Calculate the thermal rates
-            (temp, rate_mat) = nr.get_thermal_rates()
+            (temp, pdi_grids) = nr.get_pdi_grids()
 
-            # Initialize the linear system solver
-            mg = MatrixGenerator(temp, rate_mat, self._sII)
+            # Initialize the MatrixGenerator
+            mg = MatrixGenerator(temp, pdi_grids, self._sII)
 
-            # Generate the final matrix power...
-            matp = mg.get_final_matp()
-            # ...and buffer the result
-            self._sMatpBuffer = matp
+            # Calculate the final matrices and set the buffer
+            self._sMatpBuffer = mg.get_final_matp()
 
-        # Calculate the final abundances
-        fmat = expm(matp)
+        # Calculate the final matrices
+        matp = self._sMatpBuffer
 
-        return np.column_stack( list( fmat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() ) )
+        # Calculate the final matrix and return
+        return expm( sum(m for m in matp) )
 
 
-    def set_matp_buffer(self, matp):
-        self._sMatpBuffer = matp
+    def _pred_matrix(self):
+        dmat = np.identity(NY)
+
+        # n   > p
+        dmat[0,0], dmat[1,0] = 0., 1.
+
+        # t > He3
+        Tmax = max( self._sTrg )
+        tmax = self._sII.time( Tmax )
+
+        expf = exp( -tmax/tau_t )
+
+        dmat[3,3], dmat[4, 3] = expf, 1. - expf
+
+        return dmat
+
+
+    def _postd_matrix(self):
+        dmat = np.identity(NY)
+
+        dmat[0,0], dmat[1,0] = 0., 1. # n   > p
+        dmat[3,3], dmat[4,3] = 0., 1. # t   > He3
+        dmat[8,8], dmat[7,8] = 0., 1. # Be7 > Li7
+
+        return dmat
+
+
+    def _squeeze_decays(self, Yf):
+        dmat = self._postd_matrix()
+
+        return np.column_stack(
+            list( dmat.dot( Yi ) for Yi in Yf.transpose() )
+        )
 
 
     def get_matp_buffer(self):
         return self._sMatpBuffer
+
+
+    def set_matp_buffer(self, matp):
+        self._sMatpBuffer = matp
 
 
     # ABSTRACT METHODS ##############################################
@@ -136,7 +191,7 @@ class DecayModel(AbstractModel):
 
     def __init__(self, mphi, tau, temp0, n0a, bree, braa):
         # Initialize the Input_Interface
-        self._sII   = InputInterface("data/sm.tar.gz")
+        self._sII   = InputInterface( locate_sm_file() )
 
         # The mass of the decaying particle
         self._sMphi = mphi            # in MeV
@@ -216,9 +271,9 @@ class DecayModel(AbstractModel):
 
 class AnnihilationModel(AbstractModel):
 
-    def __init__(self, mchi, a, b, tempkd, bree, braa):
+    def __init__(self, mchi, a, b, tempkd, bree, braa, omegah2=0.12):
         # Initialize the Input_Interface
-        self._sII    = InputInterface("data/sm.tar.gz")
+        self._sII    = InputInterface( locate_sm_file() )
 
         # The mass of the dark-matter particle
         self._sMchi  = mchi         # in MeV
@@ -237,14 +292,17 @@ class AnnihilationModel(AbstractModel):
         # The branching ratio into two photons
         self._sBRaa  = braa
 
+        # The density parameter of dark matter
+        self._sOmgh2 = omegah2
+
         # Call the super constructor
         super(AnnihilationModel, self).__init__(self._sE0, self._sII)
 
     # DEPENDENT QUANTITIES ##############################################################
 
     def _number_density(self, T):
-        rho_d0 = 0.12*8.095894680377574e-35   # DM density today in MeV^4
-        T0     = 2.72548*8.6173324e-11        # CMB temperature today in MeV
+        rho_d0 = 8.095894680377574e-35 * self._sOmgh2  # DM density today in MeV^4
+        T0     = 2.72548*8.6173324e-11                 # CMB temperature today in MeV
 
         sf_ratio = self._sII.scale_factor(T0) / self._sII.scale_factor(T)
 

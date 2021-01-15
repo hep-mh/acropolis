@@ -1,7 +1,7 @@
-# numpy
-import numpy as np
 # gzip
 import gzip
+# pickle
+import pickle
 # os
 from os import path
 # numba
@@ -10,16 +10,19 @@ import numba as nb
 from time import time
 
 # pprint
-from .pprint import print_info
+from acropolis.pprint import print_info
 # params
-from .params import usedb
-from .params import Emin_log, Emax_log, Enum
-from .params import Tmin_log, Tmax_log, Tnum
+from acropolis.params import usedb
+from acropolis.params import Emin_log, Emax_log, Enum
+from acropolis.params import Tmin_log, Tmax_log, Tnum
 
 
 def import_data_from_db():
+    pkg_dir, _ = path.split(__file__)
+    db_file    = path.join(pkg_dir, "data", "rates.db.gz")
+
     ratedb = None
-    if not usedb or not path.exists("data/rates.db.gz"):
+    if not usedb or not path.exists(db_file):
         return ratedb
 
     start_time = time()
@@ -28,14 +31,13 @@ def import_data_from_db():
         "acropolis.db.import_data_from_db"
     )
 
-    ratefl = gzip.open("data/rates.db.gz", "rb")
-    #ratedb = pickle.load(ratefl)
-    ratedb = np.loadtxt(ratefl)
+    ratefl = gzip.open(db_file, "rb")
+    ratedb = pickle.load(ratefl)
     ratefl.close()
 
     end_time = time()
     print_info(
-        "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
+        "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
     )
 
     return ratedb

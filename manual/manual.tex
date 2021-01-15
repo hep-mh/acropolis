@@ -75,7 +75,7 @@
 \abstract{The remarkable agreement between observations of the primordial light element abundances and the corresponding theoretical predictions within the standard cosmological history provides a powerful method to constrain physics beyond the standard model of particle physics (BSM). For a given BSM model these primordial element abundances are generally determined by {\it (i) Big Bang Nucleosynthesis} and {\it (ii) possible subsequent disintegration processes}. The latter potentially change the abundances due to late-time high-energy injections which may be present in these scenarios. While there are a number of public codes for the first part, no such code is currently available for the second.
 Here we close this gap and present \texttt{ACROPOLIS}, \texttt{A} generi\texttt{C} f\texttt{R}amework f\texttt{O}r \texttt{P}hotodisintegration \texttt{O}f \texttt{LI}ght element\texttt{S}. The widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. Furthermore, due to its modular structure, \texttt{ACROPOLIS} can easily be extended also to other scenarios.\vspace{0.5cm}
 
-\noindent\textbf{For the most recent version of this manual, please download it directly from the GitHub repository at \url{https://github.com/skumblex/acropolis}.}
+\noindent\textbf{For the most recent version of this manual, please visit the GitHub repository at \url{https://github.com/skumblex/acropolis}.}
 }
 \keywords{}
 
@@ -124,15 +124,15 @@ where $E = \sqrt{m_x^2 + p^2}$ is the energy with mass $m_x$ and $p$ is the mome
 \subsection{Electromagnetic cascade}
 
 The late-time injection of high-energetic electromagnetic particles into the SM plasma induces an electromagnetic cascade that leads to non-thermal parts of the photon, electron, and positron spectra. Denoting particles from the thermal background with a subscript `th' the most relevant interactions are
-\begin{enumerate}
+\begin{itemize}
 \item Double photon pair creation $\gamma \gamma_\mathrm{th} \rightarrow e^+ e^-$,
 \item Photon-photon scattering $\gamma \gamma_\mathrm{th} \rightarrow \gamma \gamma$,
 \item Bethe-Heitler pair creation $\gamma N \rightarrow e^+ e^- N$ with $N \in \{{}^1 \mathrm{H}, {}^4 \mathrm{He} \}$,
 \item Compton scattering $\gamma e^-_\mathrm{th} \rightarrow \gamma e^-$, and
 \item Inverse Compton scattering $e^\pm \gamma_\mathrm{th} \rightarrow e^\pm \gamma$.
-\end{enumerate}
+\end{itemize}
 Other processes are suppressed by small number densities and can be neglected, cf.\ appendix~\ref{app:rates_cascade}. Before turning to the appropriate Boltzmann equation for the description of the electromagnetic cascade, let us briefly comment on why photodisintegration is only possible for late-time and high-energy injections into the SM plasma. For photons with energies above the threshold for double photon pair creation $E_{e^+ e^-}^\mathrm{th} \simeq m_e^2/(22 T)$~\cite{Kawasaki:1994sc}, where $m_e$ is the electron mass and $T$ is the photon temperature, this process is much more efficient than the other reactions, thus rapidly depleting these high-energy photons. This implies that any photodisintegration process can only occur if $E_{e^+ e^-}^\mathrm{th}$ is above the threshold for the various disintegration reactions, i.e.\ if $T$ is small enough translating to
-\begin{enumerate}
+\begin{itemize}
 \item $T \lesssim 5.34 \, \mathrm{keV}$ for $\mathrm{D}$-disintegration with $E_\mathrm{D}^\mathrm{th} \approx 2.22 \, \mathrm{MeV}$,
 \item $T \lesssim 1.90 \, \mathrm{keV}$ for ${}^3\mathrm{H}$-disintegration with $E_{{}^3\mathrm{H}}^\mathrm{th} \approx 6.26 \, \mathrm{MeV}$,
 \item $T \lesssim 2.16 \, \mathrm{keV}$ for ${}^3\mathrm{He}$-disintegration with $E_{{}^3\mathrm{He}}^\mathrm{th} \approx 5.49 \, \mathrm{MeV}$,
@@ -140,9 +140,9 @@ Other processes are suppressed by small number densities and can be neglected, c
 \item $T \lesssim 3.21 \, \mathrm{keV}$ for ${}^6\mathrm{Li}$-disintegration with $E_{{}^6\mathrm{Li}}^\mathrm{th} \approx 3.70 \, \mathrm{MeV}$,
 \item $T \lesssim 4.81 \, \mathrm{keV}$ for ${}^7\mathrm{Li}$-disintegration with $E_{{}^7\mathrm{Li}}^\mathrm{th} \approx 2.47 \, \mathrm{MeV}$, and
 \item $T \lesssim 7.48 \, \mathrm{keV}$ for ${}^7\mathrm{Be}$-disintegration with $E_{{}^7\mathrm{Be}}^\mathrm{th} \approx 1.59 \, \mathrm{MeV}$.
-\end{enumerate}
+\end{itemize}
 We observe that photodisintegration will become effective for rather low temperatures where BBN has already finished, so that the two processes simply factorise.
-This implies in particular that the initial abundances for photodisintegration correspond to the final abundances of BBN.
+This implies in particular that the initial abundances for photodisintegration correspond to the final abundances of BBN.\footnote{This factorisation specifically implies that \acropolis can be used independently of the actual BBN code and therefore can easily be incorporated as a post-processing step into most existing tool chains.}
 Even though we do not employ it within \texttt{ACROPOLIS}, let us also remark that for injection energies above $E_{e^+ e^-}^\mathrm{th}$, the non-thermal part of the photon spectrum is close to the universal spectrum~\cite{Cyburt:2002uv}
 \begin{align}
 \mathrm{f}_{\gamma, \mathrm{univ}} (E) \sim \begin{cases} K_0 (E/E_X)^{-3/2} &\text{for} \; E < E_X\eqsp, \\
@@ -165,7 +165,7 @@ where $S_x (E)$ is the source term for the production of $x$ with energy $E$, $\
 \end{align}
 
 We consider source terms arising from monochromatic or continuous high-energy injections, with the former one being typically realised for decays or residual annihilations of non-relativistic particles into two-particle SM final states.
-Hence, we parameterize the source terms via
+Hence, we parameterise the source terms via
 \begin{align}
 S_\X(E) = S_\X^{(0)} \delta(E-E_0) + S_\X^{(\text{c})}(E)\eqsp,
 \label{eq:SXE_definition}
@@ -189,55 +189,62 @@ such that
 
 With the previously calculated photon spectra $\fpdi_\gamma$ we can now evaluate the effect on the primordial light element abundances $N \in \{n, p, D, {}^3\mathrm{H}, {}^3\mathrm{He}, {}^4\mathrm{He}, {}^6\mathrm{Li}, {}^7\mathrm{Li}, {}^7\mathrm{Be} \}$. The corresponding Boltzmann equation is given by
 \begin{align}
-\dot{Y}_N(t) = \sum_{j} Y_{j}(t) \int_{0}^{\infty} \text{d} E \, \fpdi_\gamma(t, E)\sigma_{j\gamma \rightarrow N}(E) - Y_N(t) \sum_{j'} \int_{0}^{\infty} \text{d} E \, \fpdi_\gamma(t, E)\sigma_{N\gamma \rightarrow j'}(E)\eqsp,
+\dot{Y}_N(t) & = \sum_{j} Y_{j}(t) \left[\frac{1}{\tau_{j\rightarrow N}} + \int_{0}^{\infty} \text{d} E \, \fpdi_\gamma(t, E)\sigma_{j\gamma \rightarrow N}(E) \right] \nonumber \\
+& - Y_N(t) \sum_{j'} \left[\frac{1}{\tau_{N\rightarrow j'}} + \int_{0}^{\infty} \text{d} E \, \fpdi_\gamma(t, E)\sigma_{N\gamma \rightarrow j'}(E) \right]\eqsp,
 \label{eq:y_pdi}
 \end{align}
-where $Y_N = n_N / n_b$ with $n_N$ $(n_b)$ the number density of $N$ (baryons) and $\sigma_r$ the cross section for the reaction $r$. Here we implement all reactions that are shown in tab.~\ref{tab:reactions}
+where $Y_N = n_N / n_b$ with $n_N$ $(n_b)$ the number density of $N$ (baryons), $\sigma_r$ the cross section of the reaction $r$, and $\tau_d$ the lifetime of the decay $d$. Here we implement all reactions shown in table \ref{tab:reactions}.
 \begin{table}
 	\centering
-	\begin{tabular}{|rcrcrcrcr|c|}
+	\begin{tabular}{|c|rcrcrcrcr|c|}
 		\hline
-		& & & & & & & & & $E^\text{th}\;\;[\mathrm{MeV}]$\\
+		 No. & & & & & & & & & & $E^\text{th}\;\;[\mathrm{MeV}]$\\
+		\hline\hline
+		1 & $\mathrm{D}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ & $n$ & & & $2.22$\\
 		\hline
-		$\mathrm{D}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ & $n$ & & & $2.22$\\
+		2 & $^3\mathrm{H}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $n$ & & & $6.26$\\
 		\hline
-		$^3\mathrm{H}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $n$ & & & $6.26$\\
+		3 & $^3\mathrm{H}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ & $n$ & $+$ & $n$ & $8.48$ \\
 		\hline
-		$^3\mathrm{H}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ & $n$ & $+$ & $n$ & $8.48$ \\
+		4 & $^3\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $p$ & & & $5.49$ \\
 		\hline
-		$^3\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $p$ & & & $5.49$ \\
+		5 & $^3\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $n$ & $+$ & $p$ & $+$ & $p$ & $7.12$\\
 		\hline
-		$^3\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $n$ & $+$ & $p$ & $+$ & $p$ & $7.12$\\
+		6 & $^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\mathrm{H}$ & $+$ & $\, p$ & & & $19.81$ \\
 		\hline
-		$^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\mathrm{H}$ & $+$ & $\, p$ & & & $19.81$ \\
+		7 & $^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $^{3}\mathrm{He}$ & $+$ & $n$ & & & $20.58$ \\
 		\hline
-		$^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $^{3}\mathrm{He}$ & $+$ & $n$ & & & $20.58$ \\
+		8 & $^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $\mathrm{D}$ & & & $23.84$ \\
 		\hline
-		$^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $\mathrm{D}$ & & & $23.84$ \\
+		9 & $^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $n$ & $+$ & $p$ & $26.07$ \\
 		\hline
-		$^4\mathrm{He}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{D}$ & $+$ & $n$ & $+$ & $p$ & $26.07$ \\
+		10 & $^6\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $\, ^{4}\mathrm{He}$ & $+$ & $n$ & $+$ & $p$ & $3.70$ \\
 		\hline
-		$^6\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $\, ^{4}\mathrm{He}$ & $+$ & $n$ & $+$ & $p$ & $3.70$ \\
+		11 & $^6\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{X}$ & $+$ &  $\, ^{3}A$ & & & $15.79$ \\
 		\hline
-		$^6\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $\mathrm{X}$ & $+$ &  $\, ^{3}A$ & & & $15.79$ \\
+		12 & $^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\text{H}$ & $+$ &  $\, ^{4}\text{He}$ & & & $2.47$ \\
 		\hline
-		$^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\text{H}$ & $+$ &  $\, ^{4}\text{He}$ & & & $2.47$ \\
+		13 & $^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $n$ & $+$ &  $\, ^{6}\text{Li}$ & & & $7.25$ \\
 		\hline
-		$^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $n$ & $+$ &  $\, ^{6}\text{Li}$ & & & $7.25$ \\
+		14 & $^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $2n$ & $+$ &  $p$ & $+$ & $ ^{4}\text{He}$ & $10.95$ \\
 		\hline
-		$^7\mathrm{Li}$ & $+$ & $\gamma$ & $\rightarrow$ & $2n$ & $+$ &  $p$ & $+$ & $ ^{4}\text{He}$ & $10.95$ \\
+		15 & $^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\text{He}$ & $+$ &  $ ^{4}\text{He}$ & & & $1.59$ \\
 		\hline
-		$^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $^3\text{He}$ & $+$ &  $ ^{4}\text{He}$ & & & $1.59$ \\
+		16 & $^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ &  $ ^{6}\text{Li}$ & & & $5.61$ \\
 		\hline
-		$^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $p$ & $+$ &  $ ^{6}\text{Li}$ & & & $5.61$ \\
+		17 & $^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $2p$ & $+$ &  $n$ & $+$ & $ ^{4}\text{He}$ & $9.30$ \\
+		\hline\hline
+		 & & & & & & & & & & $\tau\;\;[\mathrm{s}]$\\
+		\hline\hline
+		18 & $n$ & & & $\rightarrow$ & $p$ & $+$ & $e^-$ & $+$ & $\bar{\nu}_e$ & $8.802\times10^2$\\
 		\hline
-		$^7\mathrm{Be}$ & $+$ & $\gamma$ & $\rightarrow$ & $2p$ & $+$ &  $n$ & $+$ & $ ^{4}\text{He}$ & $9.30$ \\
+		19 & $^3\text{H}$ & & & $\rightarrow$ & $^3\text{He}$ & $+$ & $e^-$ & $+$ & $\bar{\nu}_e$ & $5.605 \times 10^8$ \\
 		\hline
 	\end{tabular}
-\caption{Reactions and threshold energies from~\cite{Cyburt:2002uv} for the processes we consider in eq.~\eqref{eq:y_pdi}.}
+\caption{Reactions and their corresponding threshold energies from~\cite{Cyburt:2002uv} or lifetimes for the processes we consider in eq.~\eqref{eq:y_pdi}.}
 \label{tab:reactions}
 \end{table}
-by adopting the analytical expressions for the rates $1-17$ from~\cite{Cyburt:2002uv}; however, we modify the prefactor of reaction $7$ from $17.1\e\mathrm{mb}$ to $20.7\e\mathrm{mb}$ as suggested by~\cite{Jedamzik:2006xz} in order to match the most recent EXFOR data. Note that these disintegration reactions can be neglected in eq.~\eqref{eq:boltzmann_cascade} due to the low number density of nuclei, thus enabling us to calculate the photon spectrum without knowledge of the light element abundances.
+Regarding the cross-sections for the various photodisintegration reactions we adopt the analytical expressions for the rates $1-17$ from~\cite{Cyburt:2002uv}; however, we modify the prefactor of reaction $7$ from $17.1\e\mathrm{mb}$ to $20.7\e\mathrm{mb}$ as suggested by~\cite{Jedamzik:2006xz} in order to match the most recent EXFOR data. Note that these disintegration reactions can be neglected in eq.~\eqref{eq:boltzmann_cascade} due to the low number density of nuclei, thus enabling us to calculate the photon spectrum without knowledge of the light element abundances. Finally, let us note that there exists an additional decay channel of beryllium-7, i.e.\ ${}^7\text{Be} + e^- \rightarrow {}^7\text{Li} +\nu_e$. However, this decay does not become relevant until shortly before recombination, which is why it can be neglected in eq.~\eqref{eq:y_pdi}. To incorporate this decay, it is thus sufficient to simply transfer the full beryllium-7 abundance to lithium-7 after the calculation.
 
 \section{Numerical solution techniques}
 
@@ -269,30 +276,32 @@ Given the knowledge of $\big[ a(\epsilon_i) \big]_{\X}$ and $\big[B(\epsilon_i)\
 As $\big[ a(\epsilon_i) \big]_{\X}$ and $\big[B(\epsilon_i)\big]_{\X \X'}$ explicitly depend on $\bar{\Fpdi}(\epsilon_j)$ for $j > i$, we start solving eq.~\eqref{eq:FX_ES} at $i=M-1$ to successively determine solutions of eq.~\eqref{eq:Fab} at $i < M-1$.
 
 \subsection{Non-thermal nucleosynthesis}
-For the numerical solution of eq.~\eqref{eq:y_pdi} we first define
+For the numerical solution of eq.~\eqref{eq:y_pdi}, we first bring it into the form
 \begin{align}
-\Gamma_r(t) \ldefine \int_0^\infty \fpdi_\gamma(t, E) \sigma_r(E)\,\d E\eqsp,
-\end{align}
-which transforms eq.~\eqref{eq:y_pdi} into the form
-\begin{align}
-\dot{Y}_N(t) = \sum_{j} Y_{j}(t) \Gamma_{j\gamma \rightarrow N}(t) - Y_N(t) \sum_{j'} \Gamma_{N\gamma \rightarrow j'}(t)\eqsp.
+\dot{Y}_N(t) & = \sum_{j} Y_{j}(t) \big[\Gamma_{j\gamma \rightarrow N}(t) + \Gamma_{j \rightarrow N}\big] - Y_N(t) \sum_{j'} \big[ \Gamma_{N\gamma \rightarrow j'}(t) + \Gamma_{N \rightarrow j'} \big]
 \label{eq:y_pdi_redef}
 \end{align}
+by defining the reaction rates
+\begin{align}
+\Gamma_{N\gamma \rightarrow N'}(t) &\ldefine \int_0^\infty \fpdi_\gamma(t, E) \sigma_{N\gamma \rightarrow N'}(E)\,\d E\eqsp, \\
+\Gamma_{N\rightarrow N'} &\ldefine \frac{1}{\tau_{N\rightarrow N'}}
+\end{align}
+for photodisintegration reactions and decays, respectively.
 Consequently, by also defining $\bar{Y}(t) \ldefine \big[ Y_n(t), Y_p(t), Y_\text{D}(t), ... \big]^T$ and after substituting $t \rightarrow T$ by means of the time-temperature relation, we find
 \begin{equation}
-\frac{\d \bar{Y}(T)}{\d T} = \mathcal{R}(T) \bar{Y}(T)
+\frac{\d \bar{Y}(T)}{\d T} = \big[ \mathcal{R}_\text{pdi}(T) + \mathcal{R}_\text{decay}(T) \big] \bar{Y}(T)
 \label{eq:YT}
 \end{equation}
-with
+with 
 \begin{align}
-\big[ \mathcal{R}(T)\big]_{N N'} \ldefine \frac{\d t}{\d T} \times \left[ \Gamma_{N'\gamma\rightarrow N}(T)  - \delta_{N N'} \sum_{j'} \Gamma_{N\gamma\rightarrow j'}(T)\right]\eqsp.
+\big[ \mathcal{R}_\text{pdi/decay}(T)\big]_{N N'} \ldefine \frac{\d t}{\d T} \times \left[ \Gamma_{N'\gamma/N' \rightarrow N}(T)  - \delta_{N N'} \sum_{j'} \Gamma_{N\gamma/N\rightarrow j'}(T)\right]\eqsp.
 \label{eq:rate_matrix}
 \end{align}
-Here, the matrix $\big[ \mathcal{R}(T)\big]_{N N'}$ can be obtained via numerical integration, and eq.~\eqref{eq:YT} is an ordinary system of differential equations, which is solved by
+Here, the matrices $\big[ \mathcal{R}_\text{pdi}(T)\big]_{N N'}$ and $\big[ \mathcal{R}_\text{decay}(T)\big]_{N N'}$ can be obtained via numerical integration, and eq.~\eqref{eq:YT} is an ordinary system of differential equations, which is solved by
 \begin{align}
 \bar{Y}(T) = \exp\left(\int_{T_\text{max}}^T \mathcal{R}(T')\,\d T'\right)\bar{Y}_0
 \end{align}
-with the initial condition $\bar{Y}(T_\text{max}) = \bar{Y}_0$ at some maximal (initial) temperature $T_\text{max}$. The matrix exponential $\exp(\cdot)$ can be evaluated numerically by \emph{(i)} diagonalising the matrix $\int_{T_0}^T \mathcal{R}(T')\d T'$ with the corresponding unitary transformation $U_{\mathcal{R}}(T)$, \emph{(ii)} taking the exponential of the diagonal matrix by exponentiating each eigenvalue individually, and \emph{(iii)} transforming the resulting matrix back using $U_{\mathcal{R}}^{-1}(T)$.
+with $\mathcal{R}(T') \ldefine \mathcal{R}_\text{pdi}(T') + \mathcal{R}_\text{decay}(T')$ and the initial condition $\bar{Y}(T_\text{max}) \ldefine \bar{Y}_0$ at some maximal (initial) temperature $T_\text{max}$. The matrix exponential $\exp(\cdot)$ can be evaluated numerically by \emph{(i)} diagonalising the matrix $\int_{T_0}^T \mathcal{R}(T')\d T'$ with the corresponding unitary transformation $U_{\mathcal{R}}(T)$, \emph{(ii)} taking the exponential of the diagonal matrix by exponentiating each eigenvalue individually, and \emph{(iii)} transforming the resulting matrix back using $U_{\mathcal{R}}^{-1}(T)$.
 
 \section{Example models}
 \label{sec:example_models}
@@ -333,7 +342,7 @@ With the python script \texttt{decay} we thus provide an example program to calc
 \subsection{Residual annihilations of MeV-scale dark matter}
 \label{sec:annihilation_model}
 
-For the second example model implemented in \texttt{ACROPOLIS}, we consider residual annihilations of DM (or more generally any annihilating BSM particle) following~\cite{Depta:2019lbe}. We assume that DM consists of a self-conjugate\footnote{While only the case for self-conjugate DM is directly implemented in \texttt{ACROPOLIS}, the case of non self-conjugate DM differs only by a factor of 2 in $\langle \sigma v \rangle$. This factor is exact, unlike for freeze-out calculations~\cite{Bringmann:2020mgx}.} fermion $\chi$ with mass $m_\chi$ and an abundance (number density $n_\chi$) fixed such that $\Omega_\mathrm{DM} h^2 = 0.12$~\cite{Aghanim:2018eyx}.
+For the second example model implemented in \texttt{ACROPOLIS}, we consider residual annihilations of DM (or more generally any annihilating BSM particle) following~\cite{Depta:2019lbe}. We assume that DM consists of a self-conjugate\footnote{While only the case for self-conjugate DM is directly implemented in \texttt{ACROPOLIS}, the case of non self-conjugate DM differs only by a factor of 2 in $\langle \sigma v \rangle$. This factor is exact, unlike for freeze-out calculations~\cite{Bringmann:2020mgx}.} fermion $\chi$ with mass $m_\chi$ and a density parameter $\Omega_\mathrm{DM} h^2$. By default, the latter quantity is fixed to $\Omega_\mathrm{DM} h^2 = 0.12$~\cite{Aghanim:2018eyx}, but different values can also be specified by means of an optional command-line argument (cf.\ sec.~\ref{sec:wrappers}).
 The source terms entering in eq.~\eqref{eq:SXE_definition} are then given by~\cite{Depta:2019lbe}
 \begin{align}
 E_0 &= m_\chi \eqsp, \\
@@ -342,7 +351,7 @@ S_{e^-}^{(0)} &= S_{e^+}^{(0)} = \text{BR}_{e^+ e^-} \times \frac{1}{2} \langle 
 S_\gamma^{(\text{c})} (E) &=  \frac{S^{(0)}_{e^\pm}}{E_0} \times \frac{\alpha}{\pi} \frac{1 + (1-x)^2}{x} \ln \left( \frac{4 E_0^2 (1-x)}{m_e^2} \right) \times \Theta \left( 1 - \frac{m_e^2}{4 E_0^2} - x \right)\eqsp, \\
 S_{e^-}^{(\text{c})} (E) &= S_{e^+}^{(\text{c})} (E) = 0\eqsp,
 \end{align}
-where $\text{BR}_{\gamma \gamma}$ ($\text{BR}_{e^+ e^-}$) is the branching ratio for annihilations into two photons (electron-positron pairs), $\alpha$ is the fine-structure constant, $m_e$ is the electron mass, $x = E/E_0$, and we expand the thermally averaged annihilation cross section\footnote{This is the sum of the one for annihilations in two photons and in electron-positron pairs, weighted according to their branching ratios.} in powers of the relative velocity $v_\mathrm{rel}$
+where $\text{BR}_{\gamma \gamma}$ ($\text{BR}_{e^+ e^-}$) is the branching ratio for annihilations into two photons (electron-positron pairs), $\alpha$ is the fine-structure constant, $m_e$ is the electron mass, $x = E/E_0$. Here, the continuous part $S_\gamma^{(\text{c})} (E)$ of the photon source term is again solely due to final-state radiation of photons from injected electron-positron pairs. For the calculation, we expand the thermally averaged annihilation cross section\footnote{This is the sum of the one for annihilations in two photons and in electron-positron pairs, weighted according to their branching ratios.} in powers of the relative velocity $v_\mathrm{rel}$
 \begin{align}
 \langle \sigma v \rangle \simeq a + b \langle v_\mathrm{rel}^2 \rangle\eqsp.
 \end{align}
@@ -367,7 +376,7 @@ To summarise, we provide the example program \texttt{annihilation} to calculate 
 \section{Running \texttt{ACROPOLIS}}
 
 \subsection{Installation}
-\acropolis is open-source software, licensed under GPL3. The source code is publicly available and can be cloned from GitHub by executing the command\\\\
+\acropolis is open-source software, licensed under GPL3. The source code is publicly available and can be cloned from GitHub by executing the command\footnote{Alternatively, the code is also available on \texttt{HEPForge} at \url{https://acropolis.hepforge.org/}.}\\\\
 \cmd{git clone https://github.com/skumblex/acropolis.git}
 which creates a new folder named \texttt{acropolis} with the repository inside of your current working directory.
 \acropolis has been tested with \texttt{Python} version $\geq 3.7$ on macOS 10.15 and Ubuntu 20.04, and the following packages must be available (older versions might also work but have not been thoroughly tested):
@@ -376,21 +385,22 @@ which creates a new folder named \texttt{acropolis} with the repository inside o
 	\item \href{https://www.scipy.org/}{\texttt{SciPy}} $\geq 1.5.2$ (numerical integration)
 	\item \href{https://numba.pydata.org/}{\texttt{Numba}} $\geq 0.51.2$ (just-in-time compilation)
 \end{itemize}
-The most recent versions of these dependencies can be collectively installed at user-level, i.e. without the need for root access, by executing the command\\\\
+The most recent versions of these dependencies can be collectively installed at user-level, i.e.\ without the need for root access, by executing the command\\\\
 \cmd{python3 -m pip install numpy, scipy, numba --user}
 If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
 
-Inside of the git repository there also is an optional database file \texttt{data/rates.db.gz}, which contains pre-calculated values for some of the computationally expensive reaction rates. By default, \acropolis uses this file to speed up the calculation by $\sim \mathcal{O}(10\%)$\footnote{Several benchmark points that show the runtime of the code with and without the additional database files, can be found in appendix~\ref{sec:benchmarks_single}.}. However, if this behavior is not desired for some reason, i.e. when running on a batch system, \acropolis also allows to disable the usage of this file (cf.~sec.~\ref{sec:params}).
+Inside of the git repository there also exists an optional database file at the location \texttt{acropolis/data/rates.db.gz}, which contains pre-calculated values for some of the computationally expensive reaction rates. By default, \acropolis uses this file to speed up the calculation by $\sim \mathcal{O}(10\%)$\footnote{Several benchmark points that show the runtime of the code with and without the additional database files, can be found in appendix~\ref{sec:benchmarks_single}.}. However, if this behaviour is not desired for some reason, e.g.\ when running on a batch system, \acropolis also allows to disable the usage of this file (cf.~sec.~\ref{sec:params}).
 
 
 \subsection{Using the predefined models}
 \acropolis is designed to allow for an easy implementation of arbitrary models, but also contains reference implementations for the example models that were introduced in section~\ref{sec:example_models}. In fact, these two models and the corresponding scripts that are bundled with \acropolis should already suffice to treat most conceivable scenarios, implying that -- for most applications -- no additional coding is required. In the present section we will therefore first discuss how to correctly utilise these reference models, and only afterwards discuss how to implement additional ones in section~\ref{sec:implementing_models}.
 
 \subsubsection{Running the wrapper scripts}
-Within the \acropolis main directory there are two executables, \texttt{decay} and \texttt{annihilation}, which wrap the scenarios discussed in section~\ref{sec:decay_model} and section~\ref{sec:annihilation_model}, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. Using the notation from section~\ref{sec:example_models}, the required parameters are
+\label{sec:wrappers}
+Within the \acropolis main directory there are two executables, \texttt{decay} and \texttt{annihilation}, which wrap the scenarios discussed in section~\ref{sec:decay_model} and section~\ref{sec:annihilation_model}, respectively. Both of these files need to be called with six mandatory command-line arguments (and an optional seventh argument for $\Omega_\text{DM} h^2$ when calling \texttt{annihilation}), a list of which can be obtained by running the command of choice without any arguments at all. Using the notation from section~\ref{sec:example_models}, the requested parameters are
 \begin{itemize}
-	\item \texttt{decay}: $\hspace{1.8cm} m_\phi\;\,[\mathrm{MeV}] \quad \tau_\phi\;\,[\mathrm{s}] \quad T_0\;\,[\mathrm{MeV}] \quad n_\phi/n_\gamma|_{T_0} \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma}$
-	\item \texttt{annihilation}: $\quad m_\chi\;\,[\mathrm{MeV}] \quad a\;\,[\mathrm{cm^3/s}] \quad b\;\,[\mathrm{cm^3/s}] \quad T_\text{kd}\;\,[\mathrm{MeV}] \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma}$
+	\item \texttt{decay}: $\hspace{1.4cm} m_\phi\;\,[\mathrm{MeV}] \quad \tau_\phi\;\,[\mathrm{s}] \quad T_0\;\,[\mathrm{MeV}] \quad n_\phi/n_\gamma|_{T_0} \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma}$
+	\item \texttt{annihilation}: $ m_\chi\;\,[\mathrm{MeV}] \quad a\;\,[\mathrm{cm^3/s}] \quad b\;\,[\mathrm{cm^3/s}] \quad T_\text{kd}\;\,[\mathrm{MeV}] \quad \text{BR}_{ee} \quad \text{BR}_{\gamma\gamma} \quad \Omega_\text{DM} h^2$
 \end{itemize}
 For example, the command\\[4mm]
 \cmd{./decay 10 1e5 10 1e-10 0 1}
@@ -399,45 +409,63 @@ calculates the abundances after photodisintegration in the presence of an unstab
 Running the executables, information regarding the current state of the calculation is provided and the final output is given by a 9x3 matrix comprising the final abundances after photodisintegration for the given parameter point. For our example above the corresponding output roughly looks as follows:
 \begin{lstlisting}[language=bash, backgroundcolor=\color{white}]
 INFO   : Extracting and reading database files.
-INFO   : Finished after 1.5s.
+INFO   : Finished after 29.8ms.
 INFO   : Calculating non-thermal spectra and reaction rates.
-INFO   : Finished after 22.2s.
+INFO   : Finished after 24.0s.
 INFO   : Running non-thermal nucleosynthesis.
-INFO   : Finished after 10.4s.
+INFO   : Finished after 443.9ms.
 
     |    mean     |    high     |     low    
 ----------------------------------------------
-n   | 1.32309e-08 | 1.29265e-08 | 1.35767e-08
+n   | 0.00000e+00 | 0.00000e+00 | 0.00000e+00  [decayed]
 p   | 7.53096e-01 | 7.53161e-01 | 7.53036e-01
 H2  | 1.92530e-05 | 1.88101e-05 | 1.97562e-05
-H3  | 5.53065e-08 | 2.28921e-08 | 3.76285e-07
-He3 | 7.63949e-06 | 3.27977e-06 | 7.82619e-06
+H3  | 0.00000e+00 | 0.00000e+00 | 0.00000e+00  [decayed]
+He3 | 7.69480e-06 | 3.30266e-06 | 8.20247e-06
 He4 | 6.17092e-02 | 6.16965e-02 | 6.17237e-02
 Li6 | 8.39044e-15 | 2.70471e-14 | 1.30028e-15
-Li7 | 1.98142e-11 | 7.64325e-12 | 6.47310e-11
-Be7 | 3.24947e-10 | 1.29785e-10 | 3.05210e-10
+Li7 | 3.44762e-10 | 1.37428e-10 | 3.69941e-10
+Be7 | 0.00000e+00 | 0.00000e+00 | 0.00000e+00  [decayed]
 
 \end{lstlisting}
 \vspace{5mm}
+%INFO   : Extracting and reading database files.
+%INFO   : Finished after 1.5s.
+%INFO   : Calculating non-thermal spectra and reaction rates.
+%INFO   : Finished after 22.2s.
+%INFO   : Running non-thermal nucleosynthesis.
+%INFO   : Finished after 10.4s.
+%
+%    |    mean     |    high     |     low    
+%----------------------------------------------
+%n   | 1.32309e-08 | 1.29265e-08 | 1.35767e-08
+%p   | 7.53096e-01 | 7.53161e-01 | 7.53036e-01
+%H2  | 1.92530e-05 | 1.88101e-05 | 1.97562e-05
+%H3  | 5.53065e-08 | 2.28921e-08 | 3.76285e-07
+%He3 | 7.63949e-06 | 3.27977e-06 | 7.82619e-06
+%He4 | 6.17092e-02 | 6.16965e-02 | 6.17237e-02
+%Li6 | 8.39044e-15 | 2.70471e-14 | 1.30028e-15
+%Li7 | 1.98142e-11 | 7.64325e-12 | 6.47310e-11
+%Be7 | 3.24947e-10 | 1.29785e-10 | 3.05210e-10
 The different columns in the matrix contain the abundances $Y_N = n_N/n_b$ for the nine nuclei $N\in\{n, p, {}^2\text{H}, {}^3\text{H}, {}^3\text{He}, {}^4\text{He}, {}^6\text{Li}, {}^7\text{Li}, {}^7\text{Be}\}$ as indicated. In each column slightly different initial conditions are set,
 corresponding to the SM results that are obtained by running the public code \texttt{AlterBBN}~\cite{Arbey:2011nf,Arbey:2018zfh} with the mean (first column), high (second column), and low (third column) values of the implemented nuclear reaction rates.\footnote{This can easily be changed, meaning that it is possible to use arbitrary sets of initial abundances for the calculation. We will discuss this later in section~\ref{sec:input}.}
-The variation between the values of different columns can therefore be used to approximate the  theoretical errors for different abundances.
+The variation between the values of different columns can therefore be used to approximate the  theoretical errors for different abundances. Finally, those nuclei that have already decayed are labeled with \texttt{[decayed]}.
 
-Before comparing the output of \acropolis with observationally inferred primordial abundances, it is important to note that the values returned by \acropolis do not fully take into account the three decay channels ${}^3\text{H} \rightarrow {}^3\text{He} + e^- + \bar{\nu}_e$, $n\rightarrow p + e^- + \bar{\nu}_e$, and ${}^7\text{Be} + e^- \rightarrow {}^7\text{Li} +\nu_e$, which only happen/conclude at a later cosmological time. This way, the user can in principle implement additional effects into their analysis that happen between the end of photodisintegration and the decay times. This implies that the abundances today $Y_N^* \neq Y_N$ are different than the ones returned by \acropolis and in general it is necessary to perform the following three operations
-\begin{center}
-\begin{tabular}{|l|l|}
-	\hline
-	Process & Abundance today \\
-	\hline
-	$n\rightarrow p + e^- + \bar{\nu}_e$ & $Y_n^* = 0\qquad Y_p^* = Y_p + Y_n$ \\
-	\hline
-	$ {}^3\text{H} \rightarrow {}^3\text{He} + e^- + \bar{\nu}_e$ & $Y_{^3\text{H}}^* = 0\qquad\!\! Y_{^3\text{He}}^* = Y_{^3\text{He}} + Y_{^3\text{H}}$ \\
-	\hline
-	${}^7\text{Be} + e^- \rightarrow {}^7\text{Li} +\nu_e$ & $Y_{^7\text{Be}}^* = 0\qquad\!\!\!\! Y_{^7\text{Li}}^* = Y_{^7\text{Be}} + Y_{^7\text{Li}}$ \\
-	\hline
-\end{tabular}
-\end{center}
-In fact, the decay of tritium might become relevant for photodisintegration reactions that happen around or beyond $\tau_{^3\text{H}} = 3.89\times 10^8\,\mathrm{s}$. However, this is at most a percent effect, since the abundance of tritium is much smaller than the one of helium-3.
+%Before comparing the output of \acropolis with observationally inferred primordial abundances, it is important to note that the values returned by \acropolis do not fully take into account the three decay channels ${}^3\text{H} \rightarrow {}^3\text{He} + e^- + \bar{\nu}_e$, $n\rightarrow p + e^- + \bar{\nu}_e$, and ${}^7\text{Be} + e^- \rightarrow {}^7\text{Li} +\nu_e$, which only happen/conclude at a later cosmological time. This way, the user can in principle implement additional effects into their analysis that happen between the end of photodisintegration and the decay times. This implies that the abundances today $Y_N^* \neq Y_N$ are different than the ones returned by \acropolis and in general it is necessary to perform the following three operations
+%\begin{center}
+%\begin{tabular}{|l|l|}
+%	\hline
+%	Process & Abundance today \\
+%	\hline
+%	$n\rightarrow p + e^- + \bar{\nu}_e$ & $Y_n^* = 0\qquad Y_p^* = Y_p + Y_n$ \\
+%	\hline
+%	$ {}^3\text{H} \rightarrow {}^3\text{He} + e^- + \bar{\nu}_e$ & $Y_{^3\text{H}}^* = 0\qquad\!\! Y_{^3\text{He}}^* = Y_{^3\text{He}} + Y_{^3\text{H}}$ \\
+%	\hline
+%	${}^7\text{Be} + e^- \rightarrow {}^7\text{Li} +\nu_e$ & $Y_{^7\text{Be}}^* = 0\qquad\!\!\!\! Y_{^7\text{Li}}^* = Y_{^7\text{Be}} + Y_{^7\text{Li}}$ \\
+%	\hline
+%\end{tabular}
+%\end{center}
+%In fact, the decay of tritium might become relevant for photodisintegration reactions that happen around or beyond $\tau_{^3\text{H}} = 3.89\times 10^8\,\mathrm{s}$. However, this is at most a percent effect, since the abundance of tritium is much smaller than the one of helium-3.
 
 \subsubsection{A first look at the source code}
 While the output of the wrapper scripts is sufficient to check whether a certain parameter point is excluded or not, it is sometimes important to not only print but also to further process the final abundances. This step, however, requires some knowledge regarding the internal workings of \texttt{ACROPOLIS}, which can be obtained by taking a closer look at the actual source code. Using the file \texttt{decay} as an example, much of the important information is comprised in the following two lines of code:
@@ -450,7 +478,7 @@ from acropolis.models import DecayModel
 
 [...]
 
-Yf = DecayModel(mphi, tau, temp0, n0a, bree, braa).run_disintegration()
+Yf = DecayModel(*params).run_disintegration()
 
 [...]
 \end{lstlisting}
@@ -458,7 +486,7 @@ In this code snippet, the relevant model is first loaded from the module \texttt
 
 \subsubsection{Running parameter scans}
 \label{sec:scans}
-\acropolis provides two classes for parameter scans, \texttt{acropolis.scans.BufferedScanner} and \texttt{acropolis.scans.ScanParameter}. In order to understand how these two classes work we show the following code snippet, which performs a parameter scan for the model from sec~\ref{sec:decay_model} with $m_\phi=50\,\mathrm{MeV}$, $T_0 = 10\,\mathrm{MeV}$, $\text{BR}_{ee} = 0$, and $\text{BR}_{\gamma\gamma}=1$ in the $\tau_\phi - n_\phi/n_\gamma|_{T_0}$ parameter plane.\newpage
+\acropolis provides two classes for parameter scans, \texttt{acropolis.scans.BufferedScanner} and \texttt{acropolis.scans.ScanParameter}. In order to understand how these two classes work we show the following code snippet, which performs a parameter scan for the model from sec~\ref{sec:decay_model} with $m_\phi=50\,\mathrm{MeV}$, $T_0 = 10\,\mathrm{MeV}$, $\text{BR}_{ee} = 0$, and $\text{BR}_{\gamma\gamma}=1$ in the $\tau_\phi - n_\phi/n_\gamma|_{T_0}$ parameter plane.
 \begin{lstlisting}
 #! /usr/bin/env python3
 
@@ -480,8 +508,8 @@ res = BufferedScanner( DecayModel,
 
 [...]
 \end{lstlisting}
-Here, the previously mentioned classes are first loaded from the module \texttt{acropolis.scans} together with the model that is used for the scan, in this case \texttt{DecayModel}. Then a new instance of \texttt{BufferedScanner} is initiated, which takes as a first argument the model that is used for the calculation and afterwards a set of keyword arguments with names that are identical to the ones in the constructor of the model. These keyword arguments can either be a \texttt{float} or an instance of \texttt{ScanParameter}. While the \texttt{float} parameters are kept constant, instances of \texttt{ScanParameter} are scanned over. The range for the scan is defined by the arguments of \texttt{ScanParameter(ivalue, fvalue, num, spacing)} and is constructed internally using \texttt{NumPy} functions by either calling \texttt{np.logspace(ivalue, fvalue, num)} for \texttt{spacing="log"} (default) or \texttt{np.linspace(ivalue, fvalue, num)} for \texttt{spacing="lin"}. Hence, the above code performs a scan over $\tau_\phi \in [10^3\,\mathrm{s}, 10^{10}\,\mathrm{s}]$ and $n_\phi/n_\gamma|_{T_0} \in [10^{-14}, 10^{-3}]$ with 200 data points in each direction, distributed equidistantly on a log-scale. There is one additional argument that can be passed to \texttt{ScanParameter},  \texttt{fast}, which can either be \texttt{True} or \texttt{False}. To understand the importance of this parameter, let us note that according to eq.~\eqref{eq:cascade_full}, the spectra $\kappa F_x(E)$ with some constant $\kappa$ are a solution of the cascade equation with source terms $\kappa S_x(E)$ if the spectra $F_x(E)$ are valid solutions of the cascade equation with source terms $S_x(E)$. In these two cases, the corresponding matrices in eq.~\eqref{eq:rate_matrix} are then $\kappa \mathcal{R}(T)$ and $\mathcal{R}(T)$, respectively. Hence, for each parameter that simply scales the source terms, it is not necesary to recalculate the non-thermal spectra and nuclear rates for each parameter point. Instead, we can simply rescale previously obtained solutions.
-The argument \texttt{fast} is used to determine whether this procedure is used or not. In the example above with \texttt{fast=True} for \texttt{n0a} this means that for a given value of $\tau_\phi$, $\mathcal{R}(T)$ is calculated only once for $n_\phi/n_\gamma|_{T_0} = 10^{-14}$ and then simply rescaled for other values of $n_\phi/n_\gamma|_{T_0}$. This way, the initial calculation for each \texttt{tau} takes $\sim \mathcal{O}(1\,\mathrm{min})$, while the calculation of different points for \texttt{n0a} then merely takes $\sim \mathcal{O}(1\,\mu\mathrm{s})$.
+Here, the previously mentioned classes are first loaded from the module \texttt{acropolis.scans} together with the model that is used for the scan, in this case \texttt{DecayModel}. Then a new instance of \texttt{BufferedScanner} is initiated, which takes as a first argument the model that is used for the calculation and afterwards a set of keyword arguments with names that are identical to the ones in the constructor of the model. These keyword arguments can either be a \texttt{float} or an instance of \texttt{ScanParameter}. While the \texttt{float} parameters are kept constant, instances of \texttt{ScanParameter} are scanned over. The range for the scan is defined by the arguments of \texttt{ScanParameter(ivalue, fvalue, num, spacing)} and is constructed internally using \texttt{NumPy} functions by either calling \texttt{np.logspace(ivalue, fvalue, num)} for \texttt{spacing="log"} (default) or \texttt{np.linspace(ivalue, fvalue, num)} for \texttt{spacing="lin"}. Hence, the above code performs a scan over $\tau_\phi \in [10^3\,\mathrm{s}, 10^{10}\,\mathrm{s}]$ and $n_\phi/n_\gamma|_{T_0} \in [10^{-14}, 10^{-3}]$ with 200 data points in each direction, distributed equidistantly on a log-scale. There is one additional argument that can be passed to \texttt{ScanParameter},  \texttt{fast}, which can either be \texttt{True} or \texttt{False}. To understand the importance of this parameter, let us note that according to eq.~\eqref{eq:cascade_full}, the spectra $\kappa F_x(E)$ with some constant $\kappa$ are a solution of the cascade equation with source terms $\kappa S_x(E)$ if the spectra $F_x(E)$ are valid solutions of the cascade equation with source terms $S_x(E)$. In these two cases, the corresponding matrices in eq.~\eqref{eq:rate_matrix} are then $\kappa \mathcal{R}_\text{pdi}(T)$ and $\mathcal{R}_\text{pdi}(T)$, respectively, while $\mathcal{R}_\text{decay}(T)$ remains unaltered. Hence, for each parameter that simply scales the source terms, it is not necesary to recalculate the non-thermal spectra and nuclear rates for each parameter point. Instead, we can simply rescale previously obtained solutions.
+The argument \texttt{fast} is used to determine whether this procedure is used or not. In the example above with \texttt{fast=True} for \texttt{n0a} this means that for a given value of $\tau_\phi$, $\mathcal{R}_\text{pdi}(T)$ is calculated only once for $n_\phi/n_\gamma|_{T_0} = 10^{-14}$ and then simply rescaled for other values of $n_\phi/n_\gamma|_{T_0}$. This way, the initial calculation for each \texttt{tau} takes $\sim \mathcal{O}(1\,\mathrm{min})$, while the calculation of different points for \texttt{n0a} then merely takes $\sim \mathcal{O}(1\,\mu\mathrm{s})$.
 The following tables show which parameters can be used with \texttt{fast=True} without spoiling the calculation (i.e.\ those parameters that only enter the source terms as a prefactor and do not appear elsewhere in the calculation):
 \begin{center}
 \begin{minipage}{0.495\textwidth}
@@ -490,7 +518,7 @@ The following tables show which parameters can be used with \texttt{fast=True} w
 \begin{tabular}{|c|c|}
 	\hline
 	Parameter & \texttt{fast=True} \\
-	\hline
+	\hline \hline
 	\texttt{mphi} & No \\
 	\hline
 	\texttt{tau} & No \\
@@ -511,7 +539,7 @@ The following tables show which parameters can be used with \texttt{fast=True} w
 \begin{tabular}{|c|c|}
 	\hline
 	Parameter & \texttt{fast=True} \\
-	\hline
+	\hline\hline
 	\texttt{mchi} & No \\
 	\hline
 	\texttt{a} & Yes (if \texttt{b=0})  \\
@@ -575,7 +603,7 @@ The most important class in this context is \texttt{acropolis.models.AbstractMod
 	\item \texttt{AbstractModel.\_source\_photon\_c}
 \end{itemize}
 \end{enumerate}
-Consequently, each new model class must therefore feature the scaffold (compare this e.g.\ to the implementations of \texttt{DecayModel} and \texttt{AnnihilationModel})\newpage
+Consequently, each new model class must therefore feature the scaffold (compare this e.g.\ to the implementations of \texttt{DecayModel} and \texttt{AnnihilationModel})
 \begin{lstlisting}
 from acropolis.models import AbstractModel
 
@@ -653,7 +681,7 @@ When calling the constructor of a new model, it crucial to also invoke the const
 \begin{lstlisting}
 def __init__(self, mphi, tau, temp0, n0a, bree, braa):
 	# Initialize the Input_Interface
-	self._sII   = InputInterface("data/sm.tar.gz")
+	self._sII   = InputInterface( locate_sm_file() )
 
 	[...]
 
@@ -665,7 +693,7 @@ def __init__(self, mphi, tau, temp0, n0a, bree, braa):
 	# Call the super constructor
 	super(DecayModel, self).__init__(self._sE0, self._sII)
 \end{lstlisting}
-Here, an instance of \texttt{InputInterface} is constructed from the data that is stored in the file \texttt{data/sm.tar.gz}. To fully understand the code, we therefore have to discuss the importance of this class, which we do in the next section.
+Here, an instance of \texttt{InputInterface} is constructed from the data that is stored in the file \texttt{acropolis/data/sm.tar.gz}. To fully understand the code, we therefore have to discuss the importance of this class, which we do in the next section.
 
 \subsection{The input framework \texttt{acropolis.input}}
 \label{sec:input}
@@ -677,13 +705,13 @@ input.tar.gz
 |___ cosmo_file.dat
 |___ abundance_file.dat
 \end{lstlisting}
-One such file that ships with \acropolis is \texttt{data/sm.tar.gz}, which assumes a standard cosmological history without an appreciable impact of BSM physics apart from photodisintegration.
+One such file that ships with \acropolis is \texttt{acropolis/data/sm.tar.gz}, which assumes a standard cosmological history without an appreciable impact of BSM physics apart from photodisintegration.
 As mentioned above this is a very good approximation for parameter regions which are close to the resulting limit, as photodisintegration strongly constrains even very small abundances, implying that changes to the SM values are small. Correspondingly, this file is used for both example models, as in these cases the abundance of the participating dark-sector particles gives a negligible contribution.
 However, this might not always be the case, potentially necessitating the construction of model-specific input files.
 We go over these different \texttt{*.dat} files and their content below and discuss how to access them from an instance of \texttt{InputInterface}. This is crucial since this class might encode vital information that is needed to implement the different source terms and the temperature range.
 
 \subsubsection{The file \textit{param\_file.dat}}
-This file contains all input parameters that cannot be provided in the model constructor, e.g.\ if they are closely tied to the evolution of the background plasma. Here, the minimal requirement is to provide a value for the baryon-to-photon ratio,\footnote{This parameter also enters the initial abundances and therefore is closely tied to other inputs.} but more parameters can be incorporated via additional lines of the form \texttt{key=value}. For example, the file \texttt{data/sm.tar.gz:param\_file.dat} only contains one line,
+This file contains all input parameters that cannot be provided in the model constructor, e.g.\ if they are closely tied to the evolution of the background plasma. Here, the minimal requirement is to provide a value for the baryon-to-photon ratio,\footnote{This parameter also enters the initial abundances and therefore is closely tied to other inputs.} but more parameters can be incorporated via additional lines of the form \texttt{key=value}. For example, the file \texttt{acropolis/data/sm.tar.gz:param\_file.dat} only contains one line,
 \begin{lstlisting}[backgroundcolor=\color{white}]
 eta=6.137e-10
 \end{lstlisting}
@@ -738,7 +766,7 @@ This file contains the initial abundances (before photodisintegration, but after
 All of the constants that are used within \acropolis can be found in \texttt{acropolis.params}. This files not only contains mathematical (\texttt{zeta3},...) and physical (\texttt{alpha, me, hbar},...) constants, but also some algorithm-specific parameters such as the number of points per decade used to construct the energy (\texttt{NE\_pd}) and temperature (\texttt{NT\_pd}) grids. All of these parameters are well documented in the file itself.
 There are three parameters at the beginning of this file that can be set to \texttt{True} or \texttt{False}:
 \begin{itemize}
-	\item \texttt{usedb} (default: \texttt{True}) -- if this parameter is set to \texttt{True}, the optional database files are used to speed up the calculation at the cost of additional I/O operations. If this parameter is set to \texttt{False} instead, all reaction rates are calculated from scratch. This might be especially useful when running on a batch system. Some benchmark that have been calculated with and without the use of the database files can be found in appendix~\ref{sec:benchmarks_single}.
+	\item \texttt{usedb} (default: \texttt{True}) -- if this parameter is set to \texttt{True}, the optional database files are used to speed up the calculation at the cost of additional I/O operations. If this parameter is set to \texttt{False} instead, all reaction rates are calculated from scratch. This might be especially useful when running on a batch system. Some benchmarks that have been calculated with and without the use of the database files can be found in appendix~\ref{sec:benchmarks_single}.
 	\item \texttt{verbose} (default: \texttt{True}) -- if this parameter is set to \texttt{True}, the code prints all message types to the screen, including \texttt{INFO}, \texttt{WARNING}, and \texttt{ERROR}. If this parameter is set to \texttt{False} instead, \texttt{INFO} messages are not printed.
 	\item \texttt{debug} (default: \texttt{False}) -- if this parameter is set to \texttt{True}, additional debug info is printed, including additional information on the position at which certain warnings or errors appear.
 \end{itemize}
@@ -931,17 +959,17 @@ In this appendix we present benchmarks in order to better understand the actual 
 		\hline
 		$m_\phi\;\mathrm{[MeV]}$ & $\tau_\phi\;\mathrm{[s]}$ &  runtime (with db) & runtime (without db) \\
 		\hline\hline
-		$10$ & $10^5$ & 0min 44s & 1min 16s\\
+		$10$ & $10^5$ & 0min 28s & 1min 13s\\
 		\hline
-		$50$ & $10^5$ & 3min 15s & 5min 19s \\
+		$50$ & $10^5$ & 2min 51s & 5min 12s \\
 		\hline
-		$100$ & $10^5$ & 5min 13s & 7min 52s \\
+		$100$ & $10^5$ & 4min 29s & 7min 56s \\
 		\hline\hline
-		$10$ & $10^7$ & 0min 26s & 0min 39s\\
+		$10$ & $10^7$ & 0min 19s & 0min 33s\\
 		\hline
-		$50$ & $10^7$ & 2min 46s & 3min 26s\\
+		$50$ & $10^7$ & 2min 12s & 3min 11s\\
 		\hline
-		$100$ & $10^7$ & 4min 00s & 5min 15s\\
+		$100$ & $10^7$ & 3min 33s & 5min 03s\\
 		\hline
 	\end{tabular}
 \end{center}
@@ -954,11 +982,11 @@ Benchmarking the annihilation model, we ran the script \texttt{annihilation} for
 		\hline
 		$m_\phi\;\mathrm{[MeV]}$ &  runtime (with db) & runtime (without db) \\
 		\hline\hline
-		$10$ & 02min 03s & 03min 52s\\
+		$10$ & 01min 46s & 03min 45s\\
 		\hline
-		$50$ & 07min 20s & 11min 34s \\
+		$50$ & 06min 58s & 11min 50s \\
 		\hline
-		$100$ & 10min 46s & 16min 37s \\
+		$100$ & 10min 51s & 17min 04s \\
 		\hline
 	\end{tabular}
 \end{center}

@@ -14,7 +14,7 @@ N = len(sys.argv)
 
 # ...and check if there are exactly six
 if N != 7:
-    print_error("Would you kindly specify the following six command-line arguments:\n"
+    print_error("Would you kindly specify the following command-line arguments:\n"
                 + "       1. The mass of the decaying particle              [in MeV]\n"
                 + "       2. The lifetime of the decaying particle          [in s]\n"
                 + "       3. Some reference temperature T0                  [in MeV]\n"
@@ -24,10 +24,10 @@ if N != 7:
                 + "       6. The branching ratio into two photons.\n")
 
 # Extract the input parameters
-[mphi, tau, temp0, n0a, bree, braa] = [float(arg) for arg in sys.argv[1:]]
+params = [float(arg) for arg in sys.argv[1:]]
 
 # Run the code
-Yf = DecayModel(mphi, tau, temp0, n0a, bree, braa).run_disintegration()
+Yf = DecayModel(*params).run_disintegration()
 
 # Print the result
 print_Yf(Yf)

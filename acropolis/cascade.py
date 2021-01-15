@@ -1,7 +1,5 @@
 # math
 from math import pi, log, log10, exp, sqrt
-# functools
-from functools import wraps
 # numpy
 import numpy as np
 # scipy
@@ -13,41 +11,18 @@ import numba as nb
 import warnings
 
 # db
-from .db import import_data_from_db
-from .db import in_rate_db, interp_rate_db
+from acropolis.db import import_data_from_db
+from acropolis.db import in_rate_db, interp_rate_db
+# cache
+from acropolis.cache import cached_member
 # pprint
-from .pprint import print_warning, print_error
+from acropolis.pprint import print_warning, print_error
 # params
-from .params import me, me2, alpha, re
-from .params import zeta3, pi2
-from .params import Emin
-from .params import approx_zero, eps, Ephb_T_max, E_EC_cut
-from .params import NE_pd, NE_min
-
-
-def _cached(f_uncached):
-    # Define the cache as a dictionary
-    cache = {}
-    cT = {"_": -1.}
-
-    # Define the wrapper function
-    @wraps(f_uncached)
-    def f_cached(*args):
-        T     = args[-1]
-        pargs = args[1:]
-
-        # For each new temperature,
-        # clear the cache and start over
-        if T != cT["_"]:
-            cT["_"] = T
-            cache.clear()
-
-        if pargs not in cache:
-            cache[pargs] = f_uncached(*args)
-
-        return cache[pargs]
-
-    return f_cached
+from acropolis.params import me, me2, alpha, re
+from acropolis.params import zeta3, pi2
+from acropolis.params import Emin
+from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
+from acropolis.params import NE_pd, NE_min
 
 
 # _ReactionWrapperScaffold ####################################################
@@ -79,8 +54,9 @@ def _JIT_G(Ee, Eph, Ephb):
     # ATTENTION: This range is absent in 'astro-ph/9412055'
     # Here we adopt the original result from
     # 'link.springer.com/content/pdf/10.1007/BF01005624.pdf'
-    Ee_lim_m = ( Eph + Ephb - (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) ) )/2.
-    Ee_lim_p = ( Eph + Ephb + (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) ) )/2.
+    dE_sqrt  = (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) )
+    Ee_lim_m = ( Eph + Ephb - dE_sqrt )/2.
+    Ee_lim_p = ( Eph + Ephb + dE_sqrt )/2.
 
     if not ( me < Ee_lim_m <= Ee <= Ee_lim_p ):
         # CHECKED to never happen, since the intergration
@@ -104,23 +80,23 @@ def _JIT_G(Ee, Eph, Ephb):
 # _PhotonReactionWrapper ######################################################
 
 @nb.jit(cache=True)
-def _JIT_PH_rate_pair_creation(y, x, T):
+def _JIT_ph_rate_pair_creation(y, x, T):
     # Define beta as a function of y
     b = sqrt(1. - 4.*me2/y)
 
     # Define the kernel for the 2d-integral; y = s, x = epsilon_bar
     #                     f/E^2                              s   \sigma_DP
-    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
     # ATTENTION: There is an error in 'astro-ph/9412055.pdf'
     # In the integration for \bar{\epsilon}_\gamma the lower
     # limit of integration should be me^2/\epsilon_\gamma
     # (the written limit is unitless, which must be wrong)
     # This limit is a consequence of the constraint on
     # the center-of-mass energy
+    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
 
 
 @nb.jit(cache=True)
-def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_ph_kernel_inverse_compton(y, E, Ep, T):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -130,13 +106,13 @@ def _JIT_PH_kernel_inverse_compton(y, E, Ep, T):
 # _ElectronReactionWrapper ####################################################
 
 @nb.jit(cache=True)
-def _JIT_EL_rate_inverse_compton(y, x, E, T):
+def _JIT_el_rate_inverse_compton(y, x, E, T):
     # Return the integrand for the 2d-integral; y = Eph, x = Ephb
     return _JIT_F(y, E, x)*x/( (pi**2.)*(exp(x/T) - 1.) )
 
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_el_kernel_inverse_compton(y, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -144,7 +120,7 @@ def _JIT_EL_kernel_inverse_compton(y, E, Ep, T):
 
 
 @nb.jit(cache=True)
-def _JIT_EL_kernel_pair_creation(y, E, Ep, T):
+def _JIT_el_kernel_pair_creation(y, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(y)
 
@@ -184,7 +160,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 
 @nb.jit(cache=True)
 def _JIT_set_spectra(F, i, Fi, cond):
-    F[:,i] = Fi
+    F[:, i] = Fi
     # In the strongly compressed regime, manually
     # set the photon spectrum to zero in order to
     # avoid floating-point errors
@@ -329,7 +305,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # In general, the threshold is E ~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
         # in order to guarantee a smooth transition
-        if E < me2/(30.*T):
+        if E < me2/(50.*T):
             return 0.
 
         # Define the integration limits from the
@@ -340,13 +316,13 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # CHECKED!
 
         # Perform the integration in lin space
-        I_fso_E2 = dblquad(_JIT_PH_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
+        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
 
         return I_fso_E2[0]/( 8.*E**2. )
 
 
     def _rate_pair_creation_db(self, E, T):
-        if E < me2/(30.*T):
+        if E < me2/(50.*T):
             return 0.
 
         E_log, T_log = log10(E), log10(T)
@@ -385,7 +361,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @_cached
+    @cached_member
     def _kernel_inverse_compton(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -410,7 +386,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_PH_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(_JIT_ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         # ATTENTION: Kawasaki considers a combined e^+/e^- spectrum
         # Therefore the factor 2 should not be there in our case
@@ -445,7 +421,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @_cached
+    @cached_member
     def _rate_inverse_compton(self, E, T):
         # Define the upper limit for the integration over x
         ulim = min( E - me2/(4.*E), Ephb_T_max*T )
@@ -459,7 +435,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         # ATTENTION:
         # The integral over \epsilon_\gamma should start at 0.
         # In fact, for \epsilon_\gamma > \epsilon_e, we have q < 0.
-        I_fF_E = dblquad(_JIT_EL_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T))
+        I_fF_E = dblquad(_JIT_el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(E**2.)
 
@@ -483,7 +459,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
     # T  is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @_cached
+    @cached_member
     def _kernel_inverse_compton(self, E, Ep, T):
         # E == Ep leads to a divergence in
         # the Bose-Einstein distribution
@@ -492,11 +468,12 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Calculate appropriate integration limits
-        pf = .25*me2/Ep - E                     # <= 0.
-        qf = .25*me2*(Ep-E)/Ep                  # >= 0.
+        pf = .25*me2/Ep - E               # <= 0.
+        qf = .25*me2*(Ep-E)/Ep            # >= 0.
 
-        z1 = -pf/2. - sqrt( (pf/2.)**2 - qf )  # smaller
-        z2 = -pf/2. + sqrt( (pf/2.)**2 - qf )  # larger
+        sqrt_d = sqrt( (pf/2.)**2. - qf )
+        z1 = -pf/2. - sqrt_d              # smaller
+        z2 = -pf/2. + sqrt_d              # larger
 
         # Define the integration limits from
         # the range that is specified in '_JIT_F'
@@ -513,7 +490,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_EL_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(_JIT_el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(Ep**2.)
 
@@ -541,7 +518,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # BETHE_HEITLER PAIR CREATION #############################################
-    @_cached
+    @cached_member
     def _kernel_bethe_heitler(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -553,13 +530,13 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # DOUBLE PHOTON PAIR CREATION #############################################
-    @_cached
+    @cached_member
     def _kernel_pair_creation(self, E, Ep, T):
         # In general, the threshold is Ep >~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
         # in acordance with the implementation we use in
         # '_PhotonReactionWrapper._rate_pair_creation'
-        if Ep < me2/(30.*T):
+        if Ep < me2/(50.*T):
             return 0.
 
         dE, E2 = Ep - E, E**2.
@@ -586,7 +563,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fG_E2 = quad(_JIT_EL_kernel_pair_creation, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fG_E2 = quad(_JIT_el_kernel_pair_creation, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         return 0.25*pi*(alpha**2.)*me2*I_fG_E2[0]/(Ep**3.)
 

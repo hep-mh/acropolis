@@ -3,7 +3,7 @@
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.1](https://img.shields.io/badge/current_version-1.1-blue.svg?style=flat-square)
+![Version: 1.2](https://img.shields.io/badge/current_version-1.2-blue.svg?style=flat-square)
 
 When using this code, please cite the following papers
 
@@ -19,6 +19,14 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
+v1.2
+ - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
+ - Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Added the decay of neutrons and tritium to the calculation
+ - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+ - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
+
+
 v1.1
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
@@ -33,7 +41,7 @@ v1.0
 
 # Install the dependencies
 
-ACROPOLIS is written in Python3.7 (remember that Python2 is dead) and depends on the following packages (older versions might work, but have not been thoroughly testes)
+ACROPOLIS is written in Python3.7 (remember that Python2 is dead) and depends on the following packages (older versions might work, but have not been thoroughly tested)
 
  - NumPy (> 1.19.1)
  - SciPy (>1.5.2)
@@ -47,9 +55,19 @@ python3 -m pip install numpy, scipy, numba --user
 
 If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
 
+# Install ACROPOLIS using pip
+
+ACROPOLIS also comes with a ``setup.py`` file, which allows to simply install it via pip. To do this, simply run the following command in the root of the cloned repository
+
+```
+python3 -m pip install .
+```
+
+Afterwards, the different packages of ACROPOLIS can be imported into our own code, just like any other python package. The above command, also copies the executable ``decay`` and ``annihilation`` into your ``PATH`` and makes sure that all dependencies are fulfilled.
+
 # Use the example models
 
-Within the ACROPOLIS main directory there are two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. On that note, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 1e5s that decays exclusively into photons and has an abundance of 1e-10 relative to photons at a reference temperature of 10MeV
+Within the ACROPOLIS main directory there are two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. On that note, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 1e5s that decays exclusively into photons and has an abundance of 1e-10 relative to photons at a reference temperature of 10MeV (**if you installed ACROPOLIS using pip, you can drop the ``./`` at the beginning, since the executables are in your ``PATH``.**)
 
 ```
 ./decay 10 1e5 10 1e-10 0 1

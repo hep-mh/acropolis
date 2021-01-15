@@ -7,6 +7,13 @@ from scipy.special import zetac
 # FLAGS #############################################################
 
 # If this flag is set to 'True',
+# the remaining decay processes
+# for n, t and Be7 are performed
+# for T < Tmin
+# Default: True
+#fdecay = True
+
+# If this flag is set to 'True',
 # the pregenerated databases
 # will be used to interpolate
 # the different reaction rates
@@ -49,6 +56,16 @@ hbar = 6.582119514e-22
 # The speed of light (in cm/s)
 c_si = 2.99792458e10
 
+# The muon lifetime (in s)
+tau_m = 2.1969811e-6
+
+# The neutron lifetime (in s)
+tau_n = 8.802e2
+
+# The lifetime of tritium (in s)
+# T_(1/2) = 3.885e8
+tau_t = 5.605e8
+
 
 # MATHEMATICAL CONSTANTS ############################################
 
@@ -81,7 +98,7 @@ NY = 9
 NC = 5
 
 # Minimum energy for the different spectra (in MeV)
-# This value should be smaller than the minimal
+# This value should not be larger than the minimal
 # nucleon-interaction threshold of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
 Emin = 1.5
