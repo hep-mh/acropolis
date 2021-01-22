@@ -18,7 +18,7 @@ from acropolis.cache import cached_member
 # pprint
 from acropolis.pprint import print_warning, print_error
 # params
-from acropolis.params import me, me2, alpha, re
+from acropolis.params import me, me2, alpha, re, tau_m
 from acropolis.params import zeta3, pi2
 from acropolis.params import Emin
 from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
@@ -646,6 +646,19 @@ class _PositronReactionWrapper(object):
             "Particle with identifier X =" + str(X) + "does not exist.",
             "acropolis.cascade._PositronReactionWrapper.total_kernel_x"
         )
+
+
+# TODO
+class _MuonReactionWrapper(_ReactionWrapperScaffold):
+    pass
+
+    # RATES ###################################################################
+    # E is the energy of the incoming particle
+    # T is the temperature of the background photons
+
+    # MUON DECAY #############################################################
+    def _rate_muon_decay(self, E, T):
+        return 1./tau_m
 
 
 class SpectrumGenerator(object):
