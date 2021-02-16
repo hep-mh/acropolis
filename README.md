@@ -3,7 +3,7 @@
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.2](https://img.shields.io/badge/current_version-1.2-blue.svg?style=flat-square)
+![Version: 1.2.1](https://img.shields.io/badge/current_dev_version-1.2.1-blue.svg?style=flat-square)
 
 When using this code, please cite the following papers
 
@@ -19,11 +19,14 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
+v1.2.1
+ - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
+ - Updated the set of initial abundances to the most recent values returned by AlterBBN v2.2 (explcitly, we used ``failsafe=12``)
+
 v1.2
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
  - Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
- - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
 
 

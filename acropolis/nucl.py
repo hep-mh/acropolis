@@ -56,7 +56,7 @@ _reactions = {
     8 : "He4+a>d+d",
     9 : "He4+a>n+p+d",
     10: "Li6+a>n+p+He4",
-    11: "Li6+a>X",          # Here we only consider the destruction of Li6
+    11: "Li6+a>X",
     12: "Li7+a>t+He4",
     13: "Li7+a>n+Li6",
     14: "Li7+a>n+n+p+He4",

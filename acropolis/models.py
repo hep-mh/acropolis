@@ -12,6 +12,7 @@ from acropolis.input import InputInterface, locate_sm_file
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
+from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin
 from acropolis.params import NY
@@ -223,7 +224,7 @@ class DecayModel(AbstractModel):
         sf_ratio = self._sII.scale_factor(self._sT0)/self._sII.scale_factor(T)
 
         delta_t = self._sII.time(T) - self._st0
-        n_gamma = (pi**2.)*(self._sT0**3.)/15.
+        n_gamma = (2.*zeta3)*(self._sT0**3.)/(pi**2.)
 
         return self._sN0a * n_gamma * sf_ratio**3. * exp( -delta_t/self._sTau )
 
