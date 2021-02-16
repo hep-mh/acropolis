@@ -18,7 +18,7 @@ from acropolis.cache import cached_member
 # pprint
 from acropolis.pprint import print_warning, print_error
 # params
-from acropolis.params import me, me2, alpha, re, tau_m
+from acropolis.params import me, me2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
 from acropolis.params import Emin
 from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
@@ -648,17 +648,26 @@ class _PositronReactionWrapper(object):
         )
 
 
-# TODO
-class _MuonReactionWrapper(_ReactionWrapperScaffold):
+class _MuonReactionWrapper(_ReactionWrapperScaffold): # TODO
     pass
 
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
-    # MUON DECAY #############################################################
+    # MUON DECAY ##############################################################
     def _rate_muon_decay(self, E, T):
-        return 1./tau_m
+        return hbar/tau_m
+
+
+    # INVERSE COMPTON SCATTERING ##############################################
+    def _rate_inverse_compton(self, E, T):
+        return 0.
+
+
+    # TOTAL RATE ##############################################################
+    def total_rate(self, E, T):
+        return self._rate_inverse_compton(E, T) + self._rate_muon_decay(E, T)
 
 
 class SpectrumGenerator(object):

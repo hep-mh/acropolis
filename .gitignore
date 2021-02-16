@@ -1,9 +1,15 @@
-# Exclude scan results
-/plots/data/*
-/plots/*.pdf
-/plots/*
+# Intermediate data files
+acropolis/data/*.dat
 
+# AlterBBN files
+alterbbn/*
+
+# Temporary files
 tmp/*
+
+# Scan results
+#/plots/data/*
+/plots/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__
