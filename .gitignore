@@ -17,6 +17,11 @@ __pycache__
 *$py.class
 
 # TeX files
+.tex
+.sty
+.bst
+manual/plots/*
+
 *.bbl
 *.log
 *.out
