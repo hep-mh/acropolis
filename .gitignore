@@ -21,7 +21,6 @@ __pycache__
 *.sty
 *.bst
 *.bib
-*.sh
 manual/plots/*
 
 *.bbl
