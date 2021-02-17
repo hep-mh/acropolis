@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='ACROPOLIS',
-    version='1.2',
+    version='1.2.1',
     python_requires=">=3.6",
     description='A generiC fRamework fOr Photodisintegration Of LIght elementS',
     url='https://github.com/skumblex/acropolis',

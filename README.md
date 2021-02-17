@@ -3,7 +3,7 @@
 **A generiC fRamework fOr Photodisintegration Of LIght elementS**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.1](https://img.shields.io/badge/current_dev_version-1.2.1-blue.svg?style=flat-square)
+![Version: 1.3](https://img.shields.io/badge/current_dev_version-1.3-blue.svg?style=flat-square)
 
 When using this code, please cite the following papers
 
@@ -18,6 +18,11 @@ The most recent version of the manual can always be found on GitHub at manual/ma
 The remarkable agreement between observations of the primordial light element abundances and the corresponding theoretical predictions within the standard cosmological history provides a powerful method to constrain physics beyond the standard model of particle physics (BSM). For a given BSM model these primordial element abundances are generally determined by (i) Big Bang Nucleosynthesis and (ii) possible subsequent disintegration processes. The latter potentially change the abundance values due to late-time high-energy injections which may be present in these scenarios. While there are a number of public codes for the first part, no such code is currently available for the second. Here we close this gap and present ACROPOLIS, A generiC fRamework fOr Photodisintegration Of LIght elementS. The widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. Furthermore, due to its modular structure, ACROPOLIS can easily be extended also to other scenarios.
 
 # Changelog
+
+v1.3
+ - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
+ - Included a new c-file 'tools/create_sm_abundance_file.c', which can be used with ``AlterBBN`` to
+ generate the file abundance_file.dat for sm.tar.gz
 
 v1.2.1
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
