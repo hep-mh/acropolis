@@ -1,7 +1,7 @@
 # math
 from math import pi
 # scipy
-from scipy.special import zetac
+from scipy.special import zeta
 
 
 # FLAGS #############################################################
@@ -70,7 +70,7 @@ tau_t = 5.605e8
 # MATHEMATICAL CONSTANTS ############################################
 
 # The Riemann-Zeta function at point 3
-zeta3 = 1. + zetac(3.)
+zeta3 = zeta(3.)
 
 # The beautiful value of pi, squared
 pi2 = pi**2.
