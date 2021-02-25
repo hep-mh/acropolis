@@ -7,10 +7,6 @@ alterbbn/*
 # Temporary files
 tmp/*
 
-# Scan results
-#/plots/data/*
-/plots/*
-
 # Byte-compiled / optimized / DLL files
 __pycache__
 *.py[cod]

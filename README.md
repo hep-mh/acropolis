@@ -20,17 +20,17 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 v1.3
- - Included a new script 'tools/create_sm_cosmo_file.py' which allows to generate the file cosmo_file.dat for sm.tar.gz and can easily be modified by the user
- - Included a new c-file 'tools/create_sm_abundance_file.c', which can be used with ``AlterBBN`` to
- generate the file abundance_file.dat for sm.tar.gz
+ - Included a new script tools/create_sm_cosmo_file.py which allows to generate the file ``cosmo_file.dat`` for sm.tar.gz and can easily be modified by the user
+ - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to
+ generate the file ``abundance_file.dat`` for sm.tar.gz
 
 v1.2.1
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
- - Updated the set of initial abundances to the most recent values returned by AlterBBN v2.2 (explcitly, we used ``failsafe=12``)
+ - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explcitly, we used ``failsafe=12``)
 
 v1.2
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
- - Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
 
@@ -40,7 +40,7 @@ v1.1
  - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (~900MB -> ~20MB)
  - Fixed a bug, which could lead to NaNs when calculating heavily suppressed spectra with E0 >> me2/(22*T)
- - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ACROPOLIS
+ - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ``ACROPOLIS``
  - Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines
  - Added additional info and warning messages for the user's convenience
 
@@ -94,7 +94,7 @@ ACROPOLIS has been tested on the following platforms (but lets be honest, it sho
 | OS              | Version   | Arch   |
 | --------------- | :-------: | :----: |
 | Ubuntu          |  20.04    | x86_64 |
-| KDE neon        |  5.20     | x86_64 |
+| KDE neon        |  5.21     | x86_64 |
 | Kali GNU/Linux  |  2020.04  | x86_64 |
 | macOS           |  10.15    | x86_64 |
 | Windows 10      |  20H2     | x86_64 |
