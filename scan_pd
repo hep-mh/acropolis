@@ -1,0 +1,33 @@
+#! /bin/bash
+
+# Define a function to replace NE_pd and NT_pd
+function replace {
+    cp data/params.py.rpl acropolis/params.py
+    sed -i "s/__NE_PD__/${1}/" acropolis/params.py
+    sed -i "s/__NT_PD__/${2}/" acropolis/params.py
+}
+
+# Back up the old param file
+cp acropolis/params.py data/params.py~
+
+# Define the benchmark point
+args="50 1e7 10 1e-10 1 0"
+
+# Scan the different values for NE_pd
+for NE_PD in $(cat data/NE_pd.dat); do
+    echo $NE_PD
+
+    replace $NE_PD 50
+    echo $NE_PD $(python3 decay $args) >> data/NE_pd.out
+done
+
+# Scan the different values for NT_pd
+for NT_PD in $(cat data/NT_pd.dat); do
+    echo $NT_PD
+    
+    replace 150 $NT_PD
+    echo $NT_PD $(python3 decay $args) >> data/NT_pd.out
+done
+
+# Restore the old param file
+mv data/params.py~ acropolis/params.py
