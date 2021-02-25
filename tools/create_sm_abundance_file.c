@@ -5,11 +5,11 @@ This file must be used with a local copy of AlterBBN.
 Simply copy it into your main AlterBBN directoy and
 compile it with
 
-            make create_abundance_file
+            make create_sm_abundance_file
 
 Afterwards, it can be executed via
 
-    ./create_abundance_file.x <failsafe> <eta10>
+    ./create_sm_abundance_file.x <failsafe> <eta10>
 **/
 
 # define NY 9
