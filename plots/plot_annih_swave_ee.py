@@ -57,7 +57,7 @@ def get_abd(data, i):
 shape=(200, 200)
 
 # Read the data file
-data = np.loadtxt(f"data/annih_swave.dat")
+data = np.loadtxt(f"data/annih_swave_ee.dat")
 mchi = data[:,0].reshape(shape)
 a    = data[:,1].reshape(shape)
 
@@ -128,5 +128,5 @@ ax.set_ylim(-27, -18)
 
 plt.title(r"$b = 0\,\mathrm{cm}^3/\mathrm{s},\;T_\text{kd}=0\,\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 0$", fontsize=11)
 plt.tight_layout()
-plt.savefig(f"annih_swave.pdf")
+plt.savefig(f"annih_swave_ee.pdf")
 plt.show()

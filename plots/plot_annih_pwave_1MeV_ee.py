@@ -26,14 +26,14 @@ for axis in ['top','bottom','left','right']:
     ax.spines[axis].set_linewidth(0.5)
 
 # Deint the ticks for the x-...
-xtMajor = [np.log10(10**j) for j in np.linspace(3, 10, 8)]
+xtMajor = [np.log10(10**j) for j in np.linspace(0, 3, 4)]
 xtMinor = [np.log10(i*10**j) for j in xtMajor for i in range(10)[1:10]]
 xlMajor = [r"$10^{" + str(int(i)) + "}$" if i in xtMajor else "" for i in xtMajor]
 xMajorLocator = FixedLocator(xtMajor)
 xMinorLocator = FixedLocator(xtMinor)
 xMajorFormatter = FixedFormatter(xlMajor)
 # ... and y-axis
-ytMajor = np.linspace(-15, -3, 13)
+ytMajor = np.linspace(-21, -10, 12)
 ytMinor = [np.log10(i*10**(j)) for i in range(10)[1:] for j in ytMajor]
 ylMajor = [r"$10^{" + str(int(i)) + "}$" if i in ytMajor else "" for i in ytMajor]
 yMajorLocator = FixedLocator(ytMajor)
@@ -57,9 +57,9 @@ def get_abd(data, i):
 shape=(200, 200)
 
 # Read the data file
-data = np.loadtxt(f"data/decay_50MeV.dat")
-tau  = data[:,0].reshape(shape)
-n0a  = data[:,1].reshape(shape)
+data = np.loadtxt(f"data/annih_pwave_1e0MeV_ee.dat")
+mchi = data[:,0].reshape(shape)
+b    = data[:,1].reshape(shape)
 
 # Extract the different abundances
 mn, en = get_abd(data, 0)
@@ -92,47 +92,40 @@ DH  = DH.reshape(shape)
 HeD = HeD.reshape(shape)
 LiH = LiH.reshape(shape)
 
-HeD[(tau>1e7)*(n0a>1e-8)*(n0a<1e-6)] = 10
-DH[np.isnan(DH)] = -10
-
 # Extract the overall exclusion line
 max = np.maximum( np.abs(DH), np.abs(Yp) )
 max = np.maximum( max, HeD )
 
 sig = 1.95996
 
-plt.contourf(np.log10(tau), np.log10(n0a), DH, levels=[-1e10, -sig, sig, 1e10], colors=["0.6","white", "tomato"], alpha=0.2)
-plt.contourf(np.log10(tau), np.log10(n0a), Yp, levels=[-1e10, -sig, sig, 1e10], colors=["dodgerblue","white", "lightcoral"], alpha=0.2)
-plt.contourf(np.log10(tau), np.log10(n0a), HeD, levels=[sig, 1e10], colors=["mediumseagreen"], alpha=0.2)
+plt.contourf(np.log10(mchi), np.log10(b), DH, levels=[-1e10, -sig, sig, 1e10], colors=["0.6","white", "tomato"], alpha=0.2)
+plt.contourf(np.log10(mchi), np.log10(b), Yp, levels=[-1e10, -sig, sig, 1e10], colors=["dodgerblue","white", "lightcoral"], alpha=0.2)
+plt.contourf(np.log10(mchi), np.log10(b), HeD, levels=[sig, 1e10], colors=["mediumseagreen"], alpha=0.2)
 
-# plt.contour(np.log10(tau), np.log10(n0a), LiH, levels=[0], colors='#fe46a5', linestyles='--')
-# plt.contour(np.log10(tau), np.log10(n0a), LiH, levels=[-sig], colors='#fe46a5', linestyles='-')
-# plt.contour(np.log10(tau), np.log10(n0a), LiH, levels=[+sig], colors='#fe46a5', linestyles='-')
+# plt.contour(np.log10(mchi), np.log10(b), LiH, levels=[0], colors='#fe46a5', linestyles='--')
+# plt.contour(np.log10(mchi), np.log10(b), LiH, levels=[-sig], colors='#fe46a5', linestyles='-')
+# plt.contour(np.log10(mchi), np.log10(b), LiH, levels=[+sig], colors='#fe46a5', linestyles='-')
 
-plt.contour(np.log10(tau), np.log10(n0a), DH, levels=[-sig], colors='0.6', linestyles='-')
-plt.contour(np.log10(tau), np.log10(n0a), DH, levels=[sig], colors='tomato', linestyles='-')
-plt.contour(np.log10(tau), np.log10(n0a), Yp, levels=[-sig], colors='dodgerblue', linestyles='-')
-plt.contour(np.log10(tau), np.log10(n0a), HeD, levels=[sig], colors='mediumseagreen', linestyles='-')
-plt.contour(np.log10(tau), np.log10(n0a), max, levels=[sig], colors='black', linewidths=1.5, linestyles='-')
+plt.contour(np.log10(mchi), np.log10(b), DH, levels=[-sig], colors='0.6', linestyles='-')
+plt.contour(np.log10(mchi), np.log10(b), DH, levels=[sig], colors='tomato', linestyles='-')
+plt.contour(np.log10(mchi), np.log10(b), Yp, levels=[-sig], colors='dodgerblue', linestyles='-')
+plt.contour(np.log10(mchi), np.log10(b), HeD, levels=[sig], colors='mediumseagreen', linestyles='-')
+plt.contour(np.log10(mchi), np.log10(b), max, levels=[sig], colors='black', linewidths=1.5, linestyles='-')
 
-plt.text(4, -10, r"D/$^1$H low", color='0.6', fontsize=16)
-plt.text(7.5, -11, r"$^3$He/D high", color='mediumseagreen', fontsize=16)
-plt.text(6.3, -4.2, r"$\mathcal{Y}_\text{p}$ low", color='dodgerblue', fontsize=16)
-plt.text(7.3, -8, r"D/$^1$H high", color='tomato', fontsize=16)
-
-ax.xaxis.set_label_text(r"$\tau_\phi\;[\mathrm{s}]$")
+ax.xaxis.set_label_text(r"$m_\chi\;\;[\mathrm{MeV}]$")
 ax.xaxis.set_major_locator(xMajorLocator)
 ax.xaxis.set_minor_locator(xMinorLocator)
 ax.xaxis.set_major_formatter(xMajorFormatter)
-ax.set_xlim(3, 10)
+ax.set_xlim(0, 3)
 
-ax.yaxis.set_label_text(r"$(n_\phi/n_\gamma)|_{T=T_0}$")
+ax.yaxis.set_label_text(r"$b\;\;[\mathrm{cm^3/s}]$")
 ax.yaxis.set_major_locator(yMajorLocator)
 ax.yaxis.set_minor_locator(yMinorLocator)
 ax.yaxis.set_major_formatter(yMajorFormatter)
-ax.set_ylim(-15, -3)
+ax.set_ylim(-21, -10)
 
-plt.title(r"$m_\phi = 50\,\mathrm{MeV},\;T_0=10\,\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 1$", fontsize=11)
+plt.title(r"$a = 0\,\mathrm{cm}^3/\mathrm{s},\;T_\text{kd}=1\,\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 0$", fontsize=11)
+
 plt.tight_layout()
-plt.savefig(f"decay_50MeV.pdf")
+plt.savefig(f"annih_pwave_1e0MeV_ee.pdf")
 plt.show()
