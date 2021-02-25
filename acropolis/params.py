@@ -7,13 +7,6 @@ from scipy.special import zeta
 # FLAGS #############################################################
 
 # If this flag is set to 'True',
-# the remaining decay processes
-# for n, t and Be7 are performed
-# for T < Tmin
-# Default: True
-#fdecay = True
-
-# If this flag is set to 'True',
 # the pregenerated databases
 # will be used to interpolate
 # the different reaction rates

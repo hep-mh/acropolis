@@ -6,6 +6,12 @@ from acropolis.params import verbose, debug
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
+    # If not verbose, simply print one line
+    # including all abundances
+    if not verbose:
+        print(*Yf.transpose().reshape(1, Yf.size)[0,:])
+        return
+
     # Fill potentially missing header entries
     NYf = Yf.shape[1]
     header.extend( [""] * ( NYf - len(header) ) )
