@@ -13,8 +13,6 @@ cd ..
 # Back up the old param file
 cp acropolis/params.py tools/scan_pd/params.py~
 
-# Define the benchmark point
-
 # Scan the different values for NE_pd
 for NE_PD in $(cat data/NE_pd.list); do
     echo $NE_PD
@@ -26,7 +24,7 @@ done
 # Scan the different values for NT_pd
 for NT_PD in $(cat data/NT_pd.list); do
     echo $NT_PD
-    
+
     replace 150 $NT_PD
     echo $NT_PD $($@) >> scan_pd/NT_pd.dat
 done
