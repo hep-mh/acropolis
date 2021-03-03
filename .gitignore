@@ -7,21 +7,19 @@ alterbbn/*
 # Temporary files
 tmp/*
 
-# Scan results
-#/plots/data/*
-/plots/*
-
 # Byte-compiled / optimized / DLL files
 __pycache__
 *.py[cod]
 *$py.class
+
+# Plot data
+plots/data/*
 
 # TeX files
 *.tex
 *.sty
 *.bst
 *.bib
-*.sh
 manual/plots/*
 
 *.bbl

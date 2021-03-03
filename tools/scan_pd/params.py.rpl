@@ -17,7 +17,7 @@ usedb = True
 # additional output is printed
 # to the screen
 # Default: True
-verbose = True
+verbose = False
 
 # If this flag is set to 'True',
 # additional debug information
@@ -118,7 +118,7 @@ E_EC_cut = 500.
 # the energy grid, which is used within
 # the solution of the cascade equation
 # Default: 150
-NE_pd  = 150
+NE_pd  = __NE_PD__
 # The minimal number of points for
 # the energy grid
 # Default: 10
@@ -129,4 +129,4 @@ NE_min = 10
 # for the interpolation of the thermal
 # nuclear rates
 # Default: 50
-NT_pd = 50
+NT_pd = __NT_PD__
