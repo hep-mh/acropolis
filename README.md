@@ -1,15 +1,22 @@
 # ACROPOLIS
 
-**A generiC fRamework fOr Photodisintegration Of LIght elementS**
+**A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
 ![Version: 1.3](https://img.shields.io/badge/current_dev_version-1.3-blue.svg?style=flat-square)
 
+![Test](ACROPOLIS.png)
 When using this code, please cite the following papers
 
-- https://arxiv.org/abs/2011.06518
-- https://arxiv.org/abs/2011.06519
-- https://arxiv.org/abs/1808.09324
+- **ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS**\
+  Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg\
+  https://arxiv.org/abs/2011.06518
+- **Updated BBN constraints on electromagnetic decays of MeV-scale particles**\
+  Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg\
+  https://arxiv.org/abs/2011.06519
+- **BBN constraints on MeV-scale dark sectors. Part II. Electromagnetic decays**\
+  Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild
+  https://arxiv.org/abs/1808.09324
 
 The most recent version of the manual can always be found on GitHub at manual/manual.pdf. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.
 
@@ -19,23 +26,27 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
-v1.3
+v1.3\
+(In develpment)
  - Included a new script tools/create_sm_cosmo_file.py which allows to generate the file ``cosmo_file.dat`` for sm.tar.gz and can easily be modified by the user
  - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to
  generate the file ``abundance_file.dat`` for sm.tar.gz
 
-v1.2.1
+v1.2.1\
+(February 16, 2021)
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
  - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explcitly, we used ``failsafe=12``)
 
-v1.2
+v1.2\
+(January 15, 2021)
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
  - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
 
 
-v1.1
+v1.1\
+(December 1, 2020)
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (~900MB -> ~20MB)
@@ -44,7 +55,8 @@ v1.1
  - Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines
  - Added additional info and warning messages for the user's convenience
 
-v1.0
+v1.0\
+(November 12, 2020)
  - Initial release
 
 # Install the dependencies
@@ -89,7 +101,7 @@ On a similar note, the following command runs the process of photodisintegration
 
 # Supported platforms
 
-ACROPOLIS has been tested on the following platforms (but lets be honest, it should run on every OS with a Python implementation)
+ACROPOLIS has been tested on the following platforms and architectures (but lets be honest, it should run on every OS with a Python implementation)
 
 | OS              | Version   | Arch   |
 | --------------- | :-------: | :----: |
