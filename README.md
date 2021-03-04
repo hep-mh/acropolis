@@ -16,7 +16,7 @@ When using this code, please cite the following papers
   Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg\
   https://arxiv.org/abs/2011.06519
 - **BBN constraints on MeV-scale dark sectors. Part II. Electromagnetic decays**\
-  Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild
+  Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild\
   https://arxiv.org/abs/1808.09324
 
 The most recent version of the manual can always be found on GitHub at manual/manual.pdf. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.
@@ -28,8 +28,8 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 v1.3\
-(In develpment)
- - Included a new script tools/create_sm_cosmo_file.py which allows to generate the file ``cosmo_file.dat`` for sm.tar.gz and can easily be modified by the user
+(In development)
+ - [**TODO**] Included a new script tools/create_sm_cosmo_file.py which allows to generate the file ``cosmo_file.dat`` for sm.tar.gz and can easily be modified by the user
  - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to
  generate the file ``abundance_file.dat`` for sm.tar.gz
 
