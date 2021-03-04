@@ -3,7 +3,8 @@
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![Language: Python3](https://img.shields.io/badge/language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.1](https://img.shields.io/badge/current_version-1.2.1-blue.svg?style=flat-square)
+![Version: 1.2.1](https://img.shields.io/badge/current_version-1.2.1-green.svg?style=flat-square)
+![Dersion: 1.3](https://img.shields.io/badge/current_dev_version-1.3-orange.svg?style=flat-square)
 
 ![Test](ACROPOLIS.png)
 When using this code, please cite the following papers
