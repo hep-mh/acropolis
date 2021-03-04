@@ -12,10 +12,9 @@ Afterwards, it can be executed via
     ./create_sm_abundance_file.x <failsafe> <eta10>
 **/
 
-# define NY 9
+#define NY 9
 
-void ratioH_to_Y0(double ratioH[], double Y0[])
-{
+void ratioH_to_Y0(double ratioH[], double Y0[]) {
     // Extract the baryon-to-photon ratio
     Y0[0] = ratioH[0];
 
@@ -53,8 +52,7 @@ void ratioH_to_Y0(double ratioH[], double Y0[])
 
 }
 
-int main( int argc, char** argv )
-{
+int main( int argc, char** argv ) {
     int failsafe;
     float eta;
 
@@ -108,5 +106,5 @@ int main( int argc, char** argv )
     }
     fclose(abundance_file);
 
-    return 1;
+    return 0;
 }

@@ -1,8 +1,18 @@
 #! /usr/bin/env bash
 
+# Extract the current directory
+dir=$(basename $PWD)
+
+# Check if the current working directory is correct
+if [ "$dir" != "tools" ];
+then
+    echo "ERROR: This script needs to be executed in the tools/ directory. Stop!"
+    exit 1
+fi
+
 # Define a function to replace NE_pd and NT_pd
 function replace {
-    cp data/params.py.rpl acropolis/params.py
+    cp tools/scan_pd/params.py.rpl acropolis/params.py
     sed -i "s/__NE_PD__/${1}/" acropolis/params.py
     sed -i "s/__NT_PD__/${2}/" acropolis/params.py
 }
@@ -10,7 +20,7 @@ function replace {
 # Change the directory
 cd ..
 
-# Back up the old param file
+# Back up the old param-file
 cp acropolis/params.py tools/scan_pd/params.py~
 
 # Scan the different values for NE_pd
@@ -29,7 +39,7 @@ for NT_PD in $(cat data/NT_pd.list); do
     echo $NT_PD $($@) >> scan_pd/NT_pd.dat
 done
 
-# Restore the old param file
+# Restore the old param-file
 mv tools/scan_pd/params.py~ acropolis/params.py
 
 # Go back to the original directory
