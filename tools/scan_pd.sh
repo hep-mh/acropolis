@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Extract the current directory
+# Extract the current working directory
 dir=$(basename $PWD)
 
 # Check if the current working directory is correct
