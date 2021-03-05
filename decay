@@ -21,7 +21,8 @@ if N != 7:
                 + "       4. The number density of the decaying particle\n"
                 + "          (relative to photons) at T0\n"
                 + "       5. The branching ratio into electron-positron pairs\n"
-                + "       6. The branching ratio into two photons.\n")
+                + "       6. The branching ratio into two photons."
+                , eol="")
 
 # Extract the input parameters
 params = [float(arg) for arg in sys.argv[1:]]

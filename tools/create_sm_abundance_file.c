@@ -12,10 +12,9 @@ Afterwards, it can be executed via
     ./create_sm_abundance_file.x <failsafe> <eta10>
 **/
 
-# define NY 9
+#define NY 9
 
-void ratioH_to_Y0(double ratioH[], double Y0[])
-{
+void ratioH_to_Y0(double ratioH[], double Y0[]) {
     // Extract the baryon-to-photon ratio
     Y0[0] = ratioH[0];
 
@@ -25,36 +24,36 @@ void ratioH_to_Y0(double ratioH[], double Y0[])
     Y0[6] = ratioH[6]/4;
 
     for ( int i = 1; i <= NY; i++ ) {
+        // Skip the special cases from above
         if ( i == 2 || i == 6) continue;
 
         Y0[i] = ratioH[i]*Y0[2];
     }
 
     // Revert the decays of 'H3' and 'Be7'
-    Y0[5] = Y0[5] - ratioH[4]*Y0[2];    // H3
-    Y0[8] = Y0[8] - ratioH[9]*Y0[2];    // Be7
+    Y0[5] = Y0[5] - ratioH[4]*Y0[2]; // H3
+    Y0[8] = Y0[8] - ratioH[9]*Y0[2]; // Be7
 
     // Perform the neutron decay
-    Y0[2] = Y0[2] + Y0[1];
-    Y0[1] = 0.;
+    Y0[2] = Y0[2] + Y0[1];           // p
+    Y0[1] = 0.;                      // n
 
-    /* result of this function:
-        Y0[0]       final baryon-to-photon ratio
-        Y0[1]       n_neutron / n_baryon
-        Y0[2]       n_H / n_baryon
-        Y0[3]       n_deuterium / n_baryon
-        Y0[4]       n_3H / n_baryon
-        Y0[5]       n_3He / _baryon
-        Y0[6]       n_4He / n_baryon = Yp/4
-        Y0[7]       n_6Li / n_baryon
-        Y0[8]       n_7Li / n_baryon
-        Y0[9]       n_7Be / n_baryon
+    /* The result of this function are:
+        Y0[0]       eta_final
+        Y0[1]       0
+        Y0[2]       (n_n + n_p) / n_b
+        Y0[3]       n_D   / n_b
+        Y0[4]       n_H3  / n_b
+        Y0[5]       n_He3 / n_b
+        Y0[6]       n_He4 / n_b = Yp/4
+        Y0[7]       n_Li6 / n_b
+        Y0[8]       n_Li7 / n_b
+        Y0[9]       n_Be7 / n_b
     */
 
 }
 
-int main( int argc, char** argv )
-{
+int main( int argc, char** argv ) {
     int failsafe;
     float eta;
 
@@ -67,7 +66,8 @@ int main( int argc, char** argv )
           "               20...22 = Fehlberg RK4-5 method               (20=5%%, 21=1%%,    22=0.1%%)\n"
           "               30...32 = Cash-Karp RK4-5 method              (30=1%%, 31=10^-4, 32=10^-5)\n"
           "  2. eta10     The baryon-to-photon ratio times 1e10\n");
-        exit(1);
+
+        return 1;
     } else {
         sscanf(argv[1], "%d", &failsafe);
         sscanf(argv[2], "%f", &eta);
@@ -108,5 +108,5 @@ int main( int argc, char** argv )
     }
     fclose(abundance_file);
 
-    return 1;
+    return 0;
 }

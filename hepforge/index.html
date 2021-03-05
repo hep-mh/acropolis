@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>ACROPOLIS</title>
+    </head>
+    
+    <body>
+        <img src="ACROPOLIS.png" width=600>
+        
+        <h2>ACROPOLIS: <span style="color:#a40c04">A</span> generi<span style="color:#a40c04">C</span> f<span style="color:#a40c04">R</span>amework f<span style="color:#a40c04">O</span>r <span style="color:#a40c04">P</span>hotodisintegration <span style="color:#a40c04">O</span>f <span style="color:#a40c04">LI</span>ght element<span style="color:#a40c04">S</span></h2>
+        
+        <p>
+            <h3>Authors: <a href="mailto:frederik.depta@desy.de">Paul Frederik Depta</a>, <a href="mailto:marco.hufnagel@ulb.ac.be">Marco Hufnagel</a>, and <a href="mailto:kai.schmidt-hoberg@desy.de">Kai Schmidt-Hoberg</a></h3>
+        </p>
+        
+        <p>
+            ACROPOLIS is a generic framework to calculate the evolution of the light-element abundances due to photodisintegration reactions induced by different BSM particles. With ACROPOLIS, the widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. However, its modular structure also makes it possible to easily implement other BSM physics scenarios. ACROPOLIS is free software licensed under GPL3 and the full source code of the project is available via <a href="https://github.com/skumblex/acropolis">GitHub</a>, but different .tar.gz archieves for the available versions can also be obtained from the <a href="/downloads">downloads sections</a> of this website.
+            <br/><br/>
+            <b>The most recent version of the manual can be found <a href="https://github.com/skumblex/acropolis/blob/main/manual/manual.pdf">here</a>. In this document, you also find the most recent installation instructions.</b>
+        </p>
+        
+        <p>
+            When using this code for your own scentific publications, please cite
+            <ul>
+                <li><b>ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS</b><br/>Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg<br/><a href="https://arxiv.org/abs/2011.06518">[arXiv:2011.06518]</a></li>
+                <li><b>Updated BBN constraints on electromagnetic decays of MeV-scale particles</b><br/>Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg<br/><a href="https://arxiv.org/abs/2011.06519">[arXiv:2011.06519]</a></li>
+                <li><b>BBN constraints on MeV-scale dark sectors. Part II. Electromagnetic decays</b><br/>Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild<br/><a href="https://arxiv.org/abs/1808.09324">[arXiv:1808.09324]</a></li>
+            </ul>
+        </p>
+
+        <p>
+            <h2><a href="/downloads/acropolis-1.2.1.tar.gz">v1.2.1</a> &laquo; Click here to download</h2>
+            (February 16, 2021)
+
+            <ul>
+                <li>Fixed a bug in DecayModel. Results that have been obtained with older versions can be corrected by multiplying the parameter n0a with an additional factor 2.7012. All results of our papers remain unchanged.</li>
+                <li>Updated the set of initial abundances to the most recent values returned by <a href="https://alterbbn.hepforge.org/">AlterBBN</a> v2.2 (explicitly, we used failsafe=12)</li>
+            </ul>
+        </p>
+
+
+        <p>
+            <h2><a href="/downloads/acropolis-1.2.tar.gz">v1.2</a> &laquo; Click here to download</h2>
+            (January 15, 2021)
+
+            <ul>
+                <li>Speed improvements when running non-thermal nucleosynthesis (by a factor 7)</li>
+                <li>Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via python3 setup.py install --user (also putting the executables decay and annihilation into your PATH)</li>
+                <li>Added the decay of neutrons and tritium to the calculation</li>
+                <li>For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)</li>
+        </ul>
+        </p>
+
+        <p>
+            <h2><a href="/downloads/acropolis-1.1.tar.gz">v1.1</a> &laquo; Click here to download</h2>
+            (December 1, 2020)
+
+            <ul>
+                <li>For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons</li>
+                <li>By including additional JIT compilation steps, the runtime without database files was drastically decreased (by approximately a factor 15)</li>
+                <li>The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (&#x223C;900MB &#x2192; &#x223C;20MB)</li>
+                <li>Fixed a bug, which could lead to NaNs when calculating heavily suppressed spectra with E<sub>0</sub> &#x226B; me<sup>2</sup>/(22T)</li>
+                <li>Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ACROPOLIS</li>
+                <li>Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines</li>
+                <li>Added additional info and warning messages for the user's convenience</li>
+            </ul>
+        </p>
+
+        <p>
+            <h2><a href="/downloads/acropolis-1.0.tar.gz">v1.0</a> &laquo; Click here to download</h2>
+            (November 12, 2020)
+
+            <ul>
+                <li>Initial release</li>
+            </ul>
+        </p>
+    </body>
+</html>

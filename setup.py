@@ -1,12 +1,22 @@
 # setuptools
 from setuptools import setup
+# os
+from os import path
 
+# Read the README.md file
+cwd = path.abspath( path.dirname(__file__) )
+with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
+# Perform the actual setup
 setup(
     name='ACROPOLIS',
     version='1.2.1',
     python_requires=">=3.6",
     description='A generiC fRamework fOr Photodisintegration Of LIght elementS',
-    url='https://github.com/skumblex/acropolis',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://acropolis.hepforge.org',
     author='Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg',
     license='GPL3',
     packages=[

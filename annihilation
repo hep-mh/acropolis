@@ -22,8 +22,8 @@ if N not in [7, 8]:
                 + "              dark-matter particle                           [in MeV]\n"
                 + "           5. The branching ratio into electron-positron pairs\n"
                 + "           6. The branching ratio into two photons.\n"
-                + "           7. The density parameter of dark-matter (optional, default: 0.12)\n"
-                )
+                + "           7. The density parameter of dark-matter (optional, default: 0.12)."
+                , eol="")
 
 # Extract the input parameters
 params = [float(arg) for arg in sys.argv[1:]]
