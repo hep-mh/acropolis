@@ -58,14 +58,14 @@ int main( int argc, char** argv ) {
     float eta;
 
     if ( argc != 3 ) {
-        printf("Would you kindly specify the following two command-line arguments:\n"
-          "  1. failsafe  0       = fast\n"
-          "               1...3   = more precise, stiff method\n"
-          "               5...7   = stiff method with precision tests   ( 5=5%%,  6=1%%,     7=0.1%%)\n"
-          "               10...12 = RK4 method with adaptative stepsize (10=5%%, 11=1%%,    12=0.1%%)\n"
-          "               20...22 = Fehlberg RK4-5 method               (20=5%%, 21=1%%,    22=0.1%%)\n"
-          "               30...32 = Cash-Karp RK4-5 method              (30=1%%, 31=10^-4, 32=10^-5)\n"
-          "  2. eta10     The baryon-to-photon ratio times 1e10\n");
+        printf("\x1B[1;31mERROR  \x1B[0m: Would you kindly specify the following command-line arguments:\n"
+          "         1. failsafe  0       = fast\n"
+          "                      1...3   = more precise, stiff method\n"
+          "                      5...7   = stiff method with precision tests   ( 5=5%%,  6=1%%,     7=0.1%%)\n"
+          "                      10...12 = RK4 method with adaptative stepsize (10=5%%, 11=1%%,    12=0.1%%)\n"
+          "                      20...22 = Fehlberg RK4-5 method               (20=5%%, 21=1%%,    22=0.1%%)\n"
+          "                      30...32 = Cash-Karp RK4-5 method              (30=1%%, 31=1e-4,  32=1e-5).\n"
+          "         2. eta10     The baryon-to-photon ratio times 1e10.");
 
         return 1;
     } else {

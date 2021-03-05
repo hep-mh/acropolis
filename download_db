@@ -5,6 +5,6 @@ from acropolis.pprint import print_info
 
 print_info(
     "Since v1.1 this operation is no longer needed. So you can simply proceed from here!\n" +
-    " "*9 + "For more information, please check the CHANCELOG that ships with this repository.",
+    " "*9 + "For more information, please check the changelog in the README.md file.",
     ""
 )

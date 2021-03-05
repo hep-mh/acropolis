@@ -18,6 +18,7 @@ plots/data/*
 # Build files
 build/*
 dist/*
+ACROPOLIS.egg-info
 
 # TeX files
 *.tex
