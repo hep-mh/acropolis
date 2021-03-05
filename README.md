@@ -35,7 +35,7 @@ v1.2.1\
 v1.2\
 (January 15, 2021)
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
- - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 setup.py install --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
+ - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 -m pip install . --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
 

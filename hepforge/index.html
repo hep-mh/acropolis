@@ -15,8 +15,8 @@
         <p>
             ACROPOLIS is a generic framework to calculate the evolution of the light-element abundances due to photodisintegration reactions induced by different BSM particles. With ACROPOLIS, the widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. However, its modular structure also makes it possible to easily implement other BSM physics scenarios. ACROPOLIS is free software licensed under GPL3 and the full source code of the project is available at <a href="https://github.com/skumblex/acropolis">GitHub</a>, but it can also be installed from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> or by downloading one of the different .tar.gz archives from the <a href="/downloads">downloads sections</a> of this website.
             <br/><br/>
-            The easiest way to install ACROPOLIS from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> via pip, i.e. by running the command<br/><br/>
-            <b>pip3 install ACROPOLIS</b>
+            The easiest way to install ACROPOLIS, is to fetch it from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> via pip, i.e. by running the command<br/><br/>
+            <b>python3 -m pip install ACROPOLIS</b>
             <br/><br/>
             The most recent version of the manual can be found <a href="https://github.com/skumblex/acropolis/blob/main/manual/manual.pdf">here</a>. In this document, you also find the most recent installation instructions.
         </p>
@@ -47,7 +47,7 @@
 
             <ul>
                 <li>Speed improvements when running non-thermal nucleosynthesis (by a factor 7)</li>
-                <li>Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via python3 setup.py install --user (also putting the executables decay and annihilation into your PATH)</li>
+                <li>Modified the directory structure by moving ./data to ./acropolis/data to transform ACROPOLIS into a proper package, which can be installed via python3 -m pip install . --user (also putting the executables decay and annihilation into your PATH)</li>
                 <li>Added the decay of neutrons and tritium to the calculation</li>
                 <li>For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)</li>
         </ul>
