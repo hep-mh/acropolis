@@ -98,13 +98,13 @@ If these dependencies conflict with those for other programs in your work enviro
 
 # Using the example models
 
-ACROPOLIS ships with two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. As an esxample, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 1e5s that decays exclusively into photons and has an abundance of 1e-10 relative to photons at a reference temperature of 10MeV (*if you did not install ACROPOLIS via pip, you have to run this command from within the main directory and make sure to append an additional ``./`` to the beginning of the commands*)
+ACROPOLIS ships with two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. As an example, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 10<sup>5</sup>s that decays exclusively into photons and has an abundance of 10<sup>-10</sup> relative to photons at a reference temperature of 10MeV (*if you did not install ACROPOLIS via pip, you have to run this command from within the main directory and make sure to append an additional ``./`` to the beginning of the commands*)
 
 ```
 decay 10 1e5 10 1e-10 0 1
 ```
 
-On a similar note, the following command runs the process of photodisintegration for residual s-wave annihilations of a dark-matter particle with a mass of 10MeV and a cross-section of 10e-25 cm³/s that annihilates exclusively into photons
+On a similar note, the following command runs the process of photodisintegration for residual s-wave annihilations of a dark-matter particle with a mass of 10MeV and a cross-section of 10<sup>-25</sup> cm³/s that annihilates exclusively into photons
 
 ```
 annihilation 10 1e-25 0 0 0 1

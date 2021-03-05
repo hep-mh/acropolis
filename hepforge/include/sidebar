@@ -7,5 +7,8 @@
         <li><a href="https://github.com/skumblex/acropolis/tree/dev">Dev Branch</a></li>
     </ul>
 </li>
-<li><a href="https://pypi.org/project/ACROPOLIS/">PyPI</>
+<li><a href="https://pypi.org/project/ACROPOLIS/">PyPI</a>
+    <ul>
+        <li><a href="https://pypi.org/project/ACROPOLIS/#history">Releases</a></li>
+    </ul>
 <li><a href="mailto:marco.hufnagel@ulb.ac.be">Support</a></li>
