@@ -58,7 +58,7 @@ int main( int argc, char** argv ) {
     float eta;
 
     if ( argc != 3 ) {
-        printf("\x1B[1;31mERROR  \x1B[0m: Would you kindly specify the following two command-line arguments:\n"
+        printf("\x1B[1;31mERROR  \x1B[0m: Would you kindly specify the following command-line arguments:\n"
           "         1. failsafe  0       = fast\n"
           "                      1...3   = more precise, stiff method\n"
           "                      5...7   = stiff method with precision tests   ( 5=5%%,  6=1%%,     7=0.1%%)\n"
