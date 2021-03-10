@@ -95,22 +95,36 @@ class InputInterface(object):
 
     # 1. COSMO_DATA ###########################################################
 
+    def _find_index(self, x, x0):
+        ix = np.argmin( np.abs( x - x0 ) )
+
+        # Check the edge of the array
+        if ix == self._sCosmoDataShp[0] - 1:
+            # In this case, the condition
+            # below is always False
+            ix -= 1
+
+        # If not between ix and ix+1...
+        if not (x[ix] <= x0 <= x[ix+1] or x[ix] >= x0 >= x[ix+1]):
+            # ...it must be between ix-1 and ix
+            ix -= 1
+
+        return ix
+
+
     def _interp_cosmo_data(self, val, xc, yc):
         x = self._sCosmoDataLog[:,xc]
         y = self._sCosmoDataLog[:,yc]
-        N = self._sCosmoDataShp[0]
 
         val_log = log10(val)
-        # Extract the index corresponding to
-        # the data entries above and below 'val'
-        ix = np.argmin( np.abs( x - val_log ) )
-        if ix == N - 1:
-            ix -= 1
+
+        # Extract the index closest to 'val_log'
+        ix = self._find_index(x, val_log)
 
         m = (y[ix+1] - y[ix])/(x[ix+1] - x[ix])
         b = y[ix] - m*x[ix]
 
-        return 10**(m*val_log + b)
+        return 10.**(m*val_log + b)
 
 
     def temperature(self, t):
