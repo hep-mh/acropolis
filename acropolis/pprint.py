@@ -60,10 +60,13 @@ def print_warning(warning, loc="", eol="\n"):
     stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
 
 
-def print_info(info, loc="", eol="\n"):
+def print_info(info, loc="", eol="\n", verbose_flag=None):
+    if verbose_flag is None:
+        verbose_flag = verbose
+
     locf = ""
     if debug == True and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
-    if verbose:
+    if verbose_flag:
         stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
