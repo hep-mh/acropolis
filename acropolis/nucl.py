@@ -21,6 +21,7 @@ from acropolis.pprint import print_error, print_warning, print_info
 from acropolis.params import me, me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps
 from acropolis.params import NT_pd
+from acropolis.params import NY
 # cascade
 from acropolis.cascade import SpectrumGenerator
 
@@ -527,14 +528,15 @@ class MatrixGenerator(object):
         return matij/( self._sII.dTdt(T) )
 
 
-    def get_matp(self, T):
+    def get_matp(self, T, verbose=None):
         # Generate empty matrices
         mpdi, mdcy = np.zeros( (_nnuc, _nnuc) ), np.zeros( (_nnuc, _nnuc) )
 
         start_time = time()
         print_info(
             "Running non-thermal nucleosynthesis.",
-            "acropolis.nucl.MatrixGenerator.get_matp"
+            "acropolis.nucl.MatrixGenerator.get_matp",
+            verbose_flag=verbose
         )
 
         nt = 0
@@ -546,7 +548,7 @@ class MatrixGenerator(object):
                 print_info(
                     "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%",
                     "acropolis.nucl.MatrixGenerator.get_matp",
-                    eol="\r"
+                    eol="\r", verbose_flag=verbose
                 )
 
                 # Define the kernels for the integration in log-log space
@@ -559,10 +561,41 @@ class MatrixGenerator(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
+            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms.",
+            "acropolis.nucl.MatrixGenerator.get_matp",
+            verbose_flag=verbose
         )
 
         return (mpdi, mdcy)
+
+
+    def get_all_matp(self):
+        NT = len(self._sTemp)
+
+        start_time = time()
+        print_info(
+            "Running non-thermal nucleosynthesis (for all T).",
+            "acropolis.nucl.MatrixGenerator.get_all_matp"
+        )
+
+        all_mpdi = np.zeros( (NT, NY, NY) )
+        all_mdcy = np.zeros( (NT, NY, NY) )
+        for i, temp in enumerate(self._sTemp):
+            print_info(
+                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
+                "acropolis.nucl.MatrixGenerator.get_all_matp",
+                eol="\r"
+            )
+
+            all_mpdi[i, :, :], all_mdcy[i, :, :] = self.get_matp(temp, False)
+
+        end_time = time()
+        print_info(
+            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s.",
+            "acropolis.nucl.MatrixGenerator.get_all_matp"
+        )
+
+        return self._sTemp, (all_mpdi, all_mdcy)
 
 
     def get_final_matp(self):
