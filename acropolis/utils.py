@@ -55,21 +55,48 @@ class LogInterp(object):
         return self._sCache[x]
 
 
+# Cummulative numerical Simpson integration
 def cumsimp(x_grid, y_grid):
     n = len(x_grid)
-    delta_z = log(x_grid[-1] / x_grid[0])/(n-1)
-    g_grid = x_grid*y_grid
 
-    integral = np.zeros(n)
+    delta_z = log( x_grid[-1]/x_grid[0] )/( n-1 )
+    g_grid  = x_grid*y_grid
+
+    i_grid = np.zeros( n )
 
     last_even_int = 0.
-    for i in range(1, int(n/2 + 1)):
+    for i in range(1, n//2 + 1):
         ie = 2 * i
         io = 2 * i - 1
 
-        integral[io] = last_even_int + 0.5 * delta_z * (g_grid[io-1] + g_grid[io])
+        i_grid[io] = last_even_int + 0.5 * delta_z * (g_grid[io-1] + g_grid[io])
         if ie < n:
-            integral[ie] = last_even_int + delta_z * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
-            last_even_int = integral[ie]
+            i_grid[ie] = last_even_int + delta_z * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
+            last_even_int = i_grid[ie]
 
-    return integral
+    return i_grid
+
+
+# Five-point stencil numerical differentiation
+def fpsder(x_grid, y_grid):
+    n = len(x_grid)
+
+    d_grid = np.zeros( n )
+
+    # First two entries
+    d_grid[0] = ( y_grid[1] - y_grid[0] )/( x_grid[1] - x_grid[0] )
+    d_grid[1] = ( y_grid[2] - y_grid[0] )/( x_grid[2] - x_grid[0] )
+
+    # Entries in between
+    for i in range(2, n - 2):
+        nom = -y_grid[i+2]/12. + 2.*y_grid[i+1]/3. - 2.*y_grid[i-1]/3. + y_grid[i-2]/12.
+        den = x_grid[i+1] - x_grid[i]
+
+        d_grid[i] = nom/den
+
+    # Last two entries
+    l = n - 1
+    d_grid[l-1] = ( y_grid[l] - y_grid[l-2] )/( x_grid[l] - x_grid[l-2] )
+    d_grid[l  ] = ( y_grid[l] - y_grid[l-1] )/( x_grid[l] - x_grid[l-1] )
+
+    return d_grid

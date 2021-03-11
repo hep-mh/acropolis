@@ -4,9 +4,6 @@ from os import path
 from math import log10
 # numpy
 import numpy as np
-# scipy
-from scipy.interpolate import interp1d
-from scipy.integrate import cumtrapz
 # tarfilfe
 import tarfile
 
