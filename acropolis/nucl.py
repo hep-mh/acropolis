@@ -534,7 +534,7 @@ class MatrixGenerator(object):
 
         start_time = time()
         print_info(
-            "Running non-thermal nucleosynthesis.",
+            "Calculating final transfer matrix.",
             "acropolis.nucl.MatrixGenerator.get_matp",
             verbose_flag=verbose
         )
@@ -574,7 +574,7 @@ class MatrixGenerator(object):
 
         start_time = time()
         print_info(
-            "Running non-thermal nucleosynthesis (for all T).",
+            "Calculating transfer matrices for all temperatures.",
             "acropolis.nucl.MatrixGenerator.get_all_matp"
         )
 
