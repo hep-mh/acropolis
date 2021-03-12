@@ -44,7 +44,7 @@ class InputInterface(object):
 
         # Calculate the scale factor and add it
         sf = np.exp( cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
-        self._sCosmoData   = np.column_stack( [self._sCosmoData, sf] )
+        self._sCosmoData = np.column_stack( [self._sCosmoData, sf] )
 
         # Log the cosmo data for the interpolation
         # ATTENTION: At this point we have to take the
@@ -99,6 +99,7 @@ class InputInterface(object):
         if ix == self._sCosmoDataShp[0] - 1:
             # In this case, the condition
             # below is always False
+            # --> No additional -1
             ix -= 1
 
         # If not between ix and ix+1...
