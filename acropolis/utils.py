@@ -18,7 +18,9 @@ class LogInterp(object):
         self._sXminLog = self._sXLog[ 0]
         self._sXmaxLog = self._sXLog[-1]
         if self._sXmaxLog <= self._sXminLog:
-            raise ValueError("The x values need to be in ascending order.")
+            raise ValueError(
+                "The values in x_grid need to be in ascending order."
+            )
 
         self._sN = len(self._sXLog)
 
