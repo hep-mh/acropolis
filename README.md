@@ -56,24 +56,28 @@ v1.0\
 
 # Installation from PyPI
 
-This is the recommended way to install ACROPOLIS. To do so, make sure that ``pip`` is installed and afterwards simply execute the command
+*This is the recommended way to install ACROPOLIS.*
+
+To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards simply execute the command
 
 ```
 python3 -m pip install ACROPOLIS --user
 ```
 
-After the installation is completed, the different modules of ACROPOLIS can be directly imported into our own Python code (just like e.g. numpy). Using this procedure also ensures that the executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+
+If any dependencies of ACROPOLIS conflict with those for other programs in your work environment, it is strongly advised to utilize the capabilities of Python's virtual environments.
 
 
 # Installation from GitHub
 
-To install ACROPOLIS from source, first clone the respective git repository by executing the command
+To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
 
 ```
 git clone https://github.com/skumblex/acropolis.git
 ```
 
-Afterward, switch into the main directory and run
+Afterward, switch into the newly created main directory and run
 
 ```
 python3 -m pip install . --user
@@ -81,19 +85,19 @@ python3 -m pip install . --user
 
 # Usage without installation
 
-If you just want to use ACROPOLIS without any additional installation steps, you have to at least make sure that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
+In case you just want to use ACROPOLIS without any additional installation steps, it is necessary to manually check that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
 
  - NumPy (> 1.19.1)
  - SciPy (>1.5.2)
  - Numba (> 0.51.1)
 
-The most recent versions of these packages can be collectively installed at user-level, i.e. without the need for root access, by executing the command
+The most recent versions of these packages can be collectively installed via the command
 
 ```
 python3 -m pip install numpy, scipy, numba --user
 ```
 
-If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
+Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory (like ``decay`` and ``annihilation``). If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
 
 
 # Using the example models
@@ -112,4 +116,4 @@ annihilation 10 1e-25 0 0 0 1
 
 # Supported platforms
 
-ACROPOLIS should work on any platform with a working Python3 installation.
+ACROPOLIS should work on any platform that supports ``python3`` and ``clang``, the latter of which is required for ``numba`` to work.
