@@ -1,12 +1,13 @@
 # math
-from math import pi, log10
+from math import log, log10
 
 # input
 from acropolis.input import InputInterface
 # model
-from acropolis.model import AbstractModel
+from acropolis.models import AbstractModel
 # params
-from acropolis.params import hbar, alpha
+from acropolis.params import pi
+from acropolis.params import hbar, alpha, me2
 
 class EmModel(AbstractModel):
 
@@ -32,6 +33,7 @@ class EmModel(AbstractModel):
 
         # Call the super constructor
         super(EmModel, self).__init__(self._sE0, self._sII)
+
 
     # ABSTRACT METHODS ##################################################################
 
