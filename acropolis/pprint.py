@@ -3,6 +3,13 @@ from sys import stdout, stderr
 
 # params
 from acropolis.params import verbose, debug
+# info
+from acropolis.info import version, url
+
+
+def print_version():
+    if verbose == True:
+        print( "\x1B[1;38;5;209mACROPOLIS v{}\n{}\x1B[0m\n".format(version, url) )
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
