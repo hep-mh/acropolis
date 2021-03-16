@@ -79,28 +79,3 @@ def cumsimp(x_grid, y_grid):
             last_even_int = i_grid[ie]
 
     return i_grid
-
-
-# Five-point stencil numerical differentiation
-def fpsder(x_grid, y_grid):
-    n = len(x_grid)
-
-    d_grid = np.zeros( n )
-
-    # First two entries
-    d_grid[0] = ( y_grid[1] - y_grid[0] )/( x_grid[1] - x_grid[0] )
-    d_grid[1] = ( y_grid[2] - y_grid[0] )/( x_grid[2] - x_grid[0] )
-
-    # Entries in between
-    for i in range(2, n - 2):
-        nom = -y_grid[i+2]/12. + 2.*y_grid[i+1]/3. - 2.*y_grid[i-1]/3. + y_grid[i-2]/12.
-        den = x_grid[i+1] - x_grid[i]
-
-        d_grid[i] = nom/den
-
-    # Last two entries
-    l = n - 1
-    d_grid[l-1] = ( y_grid[l] - y_grid[l-2] )/( x_grid[l] - x_grid[l-2] )
-    d_grid[l  ] = ( y_grid[l] - y_grid[l-1] )/( x_grid[l] - x_grid[l-1] )
-
-    return d_grid
