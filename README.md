@@ -4,7 +4,7 @@
 
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
 ![Version: 1.2.1](https://img.shields.io/badge/Current_Version-1.2.1-green.svg?style=flat-square)
-![Dersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
+![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
 ![Logo](https://acropolis.hepforge.org/ACROPOLIS.png)
 When using this code for your own scientific publications, please cite

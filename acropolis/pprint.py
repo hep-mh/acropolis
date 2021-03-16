@@ -9,7 +9,7 @@ from acropolis.info import version, url
 
 def print_version():
     if verbose == True:
-        print( "\x1B[1;38;5;209mACROPOLIS v{}\n{}\x1B[0m\n".format(version, url) )
+        stdout.write( "\x1B[38;5;209mACROPOLIS v{} ({})\x1B[0m\n\n".format(version, url) )
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):

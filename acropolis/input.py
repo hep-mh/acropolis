@@ -6,6 +6,8 @@ from math import log10
 import numpy as np
 # tarfilfe
 import tarfile
+# abc
+from abc import ABC, abstractmethod
 
 # util
 from acropolis.utils import cumsimp
@@ -23,24 +25,72 @@ def locate_sm_file():
     return sm_file
 
 
+def data_from_file(filename):
+    # Read the input file
+    tf, tc = tarfile.open(filename, "r:gz"), {}
+
+    # Extract the different files and
+    # store them in a dictionary
+    for m in tf.getmembers(): tc[m.name] = tf.extractfile(m)
+
+    # READ THE PREVIOUSLY GENERATED DATA
+    cosmo_data = np.genfromtxt(tc["cosmo_file.dat"]    )
+    abund_data = np.genfromtxt(tc["abundance_file.dat"])
+    param_data = np.genfromtxt(tc["param_file.dat"],
+                                        delimiter="=",
+                                        dtype=None,
+                                        encoding=None
+                                     )
+
+    return InputData(cosmo_data, abund_data, param_data)
+
+
+class AbstractData(ABC):
+
+    @abstractmethod
+    def get_cosmo_data(self):
+        pass
+
+    @abstractmethod
+    def get_abund_data(self):
+        pass
+
+    @abstractmethod
+    def get_param_data(self):
+        pass
+
+
+class InputData(AbstractData):
+
+    def __init__(self, cosmo_data, abund_data, param_data):
+        self._sCosmoData = cosmo_data
+        self._sAbundData = abund_data
+        self._sParamData = param_data
+
+
+    def get_cosmo_data(self):
+        return self._sCosmoData
+
+
+    def get_abund_data(self):
+        return self._sAbundData
+
+
+    def get_param_data(self):
+        return self._sParamData
+
+
 class InputInterface(object):
 
-    def __init__(self, input_file):
-        # Read the input file
-        tf, tc = tarfile.open(input_file, "r:gz"), {}
+    def __init__(self, input_data):
+        # If input_data is a filename, extract the data first
+        if type(input_data) == str:
+            input_data = data_from_file(input_data)
 
-        # Extract the different files and
-        # store them in a dictionary
-        for m in tf.getmembers(): tc[m.name] = tf.extractfile(m)
-
-        # READ THE PREVIOUSLY GENERATED DATA
-        self._sCosmoData = np.genfromtxt(tc["cosmo_file.dat"]    )
-        self._sAbundData = np.genfromtxt(tc["abundance_file.dat"])
-        self._sParamData = np.genfromtxt(tc["param_file.dat"],
-                                            delimiter="=",
-                                            dtype=None,
-                                            encoding=None
-                                         )
+        # Extract the provided input data
+        self._sCosmoData = input_data.get_cosmo_data()
+        self._sAbundData = input_data.get_abund_data()
+        self._sParamData = input_data.get_param_data()
 
         # Calculate the scale factor and add it
         sf = np.exp( cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
