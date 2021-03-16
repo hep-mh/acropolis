@@ -32,19 +32,8 @@ class AbstractModel(ABC):
         # The temperature range that is used for the calculation
         self._sTrg = self._temperature_range()
 
-        # Calculate the relevant physical quantities, i.e. ...
-        # ...the 'delta' source terms and...
-        self._sS0 = [
-            self._source_photon_0  ,
-            self._source_electron_0,
-            self._source_positron_0
-        ]
-        # ...the ISR source terms
-        self._sSc = [
-            self._source_photon_c  ,
-            self._source_electron_c,
-            self._source_positron_c
-        ]
+        # The relevant source terms
+        (self._sS0, self._sSc) = self.get_source_terms()
 
         # A buffer for high-performance scans
         self._sMatpBuffer = None
@@ -88,6 +77,24 @@ class AbstractModel(ABC):
         )
 
         return Yf
+
+
+    def get_source_terms(self):
+        # Collect the different source terms, i.e. ...
+        # ...the 'delta' source terms and...
+        s0 = [
+            self._source_photon_0  ,
+            self._source_electron_0,
+            self._source_positron_0
+        ]
+        # ...the continous source terms
+        sc = [
+            self._source_photon_c  ,
+            self._source_electron_c,
+            self._source_positron_c
+        ]
+
+        return (s0, sc)
 
 
     def _pdi_matrix(self):
