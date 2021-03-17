@@ -9,6 +9,11 @@ import numpy as np
 from acropolis.models import AnnihilationModel
 # scans
 from acropolis.scans import ScanParameter, BufferedScanner
+# pprint
+from acropolis.pprint import print_version
+
+# Print version information
+print_version()
 
 # Set/Extract the decoupling temperature
 Tkd = float( sys.argv[1] ) if len( sys.argv ) != 1 else 1e0

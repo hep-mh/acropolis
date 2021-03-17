@@ -1,12 +1,14 @@
 # numpy
 import numpy as np
+# time
+from time import time
 # itertools
 from itertools import product
 # multiprocessing
 from multiprocessing import Pool, cpu_count
 
 # pprint
-from acropolis.pprint import print_error
+from acropolis.pprint import print_info, print_error
 # params
 from acropolis.params import NY
 # models
@@ -41,7 +43,10 @@ class BufferedScanner(object):
         # self._sWrapper(...) creates
         # a new instance of this class
         if not issubclass(model, AbstractModel):
-            print_error(str(model) + " is not a subclass of 'AbstractModel'")
+            print_error(
+                str(model) + " is not a subclass of 'AbstractModel'",
+                "acropolis.scans.BufferedScanner.__init__"
+            )
 
         self._sModel = model
 
@@ -96,13 +101,13 @@ class BufferedScanner(object):
             else:
                 print_error(
                     "All parameters must either be 'int', 'float' or an instance of 'ScanParameter'",
-                    "BufferedScanner._parse_arguments"
+                    "acropolis.scans.BufferedScanner._parse_arguments"
                 )
 
         if list( self._sFastf.values() ).count(True) > 1:
             print_error(
                 "Using more than one 'fast' parameter is not yet supported",
-                "BufferedScanner._parse_arguments"
+                "acropolis.scans.BufferedScanner._parse_arguments"
             )
 
 
@@ -120,8 +125,14 @@ class BufferedScanner(object):
         dy = len( self._sScanp_id ) + 3*NY # + 1
         results = np.zeros( ( dx, dy ) )
 
+
+        print_info(
+            "Running parallel calculation for {} = {:.4f}".format(self._sPP_id, pp),
+            "acropolis.scans.BufferedScanner.perform_scan",
+            verbose_level=3
+        )
+
         matpb, matpf = None, False
-        print(pp)
         # Loop over the non-parallel parameter(s)
         for count, scanp in enumerate(scanp_ls):
             # Define the set that contains only scan parameters
@@ -168,6 +179,13 @@ class BufferedScanner(object):
 
 
     def perform_scan(self, cores=1):
+        start_time = time()
+        print_info(
+            "Running parameter scan for {}.".format(self._sModel),
+            "acropolis.scans.BufferedScanner.perform_scan",
+            verbose_level=3
+        )
+
         num_cpus = cpu_count() if cores == -1 else cores
         with Pool(processes=num_cpus) as pool:
             # Loop over all possible combinations, by...
@@ -180,5 +198,12 @@ class BufferedScanner(object):
         parallel_results = np.array(parallel_results)
         old_shape = parallel_results.shape
         parallel_results.shape = (old_shape[0]*old_shape[1], len( self._sScanp_id ) + 3*NY) # + 1)
+
+        end_time = time()
+        print_info(
+            "Finished after {:.1f}s.".format(end_time - start_time),
+            "acropolis.scans.BufferedScanner.perform_scan",
+            verbose_level=3
+        )
 
         return parallel_results

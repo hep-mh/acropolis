@@ -9,6 +9,11 @@ import numpy as np
 from acropolis.models import AnnihilationModel
 # scans
 from acropolis.scans import ScanParameter, BufferedScanner
+# pprint
+from acropolis.pprint import print_version
+
+# Print version information
+print_version()
 
 # Define the number of points
 N = 200

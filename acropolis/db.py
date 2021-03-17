@@ -28,7 +28,8 @@ def import_data_from_db():
     start_time = time()
     print_info(
         "Extracting and reading database files.",
-        "acropolis.db.import_data_from_db"
+        "acropolis.db.import_data_from_db",
+        verbose_level=1
     )
 
     ratefl = gzip.open(db_file, "rb")
@@ -37,7 +38,9 @@ def import_data_from_db():
 
     end_time = time()
     print_info(
-        "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
+        "Finished after {:.1f}ms.".format( 1e3*(end_time - start_time) ),
+        "acropolis.db.import_data_from_db",
+        verbose_level=1
     )
 
     return ratedb

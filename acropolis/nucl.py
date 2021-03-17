@@ -435,7 +435,7 @@ class NuclearReactor(object):
         start_time = time()
         print_info(
             "Calculating non-thermal spectra and reaction rates.",
-            "acropolis.nucl.NuclearReactor.get_thermal_rates",
+            "acropolis.nucl.NuclearReactor.get_pdi_grids",
             verbose_level=1
         )
 
@@ -444,7 +444,7 @@ class NuclearReactor(object):
         for i, Ti in enumerate(Tr):
             print_info(
                 "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
-                "acropolis.nucl.NuclearReactor.get_thermal_rates",
+                "acropolis.nucl.NuclearReactor.get_pdi_grids",
                 eol="\r", verbose_level=1
             )
             rates_at_i = self._pdi_rates(Ti)
@@ -454,7 +454,8 @@ class NuclearReactor(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s.",
+            "Finished after {:.1f}s.".format(end_time - start_time),
+            "acropolis.nucl.NuclearReactor.get_pdi_grids",
             verbose_level=1
         )
 
@@ -563,7 +564,7 @@ class MatrixGenerator(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms.",
+            "Finished after {:.1f}ms.".format( 1e3*(end_time - start_time) ),
             "acropolis.nucl.MatrixGenerator.get_matp",
             verbose_level=1
         )
@@ -594,7 +595,7 @@ class MatrixGenerator(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s.",
+            "Finished after {:.1f}s.".format(end_time - start_time),
             "acropolis.nucl.MatrixGenerator.get_all_matp",
             verbose_level=2
         )
