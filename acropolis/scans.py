@@ -81,6 +81,9 @@ class BufferedScanner(object):
         # Determine the 'fast' parameter
         self._sFP_id = self._sScanp_id[ 0]
 
+        # Extract the number of parallel jobs
+        self._sNt = len( self._sScanp[self._sPP_id] )
+
 
     def _parse_arguments(self, **kwargs):
         # Loop over the different parameters
@@ -172,14 +175,15 @@ class BufferedScanner(object):
 
 
     def perform_scan(self, cores=1):
+        num_cpus = cpu_count() if cores == -1 else cores
+
         start_time = time()
         print_info(
-            "Running scan for {}.".format(self._sModel),
+            "Running scan for {} on {} cores.".format(self._sModel.__name__, num_cpus),
             "acropolis.scans.BufferedScanner.perform_scan",
             verbose_level=3
         )
 
-        num_cpus = cpu_count() if cores == -1 else cores
         with Pool(processes=num_cpus) as pool:
             # Loop over all possible combinations, by...
             #   ...1. looping over the 'parallel' parameter (map)
@@ -198,7 +202,7 @@ class BufferedScanner(object):
                     eol="\r", verbose_level=3
                 )
 
-                sleep(2)
+                sleep(1)
 
             parallel_results = async_results.get()
             pool.terminate()
