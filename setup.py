@@ -4,7 +4,7 @@ from setuptools import setup
 from os import path
 
 # version
-from acropolis.info import version, url, authors
+from acropolis.info import version, url, authors, description
 
 # Read the README.md file
 cwd = path.abspath( path.dirname(__file__) )
@@ -15,8 +15,8 @@ with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
 setup(
     name='ACROPOLIS',
     version=version,
-    python_requires=">=3.6",
-    description='A generiC fRamework fOr Photodisintegration Of LIght elementS',
+    python_requires='>=3.6',
+    description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
     url=url,
@@ -26,7 +26,7 @@ setup(
         'acropolis'
     ],
     package_data={
-        'acropolis': ["data/*"]
+        'acropolis': ['data/*']
     },
     include_package_data=True,
     scripts=[

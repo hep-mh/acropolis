@@ -4,12 +4,21 @@ from sys import stdout, stderr
 # params
 from acropolis.params import verbose, debug
 # info
-from acropolis.info import version, url
+from acropolis.info import version, dev_version, url
 
 
 def print_version():
     if verbose == True:
-        stdout.write( "\x1B[38;5;209mACROPOLIS v{} ({})\x1B[0m\n\n".format(version, url) )
+        # Differentiate between stable and dev version
+        version_str = ""
+        # Stable version
+        if version == dev_version:
+            version_str = "v{}".format(version)
+        # Development version
+        else:
+            version_str = "v{} [dev]".format(dev_version)
+
+        stdout.write( "\x1B[38;5;209mACROPOLIS {} ({})\x1B[0m\n\n".format(version_str, url) )
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
