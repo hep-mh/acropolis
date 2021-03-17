@@ -1,7 +1,7 @@
 # numpy
 import numpy as np
 # time
-from time import time
+from time import time, sleep
 # itertools
 from itertools import product
 # multiprocessing
@@ -125,13 +125,6 @@ class BufferedScanner(object):
         dy = len( self._sScanp_id ) + 3*NY # + 1
         results = np.zeros( ( dx, dy ) )
 
-
-        print_info(
-            "Running parallel calculation for {} = {:.4f}".format(self._sPP_id, pp),
-            "acropolis.scans.BufferedScanner.perform_scan",
-            verbose_level=3
-        )
-
         matpb, matpf = None, False
         # Loop over the non-parallel parameter(s)
         for count, scanp in enumerate(scanp_ls):
@@ -181,7 +174,7 @@ class BufferedScanner(object):
     def perform_scan(self, cores=1):
         start_time = time()
         print_info(
-            "Running parameter scan for {}.".format(self._sModel),
+            "Running scan for {}.".format(self._sModel),
             "acropolis.scans.BufferedScanner.perform_scan",
             verbose_level=3
         )
@@ -192,7 +185,22 @@ class BufferedScanner(object):
             #   ...1. looping over the 'parallel' parameter (map)
             #   ...2. looping over all parameter combinations,
             #   thereby exclusing the 'parallel' parameter (perform_non_parallel_scan)
-            parallel_results = pool.map(self._perform_non_parallel_scan, self._sScanp[self._sPP_id], 1)
+            async_results = pool.map_async(
+                self._perform_non_parallel_scan, self._sScanp[self._sPP_id], 1
+            )
+
+            progress = 0
+            while ( progress < 100 ) or ( not async_results.ready() ):
+                progress = 100*( self._sNt - async_results._number_left )/self._sNt
+                print_info(
+                    "Progress: {:.1f}%".format(progress),
+                    "acropolis.scans.BufferedScanner.perform_scan",
+                    eol="\r", verbose_level=3
+                )
+
+                sleep(2)
+
+            parallel_results = async_results.get()
             pool.terminate()
 
         parallel_results = np.array(parallel_results)
@@ -201,7 +209,7 @@ class BufferedScanner(object):
 
         end_time = time()
         print_info(
-            "Finished after {:.1f}s.".format(end_time - start_time),
+            "Finished after {:.1f}min.".format( (end_time - start_time)/60 ),
             "acropolis.scans.BufferedScanner.perform_scan",
             verbose_level=3
         )

@@ -442,8 +442,9 @@ class NuclearReactor(object):
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
         for i, Ti in enumerate(Tr):
+            progress = 100*i/NT
             print_info(
-                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
+                "Progress: {:.1f}%".format(progress),
                 "acropolis.nucl.NuclearReactor.get_pdi_grids",
                 eol="\r", verbose_level=1
             )
@@ -548,8 +549,10 @@ class MatrixGenerator(object):
             # Columns: Loop over all relevant nuclei
             for nc in range(_nnuc):
                 nt += 1
+
+                progress = 100*nt/_nnuc**2
                 print_info(
-                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%",
+                    "Progress: {:.1f}%".format(progress),
                     "acropolis.nucl.MatrixGenerator.get_matp",
                     eol="\r", verbose_level=1
                 )
@@ -585,8 +588,9 @@ class MatrixGenerator(object):
         all_mpdi = np.zeros( (NT, NY, NY) )
         all_mdcy = np.zeros( (NT, NY, NY) )
         for i, temp in enumerate(self._sTemp):
+            progress = 100*i/NT
             print_info(
-                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
+                "Progress: {:.1f}%".format(progress),
                 "acropolis.nucl.MatrixGenerator.get_all_matp",
                 eol="\r", verbose_level=2
             )
