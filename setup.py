@@ -4,7 +4,7 @@ from setuptools import setup
 from os import path
 
 # version
-from acropolis.info import version, url, authors, description
+from acropolis.info import version, description, url, authors
 
 # Read the README.md file
 cwd = path.abspath( path.dirname(__file__) )
