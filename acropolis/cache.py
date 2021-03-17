@@ -5,7 +5,7 @@ from functools import wraps
 def cached_member(f_uncached):
     # Define the cache as a dictionary
     cache = {}
-    cT = {"_": -1.}
+    Tc = {"_": -1.}
 
     # Define the wrapper function
     @wraps(f_uncached)
@@ -17,8 +17,8 @@ def cached_member(f_uncached):
 
         # For each new temperature,
         # clear the cache and start over
-        if T != cT["_"]:
-            cT["_"] = T
+        if T != Tc["_"]:
+            Tc["_"] = T
             cache.clear()
 
         if pargs not in cache:

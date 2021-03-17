@@ -7,6 +7,9 @@ from acropolis.params import verbose, debug
 from acropolis.info import version, dev_version, url
 
 
+_max_verbose_level = 1
+
+
 def print_version():
     if verbose == True:
         # Differentiate between stable and dev version
@@ -76,13 +79,14 @@ def print_warning(warning, loc="", eol="\n"):
     stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
 
 
-def print_info(info, loc="", eol="\n", verbose_flag=None):
-    if verbose_flag is None:
-        verbose_flag = verbose
+def print_info(info, loc="", eol="\n", verbose_level=1):
+    global _max_verbose_level
+
+    _max_verbose_level = max( _max_verbose_level, verbose_level )
 
     locf = ""
     if debug == True and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
-    if verbose_flag:
+    if verbose_level >= _max_verbose_level:
         stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
