@@ -44,7 +44,7 @@ class BufferedScanner(object):
         # a new instance of this class
         if not issubclass(model, AbstractModel):
             print_error(
-                str(model) + " is not a subclass of 'AbstractModel'",
+                model.__name__ + " is not a subclass of AbstractModel",
                 "acropolis.scans.BufferedScanner.__init__"
             )
 
