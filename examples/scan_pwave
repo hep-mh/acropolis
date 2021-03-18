@@ -10,7 +10,7 @@ from acropolis.models import AnnihilationModel
 # scans
 from acropolis.scans import ScanParameter, BufferedScanner
 # pprint
-from acropolis.pprint import print_version
+from acropolis.pprint import print_version, print_info
 
 # Print version information
 print_version()
@@ -31,5 +31,12 @@ scan_result = BufferedScanner(  AnnihilationModel,
                                 braa    = 0.
                              ).perform_scan(cores=-1)
 
+# ...specify the output-file...
+results_filefile = 'annih_pwave_Tkd_{:.0e}MeV.dat'.format(Tkd)
 # ...and save the results
-np.savetxt('annih_pwave_Tkd_{:.0e}MeV.dat'.format(Tkd), scan_result)
+np.savetxt(results_file, scan_result)
+
+# Finally print the output-file location
+print_info(
+    "Results have been written to {}.".format(results_file)
+)
