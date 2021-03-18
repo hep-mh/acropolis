@@ -52,7 +52,7 @@ class AbstractModel(ABC):
         # Print a warning if the temperature range
         # of the model is not covered by the data
         # in cosmo_file.dat
-        cf_temp_rg = self._sII.cf_temperature_range()
+        cf_temp_rg = self._sII.cosmo_range()
         if not (cf_temp_rg[0] <= self._sTrg[0] <= self._sTrg[1] <= cf_temp_rg[1]):
             print_warning(
                 "Temperature range not covered by input data. Results cannot be trusted.",

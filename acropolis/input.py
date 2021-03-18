@@ -140,10 +140,6 @@ class InputInterface(object):
             )
 
 
-    def cf_temperature_range(self):
-        return ( min(self._sCosmoData[:,1]), max(self._sCosmoData[:,1]) )
-
-
     # 1. COSMO_DATA ###########################################################
 
     def _find_index(self, x, x0):
@@ -205,6 +201,10 @@ class InputInterface(object):
 
     def cosmo_column(self, yc, val, xc=1):
         return self._interp_cosmo_data(val, xc, yc)
+
+
+    def cosmo_range(self):
+        return ( min(self._sCosmoData[:,1]), max(self._sCosmoData[:,1]) )
 
 
     # 2. ABUNDANCE_DATA #######################################################
