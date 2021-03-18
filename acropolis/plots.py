@@ -14,6 +14,9 @@ plt.rc('font', family='serif', size=14)
 plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{mathpazo}'
 
 
+_plot_number = 0
+
+
 def _get_abundances(data, i):
     i0 = i + 2
 
@@ -67,10 +70,29 @@ def _get_deviations(data):
     return Yp, DH, HeD, LiH
 
 
-def plot_scan_results(data, save_pdf=True, show_fig=False):
+def plot_scan_results(data, output_file=None, save_pdf=True, show_fig=False):
+    global _plot_number
+
     # If data is a filename, load the data first
     if type(data) == str:
         data = np.loadtxt(data)
 
-    # Calculate the relevant deviations
+    # Get the set of input parameters
+    x, y = data[:,0], data[:,1]
+
+    # Calculate the corresponding deviations
     Yp, DH, HeD, LiH = _get_deviations(data)
+
+    # TODO
+
+    if save_pdf == True:
+        # If no name for the output file is given
+        # simply enumerate the different plots
+        if output_file is None:
+            output_file = 'acropolis_plot_{}.pdf'.format(_plot_number)
+            _plot_number += 1
+
+        plt.savefig(output_file)
+
+    if show_fig == True:
+        plt.show()
