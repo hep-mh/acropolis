@@ -79,8 +79,11 @@ def print_warning(warning, loc="", eol="\n"):
     stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
 
 
-def print_info(info, loc="", eol="\n", verbose_level=1):
+def print_info(info, loc="", eol="\n", verbose_level=None):
     global _max_verbose_level
+
+    if verbose_level is None:
+        verbose_level = _max_verbose_level
 
     _max_verbose_level = max( _max_verbose_level, verbose_level )
 
@@ -90,3 +93,12 @@ def print_info(info, loc="", eol="\n", verbose_level=1):
 
     if verbose_level >= _max_verbose_level:
         stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
+
+
+def set_max_verbose_level(max_verbose_level=None):
+    global _max_verbose_level
+
+    if max_verbose_level is None:
+        max_verbose_level = 1
+
+    _max_verbose_level = max_verbose_level

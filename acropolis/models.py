@@ -64,7 +64,8 @@ class AbstractModel(ABC):
         if self._sE0 <= Emin:
             print_info(
                 "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractModel.run_disintegration"
+                "acropolis.models.AbstractModel.run_disintegration",
+                verbose_level=1
             )
             return self._squeeze_decays( self._sII.bbn_abundances() )
 
