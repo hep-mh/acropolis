@@ -86,6 +86,27 @@ _eth = {
     16:  5.605794,
     17:  9.304680
 }
+# A dictionary containing the theoretical errors for
+# the different reaction rates taken from 2006.14803
+_ucts = {
+    1:  0.06,
+    2:  0.14,
+    3:  0.07,
+    4:  0.10,
+    5:  0.15,
+    6:  0.04,
+    7:  0.05,
+    8:  0.00,
+    9:  0.14,
+    10: 0.00,
+    11: 0.00,
+    12: 0.00,
+    13: 0.04,
+    14: 0.00,
+    15: 0.09,
+    16: 0.04,
+    17: 0.09
+}
 
 
 # A dictionary containing all relevant decays
