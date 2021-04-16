@@ -1,10 +1,10 @@
 <li><a href="/">Home</a></li>
 <li><a href="/downloads">Downloads</a></li>
-<li><a href="https://github.com/skumblex/acropolis">GitHub</a>
+<li><a href="https://github.com/hep-mh/acropolis">GitHub</a>
     <ul>
-        <li><a href="https://github.com/skumblex/acropolis/releases">Releases</a></li>
-        <li><a href="https://github.com/skumblex/acropolis/blob/main/manual/manual.pdf">Manual</a></li>
-        <li><a href="https://github.com/skumblex/acropolis/tree/dev">Dev Branch</a></li>
+        <li><a href="https://github.com/hep-mh/acropolis/releases">Releases</a></li>
+        <li><a href="https://github.com/hep-mh/acropolis/blob/main/manual/manual.pdf">Manual</a></li>
+        <li><a href="https://github.com/hep-mh/acropolis/tree/dev">Dev Branch</a></li>
     </ul>
 </li>
 <li><a href="https://pypi.org/project/ACROPOLIS/">PyPI</a>
