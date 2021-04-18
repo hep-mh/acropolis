@@ -87,25 +87,27 @@ _eth = {
     17:  9.304680
 }
 # A dictionary containing the theoretical errors for
-# the different reaction rates taken from 2006.14803
-_ucts = {
-    1:  0.06,
-    2:  0.14,
-    3:  0.07,
-    4:  0.10,
-    5:  0.15,
-    6:  0.04,
-    7:  0.05,
+# the different reaction rates (taken from 2006.14803)
+# in terms of a relative deviation from the mean value
+# 8 (He4->d+d); 10, 11; (Li6->...); 12, 14 ((Li7->...)
+_rdev = {
+    1:  0.00,
+    2:  0.00,
+    3:  0.00,
+    4:  0.00,
+    5:  0.00,
+    6:  0.00,
+    7:  0.00,
     8:  0.00,
-    9:  0.14,
+    9:  0.00,
     10: 0.00,
     11: 0.00,
     12: 0.00,
-    13: 0.04,
+    13: 0.00,
     14: 0.00,
-    15: 0.09,
-    16: 0.04,
-    17: 0.09
+    15: 0.00,
+    16: 0.00,
+    17: 0.00
 }
 
 

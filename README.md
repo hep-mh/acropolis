@@ -74,7 +74,7 @@ If any dependencies of ACROPOLIS conflict with those for other programs in your 
 To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
 
 ```
-git clone https://github.com/skumblex/acropolis.git
+git clone https://github.com/hep-mh/acropolis.git
 ```
 
 Afterward, switch into the newly created main directory and run
