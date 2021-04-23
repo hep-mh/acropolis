@@ -20,7 +20,7 @@ from acropolis.params import NY
 from acropolis.pprint import print_info, print_warning
 
 
-def _source_photon_fsr_0(E0):
+def _source_photon_cfsr(E0):
     y = me2/(4.*E0**2.)
 
     return alpha*( 9.*y + y**3. - 12.*log(y) - 10. )/(18.*pi)
@@ -239,7 +239,7 @@ class DecayModel(AbstractModel):
         self._sBRaa = braa
 
         # The integrated photon fsr source term
-        self._sFsr0 = _source_photon_fsr_0(self._sE0)
+        self._sCfsr = _source_photon_cfsr(self._sE0)
 
         # Call the super constructor
         super(DecayModel, self).__init__(self._sE0, self._sII)
@@ -280,7 +280,7 @@ class DecayModel(AbstractModel):
 
     def _source_electron_0(self, T):
         return self._sBRee * self._number_density(T) * (hbar/self._sTau) \
-                 * ( 1. - self._sFsr0 )
+                 * ( 1. - self._sCfsr )
 
 
     def _source_photon_c(self, E, T):
@@ -321,7 +321,7 @@ class AnnihilationModel(AbstractModel):
         self._sBRaa  = braa
 
         # The integrated photon fsr source term
-        self._sFsr0 = _source_photon_fsr_0(self._sE0)
+        self._sCfsr = _source_photon_cfsr(self._sE0)
 
         # The density parameter of dark matter
         self._sOmgh2 = omegah2
@@ -380,7 +380,7 @@ class AnnihilationModel(AbstractModel):
 
     def _source_electron_0(self, T):
         return self._sBRee * .5 * (self._number_density(T)**2.) * self._sigma_v(T) \
-                 * ( 1. - self._sFsr0 )
+                 * ( 1. - self._sCfsr )
 
 
     def _source_photon_c(self, E, T):
