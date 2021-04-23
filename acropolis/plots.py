@@ -167,7 +167,7 @@ def plot_scan_results(data, output_file=None,
     # Calculate the abundance deviations
     Yp, DH, HeD, LiH = _get_deviations(data)
 
-    # Reshape the data...
+    # Reshape the input data...
     x   =   x.reshape(shape)
     y   =   y.reshape(shape)
     # ...and the deviation arrays
@@ -201,7 +201,7 @@ def plot_scan_results(data, output_file=None,
     )
     # Helium-3 (filled)
     ax.contourf(np.log10(x), np.log10(y), HeD,
-        levels=[_95cl, cut], # Only use as an upper limit
+        levels=[_95cl, cut], # Only use He3/D as an upper limit
         colors=['mediumseagreen'],
         alpha=0.2
     )
@@ -246,7 +246,7 @@ def plot_scan_results(data, output_file=None,
         plt.savefig(output_file)
 
         print_info(
-            "The requested figure has been saved as '{}'".format(output_file),
+            "Figure has been saved as '{}'".format(output_file),
             "acropolis.plot.plot_scan_results"
         )
 
