@@ -8,6 +8,8 @@ from matplotlib.ticker import FixedLocator, FixedFormatter
 # warnings
 import warnings
 
+# pprint
+from acropolis.pprint import print_info
 # params
 from acropolis.params import NY
 
@@ -24,7 +26,7 @@ _plot_number = 0
 
 # The number of sigmas at which a
 # point is considered excluded
-_sig = 1.95996
+_95cl = 1.95996 # 95% C.L.
 
 
 def _get_abundances(data, i):
@@ -101,8 +103,7 @@ def init_figure():
 
 
 def set_tick_labels(ax, x, y):
-    def nint(val):
-        return ceil(val) if val >= 0 else floor(val)
+    nint = lambda val: ceil(val) if val >= 0 else floor(val)
 
     xmin, xmax = np.min(x), np.max(x)
     ymin, ymax = np.min(y), np.max(y)
@@ -144,7 +145,9 @@ def set_tick_labels(ax, x, y):
     ax.set_ylim(ymin_log, ymax_log)
 
 
-def plot_scan_results(data, output_file=None, title='', labels=['', ''], save_pdf=True, show_fig=False):
+def plot_scan_results(data, output_file=None,
+                      title='', labels=('', ''),
+                      save_pdf=True, show_fig=False):
     global _plot_number
 
     # If data is a filename, load the data first
@@ -186,42 +189,42 @@ def plot_scan_results(data, output_file=None, title='', labels=['', ''], save_pd
     cut = 1e10
     # Deuterium (filled)
     ax.contourf(np.log10(x), np.log10(y), DH,
-        levels=[-cut, -_sig, _sig, cut],
+        levels=[-cut, -_95cl, _95cl, cut],
         colors=['0.6','white', 'tomato'],
         alpha=0.2
     )
     # Helium-4 (filled)
     ax.contourf(np.log10(x), np.log10(y), Yp,
-        levels=[-cut, -_sig, _sig, cut],
+        levels=[-cut, -_95cl, _95cl, cut],
         colors=['dodgerblue','white', 'lightcoral'],
         alpha=0.2
     )
     # Helium-3 (filled)
     ax.contourf(np.log10(x), np.log10(y), HeD,
-        levels=[_sig, cut], # Only use as an upper limit
+        levels=[_95cl, cut], # Only use as an upper limit
         colors=['mediumseagreen'],
         alpha=0.2
     )
 
     # Deuterium low (line)
     ax.contour(np.log10(x), np.log10(y), DH,
-        levels=[-_sig], colors='0.6', linestyles='-'
+        levels=[-_95cl], colors='0.6', linestyles='-'
     )
     # Deuterium high (line)
     ax.contour(np.log10(x), np.log10(y), DH,
-        levels=[_sig], colors='tomato', linestyles='-'
+        levels=[_95cl], colors='tomato', linestyles='-'
     )
     # Helium-4 low (line)
     ax.contour(np.log10(x), np.log10(y), Yp,
-        levels=[-_sig], colors='dodgerblue', linestyles='-'
+        levels=[-_95cl], colors='dodgerblue', linestyles='-'
     )
     # Helium-3 high (line)
     ax.contour(np.log10(x), np.log10(y), HeD,
-        levels=[_sig], colors='mediumseagreen', linestyles='-'
+        levels=[_95cl], colors='mediumseagreen', linestyles='-'
     )
     # Overall high/low (line)
     ax.contour(np.log10(x), np.log10(y), max,
-        levels=[_sig], colors='black', linestyles='-'
+        levels=[_95cl], colors='black', linestyles='-'
     )
 
     # Set the title...
@@ -241,6 +244,11 @@ def plot_scan_results(data, output_file=None, title='', labels=['', ''], save_pd
             _plot_number += 1
 
         plt.savefig(output_file)
+
+        print_info(
+            "The requested figure has been saved as '{}'".format(output_file),
+            "acropolis.plot.plot_scan_results"
+        )
 
     if show_fig == True:
         plt.show()
