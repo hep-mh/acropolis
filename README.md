@@ -27,10 +27,21 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
+v1.3\
+(In development)
+ - For the models in ``acropolis.models``, the contribution from final-state radiation of photons now also gets substracted from the monochromatic source terms of electrons and positrons. The corrections are similar in size as the ones from tritium and neutron decays: small but nice to have. ;)
+ - Added an option (via the parameter ``FX`` in ``acropolis.params``) to only consider photons in the electromagnetic cascade. This mode is faster by roughly a factor 20, but not always applicable.
+ - Made some initial plotting functions available in ``acropolis.plots``, which -- right now -- can be used to easily plot the results of parameter scans
+ - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
+ - Updated the neutron lifetime to the PDG 2020 recommended value
+ - Included some example files for e.g. scans in the directory examples/
+ - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to
+ generate the file ``abundance_file.dat`` for sm.tar.gz
+
 v1.2.1\
 (February 16, 2021)
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
- - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explcitly, we used ``failsafe=12``)
+ - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explicitly, we used ``failsafe=12``)
 
 v1.2\
 (January 15, 2021)
@@ -43,7 +54,7 @@ v1.2\
 v1.1\
 (December 1, 2020)
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
- - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
+ - By including additional JIT compilation steps, the runtime without database files was drastically decreased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (&#x223C;900MB &#x2192; &#x223C;20MB)
  - Fixed a bug, which could lead to NaNs when calculating heavily suppressed spectra with E<sub>0</sub> &#x226B; me<sup>2</sup>/(22T)
  - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ``ACROPOLIS``
