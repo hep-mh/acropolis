@@ -20,6 +20,7 @@ from acropolis.pprint import print_warning, print_error
 # params
 from acropolis.params import me, me2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
+from acropolis.params import FX
 from acropolis.params import Emin
 from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
 from acropolis.params import NE_pd, NE_min
@@ -685,7 +686,7 @@ class SpectrumGenerator(object):
             2: _PositronReactionWrapper(self._sY0, eta, db)
         }
 
-        self._sNX = 3   # The number of particle species (in the cascade)
+        self._sNX = 1 + 2*FX   # The number of particle species (in the cascade)
 
 
     def _rate_x(self, X, E, T):

@@ -82,15 +82,23 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
-# The number of elements/isotops that
-# are considered in the calculation
+# A specifier to descide which particles
+# are considered in the Boltzmann equation
+# for the electromagnetic cascade
+# 0: Photons
+# 1: Photons, Electrons/Positrons
+FX = 1
+
+# The number of nuclei that are
+# considered in the Boltzmann equation
+# for non-thermal nucleosynthesis
 NY = 9
 
 # The number of mandatory columns in
 # 'cosmo_file.dat'
 NC = 5
 
-# Minimum energy for the different spectra (in MeV)
+# The minimum energy for the different spectra (in MeV)
 # This value should not be larger than the minimal
 # nucleon-interaction threshold of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
