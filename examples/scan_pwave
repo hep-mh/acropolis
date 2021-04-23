@@ -25,7 +25,7 @@ N = 200
 scan_result = BufferedScanner(  AnnihilationModel,
                                 mchi    = ScanParameter(  0,   3, N),
                                 a       = 0.,
-                                b       = ScanParameter(-20, -10, N, fast=True),
+                                b       = ScanParameter(-21, -10, N, fast=True),
                                 tempkd  = Tkd,
                                 bree    = 1.,
                                 braa    = 0.
