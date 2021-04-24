@@ -34,7 +34,7 @@ v1.3\
  - Made some initial plotting functions available in ``acropolis.plots``, which -- right now -- can be used to easily plot the results of parameter scans
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
  - Updated the neutron lifetime to the PDG 2020 recommended value
- - Included some example files for e.g. scans in the directory examples/
+ - Included some example files, e.g. for parameter scans, in the directory examples/
  - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to
  generate the file ``abundance_file.dat`` for sm.tar.gz
 

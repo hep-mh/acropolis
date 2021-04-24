@@ -6,7 +6,7 @@ import sys; sys.path.append('..')
 import numpy as np
 
 # models
-from acropolis.models import AnnihilationModel
+from acropolis.models import DecayModel
 # scans
 from acropolis.scans import ScanParameter, BufferedScanner
 # pprint
@@ -15,21 +15,24 @@ from acropolis.pprint import print_version
 # Print version information
 print_version()
 
+# Set/Extract the mass of the mediator
+mphi = float( sys.argv[1] ) if len( sys.argv ) != 1 else 50
+
 # Define the number of points
 N = 200
 
 # Perform the scan...
-scan_result = BufferedScanner(  AnnihilationModel,
-                                mchi    = ScanParameter(  0,   3, N),
-                                a       = ScanParameter(-27, -18, N, fast=True),
-                                b       = 0.,
-                                tempkd  = 0.,
-                                bree    = 1.,
-                                braa    = 0.
+scan_result = BufferedScanner(  DecayModel,
+                                mphi  = mphi,
+                                tau   = ScanParameter(3, 10, 200),
+                                temp0 = 10.,
+                                n0a   = ScanParameter(-15, -3, 200, fast=True),
+                                bree  = 0.,
+                                braa  = 1.
                              ).perform_scan(cores=-1)
 
 # ...specify the output-file...
-results_file = 'annih_swave.dat'
+results_file = 'decay_mphi_{:.0e}MeV_aa.dat'.format(mphi)
 # ...and save the results
 np.savetxt(results_file, scan_result)
 
