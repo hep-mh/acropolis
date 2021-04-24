@@ -145,11 +145,26 @@ def set_tick_labels(ax, x, y):
     ax.set_ylim(ymin_log, ymax_log)
 
 
+def save_figure(output_file=None):
+    global _plot_number
+
+    # If no name for the output file is given
+    # simply enumerate the different plots
+    if output_file is None:
+        output_file = 'acropolis_plot_{}.pdf'.format(_plot_number)
+        _plot_number += 1
+
+    plt.savefig(output_file)
+
+    print_info(
+        "Figure has been saved as '{}'".format(output_file),
+        "acropolis.plot.plot_scan_results"
+    )
+
+
 def plot_scan_results(data, output_file=None,
                       title='', labels=('', ''),
                       save_pdf=True, show_fig=False):
-    global _plot_number
-
     # If data is a filename, load the data first
     if type(data) == str:
         data = np.loadtxt(data)
@@ -237,18 +252,7 @@ def plot_scan_results(data, output_file=None,
     plt.tight_layout()
 
     if save_pdf == True:
-        # If no name for the output file is given
-        # simply enumerate the different plots
-        if output_file is None:
-            output_file = 'acropolis_plot_{}.pdf'.format(_plot_number)
-            _plot_number += 1
-
-        plt.savefig(output_file)
-
-        print_info(
-            "Figure has been saved as '{}'".format(output_file),
-            "acropolis.plot.plot_scan_results"
-        )
+        save_figure(output_file)
 
     if show_fig == True:
         plt.show()
