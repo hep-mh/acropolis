@@ -38,5 +38,5 @@ np.savetxt(results_file, scan_result)
 
 # Finally, print the output-file location
 print_info(
-    "Results have been written to {}.".format(results_file)
+    "Results have been written to '{}'.".format(results_file)
 )
