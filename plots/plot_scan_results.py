@@ -19,18 +19,59 @@ tau_tex  = r'$\tau_\phi\;[\mathrm{s}]$'
 n0a_tex  = r'$(n_\phi/n_\gamma)|_{T=T_0}$'
 
 
-# r'$b = 0,\;T_\text{kd}=0,\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 0$'
-# r'$a = 0,\;T_\text{kd}=1\;\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 0$'
-# r"$\tau_\phi = 10^7\,\mathrm{s},\;T_0=10\,\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 1$"
-# r'$m_\phi = 50\,\mathrm{MeV},\;T_0=10\,\mathrm{MeV},\;\text{BR}_{\gamma\gamma}=1-\text{BR}_{e^+e^-} = 1$'
-
-
 def _build_annih_title(mchi=None, a=None, b=None, tempkd=None, braa=None):
-    return r''
+    eof = r',\;'
+
+    # Build the title
+    title = r'$'
+
+    if a is not None:
+        title += r'a = ' + str(a) + (r'\,\mathrm{cm^3/s}' if a != 0 else r'') + eof
+
+    if b is not None:
+        title += r'b = ' + str(b) + (r'\,\mathrm{cm^3/s}' if b != 0 else r'') + eof
+
+    if mchi is not None:
+        title += r'm_\chi = ' + str(mchi) + (r'\,\mathrm{MeV}' if mchi != 0 else r'') + eof
+
+    if tempkd is not None:
+        title += r'T_\text{kd} = ' + str(tempkd) + (r'\,\mathrm{MeV}' if tempkd != 0 else r'') + eof
+
+    if braa is not None:
+        title += r'\text{BR}_{\gamma\gamma} = 1-\text{BR}_{e^+e^-} = ' + str(braa) + eof
+
+    if title.endswith(eof):
+        title = title[:-len(eof)]
+
+    return title + '$'
 
 
 def _build_decay_title(mphi=None, tau=None, temp0=None, n0a=None, braa=None):
-    return r''
+    eof = r',\;'
+
+    # Build the title
+    title = r'$'
+
+    if mphi is not None:
+        title += r'm_\phi = ' + str(mphi) + (r'\,\mathrm{MeV}' if mphi != 0 else r'') + eof
+
+    if tau is not None:
+        title += r'\tau_\phi = 10^' + str(tau) + (r'\,\mathrm{s}' if tau != 0 else r'') + eof
+
+    if temp0 is not None:
+        title += r'T_0 = ' + str(temp0) + (r'\,\mathrm{MeV}' if temp0 != 0 else r'') + eof
+
+    if n0a is not None:
+        title += r'(n_\phi/n_\gamma)|_{T=T_0} = ' + str(n0a) + eof
+
+    if braa is not None:
+        title += r'\text{BR}_{\gamma\gamma} = 1-\text{BR}_{e^+e^-} = ' + str(braa) + eof
+
+
+    if title.endswith(eof):
+        title = title[:-len(eof)]
+
+    return title + '$'
 
 
 plot_scan_results(
@@ -47,7 +88,7 @@ plot_scan_results(
 
 plot_scan_results(
     'data/decay_1e7s_aa.dat', output_file='decay_1e7s_aa.pdf',
-    title=_build_decay_title(tau=1e7, temp0=10, braa=1), labels=(mphi_tex, n0a_tex)
+    title=_build_decay_title(tau=7, temp0=10, braa=1), labels=(mphi_tex, n0a_tex)
 )
 
 
