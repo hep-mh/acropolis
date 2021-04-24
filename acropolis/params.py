@@ -91,8 +91,9 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 # A specifier to descide which particles
 # are considered in the Boltzmann equation
 # for the electromagnetic cascade
-# 0: Photons
+# 0: Photons (do not use; invalid results!!!)
 # 1: Photons, Electrons/Positrons
+# 2: Photons, Electrons/Positrons, Anti-/Muons (not yet implemented)
 FX = 1
 
 # The number of nuclei that are
