@@ -75,26 +75,30 @@ def _build_decay_title(mphi=None, tau=None, temp0=None, n0a=None, braa=None):
     return title + '$'
 
 
+# Set the data directory
+dir = 'data/'
+
+
 plot_scan_results(
-    'data/annih_swave_ee.dat', output_file='annih_swave_ee.pdf',
+    dir + 'annih_swave_ee.dat', output_file='annih_swave_ee.pdf',
     title=_build_annih_title(b=0, tempkd=0, braa=0), labels=(mchi_tex, a_tex)
 )
 
 
 plot_scan_results(
-    'data/annih_pwave_Tkd_1e+00MeV_ee.dat', output_file='annih_pwave_1e0MeV_ee.pdf',
+    dir + 'annih_pwave_Tkd_1e+00MeV_ee.dat', output_file='annih_pwave_1e0MeV_ee.pdf',
     title=_build_annih_title(a=0, tempkd=1, braa=0), labels=(mchi_tex, b_tex)
 )
 
 
 plot_scan_results(
-    'data/decay_tau_1e+07s_aa.dat', output_file='decay_1e7s_aa.pdf',
+    dir + 'decay_tau_1e+07s_aa.dat', output_file='decay_1e7s_aa.pdf',
     title=_build_decay_title(tau=7, temp0=10, braa=1), labels=(mphi_tex, n0a_tex)
 )
 
 
 _, ax = plot_scan_results(
-    'data/decay_mphi_5e+01MeV_aa.dat', output_file=None, save_pdf=False,
+    dir + 'decay_mphi_5e+01MeV_aa.dat', output_file=None, save_pdf=False,
     title=_build_decay_title(mphi=50, temp0=10, braa=1) ,labels=(tau_tex, n0a_tex)
 )
 
