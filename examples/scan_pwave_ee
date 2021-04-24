@@ -32,7 +32,7 @@ scan_result = BufferedScanner(  AnnihilationModel,
                              ).perform_scan(cores=-1)
 
 # ...specify the output-file...
-results_file = 'annih_pwave_Tkd_{:.0e}MeV.dat'.format(tempkd)
+results_file = 'annih_pwave_Tkd_{:.0e}MeV_ee.dat'.format(tempkd)
 # ...and save the results
 np.savetxt(results_file, scan_result)
 
