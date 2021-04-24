@@ -10,7 +10,7 @@ from acropolis.models import DecayModel
 # scans
 from acropolis.scans import ScanParameter, BufferedScanner
 # pprint
-from acropolis.pprint import print_version
+from acropolis.pprint import print_version, print_info
 
 # Print version information
 print_version()
