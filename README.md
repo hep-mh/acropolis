@@ -29,7 +29,6 @@ The remarkable agreement between observations of the primordial light element ab
 
 v1.3\
 (In development)
- - For the models in ``acropolis.models``, the contribution from final-state radiation of photons now also gets substracted from the monochromatic source terms of electrons and positrons. The corrections are similar in size as the ones from tritium and neutron decays: small but nice to have. ;)
  - Made some initial plotting functions available in ``acropolis.plots``, which -- right now -- can be used to easily plot the results of parameter scans
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
  - Updated the neutron lifetime to the PDG 2020 recommended value

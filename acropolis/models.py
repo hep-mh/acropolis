@@ -20,12 +20,6 @@ from acropolis.params import NY
 from acropolis.pprint import print_info, print_warning
 
 
-# def _source_photon_cfsr(E0):
-#     y = me2/(4.*E0**2.)
-#
-#     return alpha*( 9.*y + y**3. - 12.*log(y) - 10. )/(18.*pi)
-
-
 class AbstractModel(ABC):
 
     def __init__(self, e0, ii):
