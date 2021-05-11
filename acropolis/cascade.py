@@ -700,45 +700,6 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def universal_spectrum(self, E0, S0, Sc, T):
-        # Define EC and EX as in 'astro-ph/0211258'
-        EC = me2/(22.*T)
-        EX = me2/(80.*T)
-
-        # Define the normalization K0 as in 'astro-ph/0211258'
-        K0 = E0/( (EX**2.) * ( 2. + log( EC/EX ) ) )
-
-        # Define the dimension of the grid
-        # as defined in 'params.py'...
-        NE = int(log10(E0/Emin)*NE_pd)
-        # ... but not less than NE_min points
-        NE = max(NE, NE_min)
-
-        # Generate the grid for the energy
-        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
-        # Generate the grid for the photon spectrum
-        F_rt = np.zeros(NE)
-
-        # Calculate the spectrum for the different energies
-        S0N = lambda T: sum( S0i(T) for S0i in S0 )
-        for i, E in enumerate(E_rt):
-            if E < EX:
-                F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
-            elif E > EX and E < EC:
-                F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
-
-        # Remove potential zeros
-        F_rt[F_rt < approx_zero] = approx_zero
-
-        # Define the result array...
-        res = np.zeros( (2, NE) )
-        # ...and fill it
-        res[0, :] = E_rt
-        res[1, :] = F_rt
-
-        return res
-
-
     def nonuniversal_spectrum(self, E0, S0, Sc, T, allX=False):
         # Define the dimension of the grid
         # as defined in 'params.py'...
