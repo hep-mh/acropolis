@@ -396,7 +396,7 @@ class NuclearReactor(object):
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
-        xsp, ysp = self._sGen.nonuniversal_spectrum(
+        xsp, ysp = self._sGen.get_spectrum(
                             self._sE0, self._sS0, self._sSc, T
                         )
 

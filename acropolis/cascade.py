@@ -700,7 +700,7 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def nonuniversal_spectrum(self, E0, S0, Sc, T, allX=False):
+    def get_spectrum(self, E0, S0, Sc, T, allX=False):
         # Define the dimension of the grid
         # as defined in 'params.py'...
         NE = int(log10(E0/Emin)*NE_pd)
