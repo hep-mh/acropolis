@@ -649,7 +649,6 @@ class _PositronReactionWrapper(object):
 
 
 class _MuonReactionWrapper(_ReactionWrapperScaffold): # TODO
-    pass
 
     # RATES ###################################################################
     # E is the energy of the incoming particle
@@ -677,15 +676,18 @@ class SpectrumGenerator(object):
         # no data in the folder 'data/', db = (None, None)
         db = import_data_from_db()
 
-        self._sY0 = Y0  # A dictionary containing the BBN parameter
+        # Define a dictionary containing the BBN parameter
+        self._sY0 = Y0
 
-        self._sRW = {   # A dictionary containing all reaction wrappers
+        # Define a dictionary containing all reaction wrappers
+        self._sRW = {
             0: _PhotonReactionWrapper  (self._sY0, eta, db),
             1: _ElectronReactionWrapper(self._sY0, eta, db),
             2: _PositronReactionWrapper(self._sY0, eta, db)
         }
 
-        self._sNX = 1 + 2*FX   # The number of particle species (in the cascade)
+         # Set the number of particle species (in the cascade)
+        self._sNX = 1 + 2*FX
 
 
     def _rate_x(self, X, E, T):

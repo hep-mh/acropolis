@@ -316,6 +316,7 @@ class AnnihilationModel(AbstractModel):
         # Call the super constructor
         super(AnnihilationModel, self).__init__(self._sE0, self._sII)
 
+
     # DEPENDENT QUANTITIES ##############################################################
 
     def _number_density(self, T):
