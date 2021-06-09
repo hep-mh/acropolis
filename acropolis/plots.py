@@ -19,7 +19,7 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif', size=14)
 
 # Include additional latex packages
-plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{mathpazo}'
+plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
 
 
 _plot_number = 0
