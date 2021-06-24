@@ -91,24 +91,30 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 # A specifier to descide which particles
 # are considered in the Boltzmann equation
 # for the electromagnetic cascade
-# 0: Photons (do not use; invalid results!!!)
+# ATTENTION: Do not use a value that does
+# not include all injected particle types
+# 0: Photons
 # 1: Photons, Electrons/Positrons
 # 2: Photons, Electrons/Positrons, Anti-/Muons (not yet implemented)
+# Default: 1
 FX = 1
 
 # The number of nuclei that are
 # considered in the Boltzmann equation
 # for non-thermal nucleosynthesis
+# Default: 9
 NY = 9
 
 # The number of mandatory columns in
 # 'cosmo_file.dat'
+# Default: 5
 NC = 5
 
 # The minimum energy for the different spectra (in MeV)
 # This value should not be larger than the minimal
 # nucleon-interaction threshold of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
+# Default: 1.5
 Emin = 1.5
 
 # The value that is used for 'approximately' zero
