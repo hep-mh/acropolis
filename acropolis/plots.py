@@ -174,8 +174,8 @@ def plot_scan_results(data, output_file=None,
 
     # ...and determine the shape of the data
     N  = len(x)
-    Nx = (x == x[0]).sum()
-    Ny = N//Nx
+    Ny = (x == x[0]).sum()
+    Nx = N//Ny
 
     shape = (Nx, Ny)
 
