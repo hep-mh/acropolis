@@ -168,7 +168,7 @@ def _JIT_set_spectra(F, i, Fi, cond):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
+def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
     EC   = me2/(22.*T)
     Ecut = E_EC_cut*EC
 
@@ -181,7 +181,7 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
 
     # Generate the grid for the different spectra
     # First index: X = photon, electron, positron
-    F_rt = np.zeros( (3, NE) )
+    F_rt = np.zeros( (NX, NE) )
 
     # Calculate F_X(E_S), NE-1
     _JIT_set_spectra(F_rt, -1, np.array([
@@ -216,17 +216,17 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
         i -= 1
 
     # Remove potential zeros
-    F_rt = F_rt.reshape( 3*NE )
+    F_rt = F_rt.reshape( NX*NE )
     for i, f in enumerate(F_rt):
         if f < approx_zero:
             F_rt[i] = approx_zero
-    F_rt = F_rt.reshape( (3, NE) )
+    F_rt = F_rt.reshape( (NX, NE) )
 
     # Define the result array...
-    res = np.zeros( (4, NE) )
+    res = np.zeros( (NX+1, NE) )
     # ...and fill it
-    res[0  , :] = E_rt
-    res[1:4, :] = F_rt
+    res[0     , :] = E_rt
+    res[1:NX+1, :] = F_rt
 
     return res
 
@@ -730,6 +730,7 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T)
+        res = _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T)
 
+        # 'res' always has at least two columns
         return res[0:2,:] if allX == False else res
