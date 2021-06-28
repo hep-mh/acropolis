@@ -24,9 +24,9 @@ N = 200
 # Perform the scan...
 scan_result = BufferedScanner(  DecayModel,
                                 mphi  = mphi,
-                                tau   = ScanParameter(3, 10, 200),
+                                tau   = ScanParameter(  3, 10, N),
                                 temp0 = 10.,
-                                n0a   = ScanParameter(-15, -3, 200, fast=True),
+                                n0a   = ScanParameter(-15, -3, N, fast=True),
                                 bree  = 0.,
                                 braa  = 1.
                              ).perform_scan(cores=-1)
