@@ -194,19 +194,19 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
         a = np.zeros( (NX,   ) )
 
         # Calculate the matrix B and the vector a
-        for j, X in enumerate( range(NX) ):
+        for X in range(NX):
             # Calculate B
-            B[j,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
+            B[X,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
 
             # Calculate a
-            a[j] = Sc[X,i]/G[X,i]
+            a[X] = Sc[X,i]/G[X,i]
 
-            a0  = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
-            for k in range(i+1, NE-2):
-                a0 += dy*E_rt[k]*K[X,:,i,k]*F_rt[:,k]
+            a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
+            for j in range(i+1, NE-2):
+                a0 += dy*E_rt[k]*K[X,:,i,j]*F_rt[:,j]
 
-            for a0i in a0:
-                a[j] += a0i/G[X,i]
+            for a0X in a0:
+                a[X] += a0X/G[X,i]
 
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_rt, i,
