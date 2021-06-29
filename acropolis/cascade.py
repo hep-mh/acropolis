@@ -159,7 +159,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 # SpectrumGenerator ###########################################################
 
 @nb.jit(cache=True)
-def _JIT_set_spectra(F, i, Fi, cond):
+def _JIT_set_spectra(F, i, Fi, cond=False):
     F[:, i] = Fi
     # In the strongly compressed regime, manually
     # set the photon spectrum to zero in order to
@@ -169,9 +169,6 @@ def _JIT_set_spectra(F, i, Fi, cond):
 
 @nb.jit(cache=True)
 def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
-    EC   = me2/(22.*T)
-    Ecut = E_EC_cut*EC
-
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of points in energy.
@@ -186,7 +183,7 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
     # Calculate F_X(E_S), NE-1
     _JIT_set_spectra(F_rt, -1, np.array([
         Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
-    ]), E_rt[-1] > Ecut)
+    ]))
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
     while i >= 0:
@@ -202,8 +199,8 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
             a[X] = Sc[X,i]/G[X,i]
 
             a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
-            for j in range(i+1, NE-2):
-                a0 += dy*E_rt[k]*K[X,:,i,j]*F_rt[:,j]
+            for j in range(i+1, NE-1): # Goes to NE-2
+                a0 += dy*E_rt[j]*K[X,:,i,j]*F_rt[:,j]
 
             for a0X in a0:
                 a[X] += a0X/G[X,i]
@@ -211,7 +208,7 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_rt, i,
             np.linalg.solve(np.identity(NX)-B, a)
-        , E_rt[i] > Ecut)
+        )
 
         i -= 1
 
@@ -734,3 +731,43 @@ class SpectrumGenerator(object):
 
         # 'res' always has at least two columns
         return res[0:2,:] if allX == False else res
+
+
+    def get_universal_spectrum(self, E0, S0, Sc, T):
+        # Define EC and EX as in 'astro-ph/0211258'
+        EC = me2/(22.*T)
+        EX = me2/(80.*T)
+
+        # Define the normalization K0 as in 'astro-ph/0211258'
+        K0 = E0/( (EX**2.) * ( 2. + log( EC/EX ) ) )
+
+        # Define the dimension of the grid
+        # as defined in 'params.py'...
+        NE = int(log10(E0/Emin)*NE_pd)
+        # ... but not less than NE_min points
+        NE = max(NE, NE_min)
+
+        # Generate the grid for the energy
+        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
+        # Generate the grid for the photon spectrum
+        F_rt = np.zeros(NE)
+
+        # Calculate the spectrum for the different energies
+        # TODO: Perform integration
+        S0N = lambda T: S0[0](T) + S0[1](T) + S0[2](T)
+        for i, E in enumerate(E_rt):
+            if E < EX:
+                F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
+            elif E > EX and E < EC:
+                F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
+
+        # Remove potential zeros
+        F_rt[F_rt < approx_zero] = approx_zero
+
+        # Define the result array...
+        res = np.zeros( (2, NE) )
+        # ...and fill it
+        res[0, :] = E_rt
+        res[1, :] = F_rt
+
+        return res
