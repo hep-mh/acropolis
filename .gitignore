@@ -1,6 +1,10 @@
 # Temporary changelog
 CHANGES
 
+# File from actual projects
+acropolis/cn.py
+acropolis/em.py
+
 # To-do file
 TODO
 
@@ -20,8 +24,7 @@ __pycache__
 
 # Plot data
 plots/data/*
-plots/no_cfsr/*
-plots/no_cfsr_decay/*
+plots/old/*
 
 # Build files
 build/*
