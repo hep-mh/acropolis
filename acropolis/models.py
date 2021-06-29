@@ -193,9 +193,8 @@ class AbstractModel(ABC):
         return self._source_electron_0(T)
 
 
-    @abstractmethod
     def _source_photon_c(self, E, T):
-        pass
+        return 0.
 
 
     def _source_electron_c(self, E, T):

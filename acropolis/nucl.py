@@ -385,7 +385,8 @@ class NuclearReactor(object):
 
     def _pdi_rates(self, T):
         EC = me2/(22.*T)
-        # Calculate the maximal energy
+        # Set the maximal energy, serving
+        # as a cutoff for the integration
         Emax = min( self._sE0, 10.*EC )
         # For E > me2/T >> EC, the spectrum
         # is strongly suppressed
@@ -395,10 +396,21 @@ class NuclearReactor(object):
         # key = reaction_id (from _reactions)
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
+        # TEMP flag for using the universal spectrum
+        universal_spetrum = False
+
         # Calculate the spectra for the given temperature
-        xsp, ysp = self._sGen.get_spectrum(
-                            self._sE0, self._sS0, self._sSc, T
-                        )
+        if not universal_spetrum:
+            xsp, ysp = self._sGen.get_spectrum(
+                                self._sE0, self._sS0, self._sSc, T
+                            )
+        else:
+            xsp, ysp = self._sGen.get_universal_spectrum(
+                                self._sE0, self._sS0, self._sSc, T
+                            )
+            # For performance reasons, also
+            # cut the energy at threshold
+            Emax = EC
 
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform

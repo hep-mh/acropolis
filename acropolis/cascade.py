@@ -754,7 +754,7 @@ class SpectrumGenerator(object):
 
         # Calculate the spectrum for the different energies
         # TODO: Perform integration
-        S0N = lambda T: S0[0](T) + S0[1](T) + S0[2](T)
+        S0N = lambda T: sum(S0X(T) for S0X in S0)
         for i, E in enumerate(E_rt):
             if E < EX:
                 F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
