@@ -37,6 +37,7 @@ debug = False
 # ATTENTION:
 # Change with caution and only if
 # you know what you are doing
+# Default: False
 universal = False
 
 
