@@ -20,8 +20,8 @@ from acropolis.pprint import print_error, print_warning, print_info
 # params
 from acropolis.params import me, me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps
-from acropolis.params import NT_pd
-from acropolis.params import NY
+from acropolis.params import NT_pd, NY
+from acropolis.params import universal
 # cascade
 from acropolis.cascade import SpectrumGenerator
 
@@ -396,11 +396,8 @@ class NuclearReactor(object):
         # key = reaction_id (from _reactions)
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
-        # TEMP flag for using the universal spectrum
-        universal_spetrum = False
-
         # Calculate the spectra for the given temperature
-        if not universal_spetrum:
+        if not universal:
             xsp, ysp = self._sGen.get_spectrum(
                                 self._sE0, self._sS0, self._sSc, T
                             )
