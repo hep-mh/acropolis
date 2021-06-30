@@ -107,9 +107,19 @@ class BufferedScanner(object):
                     "acropolis.scans.BufferedScanner._parse_arguments"
                 )
 
+        # ERRORS for not-yet-implemented features (TODO) ################################
+
+        # 1. More then one fast parameter
         if list( self._sFastf.values() ).count(True) > 1:
             print_error(
                 "Using more than one 'fast' parameter is not yet supported",
+                "acropolis.scans.BufferedScanner._parse_arguments"
+            )
+
+        # 2. Other then two scan parameters
+        if self._sNp != 2:
+            print_error(
+                "Using other then two 'ScanParameter' instances is not yet supported",
                 "acropolis.scans.BufferedScanner._parse_arguments"
             )
 
@@ -123,7 +133,8 @@ class BufferedScanner(object):
         # NOT! including the parameter used for the parallelisation
         scanp_ls = product( *[self._sScanp[id] for id in self._sScanp_id[:-1]] )
 
-        # TODO: Extend to more than two parameters
+        # Here, we explcitly assume the existance
+        # of exactly two 'ScanParameter' instances
         dx = len( self._sScanp[self._sFP_id] )
         dy = len( self._sScanp_id ) + 3*NY # + 1
         results = np.zeros( ( dx, dy ) )
