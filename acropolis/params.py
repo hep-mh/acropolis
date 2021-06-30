@@ -31,6 +31,14 @@ verbose = True
 # Default: False
 debug = False
 
+# If this flag is set to 'True',
+# the universal spectrum is used
+# for all points in parameter space
+# ATTENTION:
+# Change with caution and only if
+# you know what you are doing
+universal = False
+
 
 # PHYSICAL CONSTANTS ################################################
 
