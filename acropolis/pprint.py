@@ -91,7 +91,7 @@ def print_info(info, loc="", eol="\n", verbose_level=None):
     if debug == True and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
-    if verbose_level >= _max_verbose_level:
+    if verbose and verbose_level >= _max_verbose_level:
         stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
 
 
