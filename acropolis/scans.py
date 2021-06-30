@@ -53,10 +53,11 @@ class BufferedScanner(object):
         # Define the various sets
         self._sFixed = {}      # Fixed parameter
         self._sScanp = {}      # Scan parameters...
-        self._sFastf = {}      # ...that allow for fast scanning
+        self._sFastf = {}      # ...and flags for fast scanning
 
-        # Define the number of scan parameters
-        self._sNp = 0
+        # Define the number of scan parameters...
+        self._sNp      = 0 # (all)
+        self._sNp_fast = 0 # (only fast)
 
         # Parse the keyword arguments and build up the
         # sets 'self._sFixed' and 'self._sScanp'
@@ -97,20 +98,23 @@ class BufferedScanner(object):
             elif isinstance(param, ScanParameter):
                 self._sNp += 1
 
-                # Save the 'is_fast' status of all parameters
-                self._sFastf[key] = param.is_fast()
                 # Save the relevant range of all paremeters
                 self._sScanp[key] = param.get_range()
+                # Save the 'is_fast' status of all parameters
+                self._sFastf[key] = param.is_fast()
             else:
                 print_error(
                     "All parameters must either be 'int', 'float' or an instance of 'ScanParameter'",
                     "acropolis.scans.BufferedScanner._parse_arguments"
                 )
 
+        # Get the number of 'fast' parameters (Np_fast <= Np - 1)
+        self._sNp_fast = list( self._sFastf.values() ).count(True)
+
         # ERRORS for not-yet-implemented features (TODO) ################################
 
         # 1. More then one fast parameter
-        if list( self._sFastf.values() ).count(True) > 1:
+        if self._sNp_fast > 1:
             print_error(
                 "Using more than one 'fast' parameter is not yet supported",
                 "acropolis.scans.BufferedScanner._parse_arguments"
@@ -155,8 +159,10 @@ class BufferedScanner(object):
 
             scanp_set_id_0 = scanp_set[self._sScanp_id[0]]
             # Rescale the rates with the 'fast' parameter
-            # TODO: Only do this if a fast parameter exists
-            if count != 0 and matpf == True:
+            # but only if the current parameter is 'fast'
+            # TODO: Check if the current cycle goes over
+            # fast parameters: Replace self._sNp_fast
+            if self._sNp_fast != 0 and (count != 0 and matpf == True):
                 factor = scanp_set_id_0/fastp
                 model.set_matp_buffer( self.rescale_matp_buffer(matpb, factor) )
 
@@ -164,8 +170,9 @@ class BufferedScanner(object):
             Yb = model.run_disintegration()
             ##############################################################
 
-            # Rescale the nuclear-rate buffer existent
-            if count == 0:
+            # Initialize the rescaling
+            # TODO: reset for new fast parameters
+            if self._sNp_fast != 0 and count == 0:
                 matpb = model.get_matp_buffer()
                 matpf = matpb is not None
                 # matpb might still be None if E0 < Emin
