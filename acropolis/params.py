@@ -36,7 +36,8 @@ debug = False
 # for all points in parameter space
 # ATTENTION:
 # Change with caution and only if
-# you know what you are doing
+# you know what you are doing.
+# World destruction possible!
 # Default: False
 universal = False
 
