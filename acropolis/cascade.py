@@ -758,7 +758,7 @@ class SpectrumGenerator(object):
         for i, E in enumerate(E_rt):
             if E < EX:
                 F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
-            elif E > EX and E < (1. + offset)*EC: # an offset enables better interpolation
+            elif E >= EX and E <= (1. + offset)*EC: # an offset enables better interpolation
                 F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
 
         # Remove potential zeros
