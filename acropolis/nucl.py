@@ -412,7 +412,6 @@ class NuclearReactor(object):
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
         # a linear interpolation, which also has less side effects
-        # lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
         Fph = LogInterp(xsp, ysp)
         # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
