@@ -426,28 +426,28 @@ class NuclearReactor(object):
             # Calculate the 'delta-term'...
             I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
             # ... and use it as an initial value
-            pdi_rates[rid] = I_dt
+            pdi_rates[rid] = I_dt # might be zero due to exp. suppression!
 
-            # Do not perform the integral for energies below
-            # threshold or for strongly suppressed spectra
-            # If Emax < Emin, NO integral will be performed
-            if Emax < _eth[rid]:
-                continue
+            # Only perform the integral for energies above threshold,
+            # i.e. do not consider strongly suppressed spectra
+            if Emax > _eth[rid]:
+                # Perform the integration from the threshold energy to Emax
+                with warnings.catch_warnings(record=True) as w:
+                    log_Emin, log_Emax = log(_eth[rid]), log(Emax)
+                    I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
 
-            # Perform the integration from the threshold energy to Emax
-            with warnings.catch_warnings(record=True) as w:
-                log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
+                    if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
+                        print_warning(
+                            "Slow convergence when calculating the pdi rates " +
+                            "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
+                            "acropolis.nucl.NuclearReactor._thermal_rates_at"
+                        )
 
-                if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
-                    print_warning(
-                        "Slow convergence when calculating the pdi rates " +
-                        "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
-                        "acropolis.nucl.NuclearReactor._thermal_rates_at"
-                    )
+                # Add the result of the integral to the 'delta' term
+                pdi_rates[rid] += I_Fs[0]
 
-            # Add the result of the integral to the 'delta' term
-            pdi_rates[rid] += I_Fs[0]
+            # Avoid potential zeros
+            pdi_rates[rid] = max(approx_zero, pdi_rates[rid])
 
         # Go home and play
         return pdi_rates
