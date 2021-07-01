@@ -22,7 +22,8 @@ __pycache__
 *.py[cod]
 *$py.class
 
-# Plot data
+# Plots
+plots/*.pdf
 plots/data/*
 plots/old/*
 
