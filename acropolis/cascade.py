@@ -733,7 +733,7 @@ class SpectrumGenerator(object):
         return res[0:2,:] if allX == False else res
 
 
-    def get_universal_spectrum(self, E0, S0, Sc, T):
+    def get_universal_spectrum(self, E0, S0, Sc, T, offset=0.):
         # Define EC and EX as in 'astro-ph/0211258'
         EC = me2/(22.*T)
         EX = me2/(80.*T)
@@ -758,7 +758,7 @@ class SpectrumGenerator(object):
         for i, E in enumerate(E_rt):
             if E < EX:
                 F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
-            elif E > EX and E < EC:
+            elif E > EX and E < (1. + offset)*EC: # an offset enables better interpolation
                 F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
 
         # Remove potential zeros
