@@ -34,6 +34,8 @@ v1.3\
  - Updated the neutron lifetime to the PDG 2020 recommended value
  - Included some example files, e.g. for parameter scans, in the directory examples/
  - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to generate the file ``abundance_file.dat`` for sm.tar.gz
+ - Fixed a bug that prohibited running 2d parameter scans without 'fast' parameters
+ - Fixed a bug that caused INFO messages to be printed even for ``verbose=False``
 
 v1.2.1\
 (February 16, 2021)
