@@ -15,6 +15,13 @@ from acropolis.params import NY
 from acropolis.models import AbstractModel
 
 
+class _Batch(object):
+
+    def __init__(self, length, is_fast):
+        self.length  = length
+        self.is_fast = is_fast
+
+
 class ScanParameter(object):
 
     def __init__(self, ivalue, fvalue, num, spacing="log", fast=False):
@@ -92,7 +99,6 @@ class BufferedScanner(object):
                 self._sDs += len( self._sScanp[id] )
 
 
-
     def _parse_arguments(self, **kwargs):
         # Loop over the different parameters
         for key in kwargs.keys():
@@ -126,67 +132,88 @@ class BufferedScanner(object):
             )
 
 
+    # TODO!!!
+    def _build_batches(self):
+        # Generate all possible parameter combinations, thereby
+        # NOT! including the parameter used for the parallelisation
+        scanp_ls = product( *[self._sScanp[id] for id in self._sScanp_id[:-1]] )
+        # Right now: One sequential parameter, which is either fast or not
+        scanp_bt = [ _Batch(self._sDs, self._sNP_fast != 0), ]
+
+        return scanp_ls, scanp_bt
+
+
     def rescale_matp_buffer(self, buffer, factor):
         return (factor*buffer[0], buffer[1])
 
 
-    # TODO!!!
     def _perform_non_parallel_scan(self, pp):
-        fast_batch = (self._sNP_fast != 0) # HERE
-
-        # Generate all possible parameter combinations, thereby
-        # NOT! including the parameter used for the parallelisation
-        scanp_ls = product( *[self._sScanp[id] for id in self._sScanp_id[:-1]] ) # HERE
+        # Build the relevant batches
+        scanp_ls, scanp_bt = self._build_batches()
 
         # Determine the dimensions of the 'result grid'
-        dx = self._sDs            # rows
-        dy = self._sNP + 3*NY     # columns
+        dx = self._sDs                    # rows
+        dy = self._sNP + 3*NY             # columns
         results = np.zeros( ( dx, dy ) )
 
-        matpb, matpf = None, False # HERE
+        # Initialize the buffer
+        matpb = None
+
+        nb, ib = 0, 0
         # Loop over the non-parallel parameter(s)
         for i, scanp in enumerate(scanp_ls):
-            reset = (i == 0) # HERE
+            # Store the current batch
+            batch = scanp_bt[nb]
+
+            # Check if a reset is required
+            reset_required = (ib == 0)
 
             # Define the set that contains only scan parameters
             scanp_set = dict( zip(self._sScanp_id, scanp) )
             scanp_set.update( {self._sId_pp: pp} )
-
             # Define the set that contains all parameters
             fullp_set = scanp_set.copy()
             fullp_set.update( self._sFixed )
 
-            # Initialize the model wrapper of choice
+            # Initialize the model of choice
             model = self._sModel(**fullp_set)
 
             scanp_set_id_0 = scanp_set[self._sScanp_id[0]]
             # Rescale the rates with the 'fast' parameter
             # but only if the current parameter is 'fast'
-            if fast_batch and (not reset) and matpf:
-                factor = scanp_set_id_0/fastp
-                model.set_matp_buffer( self.rescale_matp_buffer(matpb, factor) )
+            if batch.is_fast and (not reset_required):
+                if matpb is not None:
+                # matpb might still be None if E0 < Emin
+                # save, since parameters determining the
+                # injection energy, should never be fast
+                    factor = scanp_set_id_0/fastp
+                    model.set_matp_buffer( self.rescale_matp_buffer(matpb, factor) )
 
             ##############################################################
             Yb = model.run_disintegration()
             ##############################################################
 
-            # Initialize the rescaling
-            if fast_batch and reset:
+            # Reset the buffer/rescaling
+            if batch.is_fast and reset_required:
                 matpb = model.get_matp_buffer()
-                matpf = matpb is not None
-                # matpb might still be None if E0 < Emin
 
                 fastp = scanp_set_id_0
 
             # For the output, use the following format
-            # 1. The 'parallel' parameter
-            # 2. All 'non fast/parallel' parameters
-            # 3. The 'fast' parameter
+            # 1. The 'non fast' parameters
+            # 3. The 'fast' parameters
             sortp_ls = list( zip( scanp_set.keys(), scanp_set.values() ) )
-            list.sort(sortp_ls, key=lambda el: self._sFastf[ el[0] ])
+            list.sort(sortp_ls, key=lambda el: self._sFastf[ el[0] ]) # False...True
             sortp_ls = [ el[1] for el in sortp_ls ]
 
             results[i] = [*sortp_ls, *Yb.transpose().reshape(Yb.size)]
+
+            # Update the batch index
+            if ib == batch.length - 1: # next batch
+                ib =  0
+                nb += 1
+            else:
+                ib += 1
 
         return results
 
