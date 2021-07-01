@@ -112,18 +112,9 @@ class BufferedScanner(object):
         self._sNp_fast = list( self._sFastf.values() ).count(True)
 
         # ERRORS for not-yet-implemented features (TODO) ################################
-
-        # 1. More then one fast parameter
-        if self._sNp_fast > 1:
+        if self._sNp_fast > 1 or self._sNp != 2:
             print_error(
-                "Using more than one 'fast' parameter is not yet supported",
-                "acropolis.scans.BufferedScanner._parse_arguments"
-            )
-
-        # 2. Other then two scan parameters
-        if self._sNp != 2:
-            print_error(
-                "Using other then two 'ScanParameter' instances is not yet supported",
+                "Currently only exactly 2 scan parameters with <= 1 fast parameter are supported!",
                 "acropolis.scans.BufferedScanner._parse_arguments"
             )
 
@@ -134,19 +125,23 @@ class BufferedScanner(object):
 
     # TODO!!!
     def _perform_non_parallel_scan(self, pp):
+        fast_batch = (self._sNp_fast != 0) # HERE
+
         # Generate all possible parameter combinations, thereby
         # NOT! including the parameter used for the parallelisation
         scanp_ls = product( *[self._sScanp[id] for id in self._sScanp_id[:-1]] )
 
         # Here, we explcitly assume the existance
         # of exactly two 'ScanParameter' instances
-        dx = len( self._sScanp[self._sFP_id] )
+        dx = len( self._sScanp[self._sFP_id] ) # HERE
         dy = len( self._sScanp_id ) + 3*NY # + 1
         results = np.zeros( ( dx, dy ) )
 
-        matpb, matpf = None, False
+        matpb, matpf = None, False # HERE
         # Loop over the non-parallel parameter(s)
-        for count, scanp in enumerate(scanp_ls):
+        for i, scanp in enumerate(scanp_ls):
+            reset = (i == 0) # HERE
+
             # Define the set that contains only scan parameters
             scanp_set = dict( zip(self._sScanp_id, scanp) )
             scanp_set.update( {self._sPP_id: pp} )
@@ -161,9 +156,7 @@ class BufferedScanner(object):
             scanp_set_id_0 = scanp_set[self._sScanp_id[0]]
             # Rescale the rates with the 'fast' parameter
             # but only if the current parameter is 'fast'
-            # TODO: Check if the current cycle goes over
-            # fast parameters: Replace self._sNp_fast
-            if self._sNp_fast != 0 and (count != 0 and matpf == True):
+            if fast_batch and (not reset) and matpf:
                 factor = scanp_set_id_0/fastp
                 model.set_matp_buffer( self.rescale_matp_buffer(matpb, factor) )
 
@@ -172,8 +165,7 @@ class BufferedScanner(object):
             ##############################################################
 
             # Initialize the rescaling
-            # TODO: reset for new fast parameters
-            if self._sNp_fast != 0 and count == 0:
+            if fast_batch and reset:
                 matpb = model.get_matp_buffer()
                 matpf = matpb is not None
                 # matpb might still be None if E0 < Emin
@@ -188,7 +180,7 @@ class BufferedScanner(object):
             list.sort(sortp_ls, key=lambda el: self._sFastf[ el[0] ])
             sortp_ls = [ el[1] for el in sortp_ls ]
 
-            results[count] = [*sortp_ls, *Yb.transpose().reshape(Yb.size)]
+            results[i] = [*sortp_ls, *Yb.transpose().reshape(Yb.size)]
 
         return results
 
