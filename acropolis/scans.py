@@ -132,6 +132,7 @@ class BufferedScanner(object):
         return (factor*buffer[0], buffer[1])
 
 
+    # TODO!!!
     def _perform_non_parallel_scan(self, pp):
         # Generate all possible parameter combinations, thereby
         # NOT! including the parameter used for the parallelisation

@@ -424,9 +424,15 @@ class NuclearReactor(object):
 
         # Calculate the different rates by looping over all available reaction_id's
         for rid in _lrid:
+            # Calculate the 'delta-term'...
+            I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+            # ... and use it as an initial value
+            pdi_rates[rid] = I_dt
+
             # Do not perform the integral for energies below
             # threshold or for strongly suppressed spectra
-            if _eth[rid] > Emax:
+            # If Emax < Emin, NO integral will be performed
+            if Emax < _eth[rid]:
                 continue
 
             # Perform the integration from the threshold energy to Emax
@@ -441,11 +447,8 @@ class NuclearReactor(object):
                         "acropolis.nucl.NuclearReactor._thermal_rates_at"
                     )
 
-            # Calculate the 'delta-term'
-            I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
-
-            # Add the delta term and save the result
-            pdi_rates[rid] = I_dt + I_Fs[0]
+            # Add the result of the integral to the 'delta' term
+            pdi_rates[rid] += I_Fs[0]
 
         # Go home and play
         return pdi_rates
