@@ -403,7 +403,7 @@ class NuclearReactor(object):
                             )
         else:
             xsp, ysp = self._sGen.get_universal_spectrum(
-                                self._sE0, self._sS0, self._sSc, T
+                                self._sE0, self._sS0, self._sSc, T, offset=5e-2
                             )
             # For performance reasons, also
             # cut the energy at threshold
