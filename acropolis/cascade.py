@@ -539,6 +539,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         # '_PhotonReactionWrapper._rate_pair_creation'
         if Ep < me2/(50.*T):
             return 0.
+        # Ep is the incoming(!) energy
 
         dE, E2 = Ep - E, E**2.
         z1 = Ep*( me2 - 2.*dE*( sqrt(E2 - me2) - E ) )/( 4*Ep*dE + me2 )
