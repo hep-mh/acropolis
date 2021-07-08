@@ -146,11 +146,6 @@ eps = 1e-3
 # Default: 200
 Ephb_T_max = 200.
 
-# The energy in units of EC at which to
-# cutoff strongly suppressed spectra
-# Default: 500.
-E_EC_cut = 500.
-
 # The number of points per decade for
 # the energy grid, which is used within
 # the solution of the cascade equation

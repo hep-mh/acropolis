@@ -21,7 +21,7 @@ from acropolis.pprint import print_warning, print_error
 from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
 from acropolis.params import FX
-from acropolis.params import Emin, approx_zero, eps, Ephb_T_max, E_EC_cut
+from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 from acropolis.params import NE_pd, NE_min
 
 
@@ -342,6 +342,8 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # PHOTON-PHOTON SCATTERING ################################################
     def _kernel_photon_photon(self, E, Ep, T):
+        #if E > me2/T:
+        #    return 0.
         expf = exp( -E*T/me2 )
 
         return 1112./(10125.*pi) * (alpha**4.)/(me**8.) * 8.*(pi**4.)*(T**6.)/63. \
