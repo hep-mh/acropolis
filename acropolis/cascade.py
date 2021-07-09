@@ -287,19 +287,37 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # BETHE-HEITLER PAIR PRODUCTION ###########################################
     def _rate_bethe_heitler(self, E, T):
-        # In general, it is necessary to use a different formula close to
-        # the reaction threshold, i.e. for E < 2me. However, this case never
-        # occurs as Emin = 1.5 > 2me (see 'acropolis.params')
-
         # For small energies, the rate is best approximated by a constant
-        # (cf. 'hep-ph/0604251')
-        if E < 4.: E = 4.
+        # (cf. 'hep-ph/0604251') --- NOT USED HERE
+        #if E < 4.: E = 4.
 
         k = E/me
 
+        # Below threshold, the rate vanishes
+        # This case never happens since Emin = 1.5 > 2me
+        # (see 'acropolis.params')
+        if k < 2:
+            return 0.
+
+        # Approximation for SMALL energies
+        if 2 <= k <= 4:
+            r = ( 2.*k - 4. )/( k + 2. + 2.*sqrt(2.*k) )
+
+            return ( alpha**3./me2 ) * self._nNZ2(T) * (2.*pi/3.) * ( (k-2.)/k )**3. * ( \
+                     1 + r/2. + (23./40.)*(r**2.) + (11./60.)*(r**3.) + (29./960.)*(r**4.) \
+                   )
+
+
+        # Approximation for LARGE energies
         log2k = log(2.*k)
-        # We implement corrections up to order (2./k)**2 ('astro-ph/9412055')
-        return ( alpha**3./me2 ) * self._nNZ2(T) * ( (28./9.)*log2k - 218./27. + (2./k)**2.*( (2./3.)*log2k**3. - log2k**2. + (6. - pi2/3.)*log2k + 2.*zeta3 + pi2/6. - 7./2. ) )
+        # We implement corrections up to order (2./k)**6 ('astro-ph/9412055')
+        # This is relevant in order to ensure a smooth transition at k = 4
+        return ( alpha**3./me2 ) * self._nNZ2(T) * ( \
+                   (28./9.)*log2k - 218./27. \
+                 + (2./k)**2. * ( (2./3.)*log2k**3. - log2k**2. + (6. - pi2/3.)*log2k + 2.*zeta3 + pi2/6. - 7./2. ) \
+                 - (2./k)**4. * ( (3./16.)*log2k + 1./8. ) \
+                 - (2./k)**6. * ( (29./2304.)*log2k - 77./13824. ) \
+               )
 
 
     # DOUBLE PHOTON PAIR PRODUCTION ###########################################
