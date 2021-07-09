@@ -57,6 +57,10 @@ def _JIT_G(Ee, Eph, Ephb):
     dE_sqrt  = (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) )
     Ee_lim_m = ( Eph + Ephb - dE_sqrt )/2.
     Ee_lim_p = ( Eph + Ephb + dE_sqrt )/2.
+    # ATTENTION: White et al. impose the range in the soft
+    # photon limit, which is more difficult to handle but
+    # should lead to the same results, since the pair production
+    # kernel ensures that Ephb ~ T << Eph ~ O(MeV)
 
     if not ( me < Ee_lim_m <= Ee <= Ee_lim_p ):
         # CHECKED to never happen, since the intergration
