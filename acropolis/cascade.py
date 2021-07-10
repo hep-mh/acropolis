@@ -287,7 +287,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # BETHE-HEITLER PAIR PRODUCTION ###########################################
     def _rate_bethe_heitler(self, E, T):
-        # For small energies, the rate is best approximated by a constant
+        # For small energies, the rate can be approximated by a constant
         # (cf. 'hep-ph/0604251') --- NOT USED HERE
         #if E < 4.: E = 4.
 
