@@ -330,9 +330,9 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
         # Define the integration limits from the
         # constraint on the center-of-mass energy
-        llim = me2/E            # <  30*T (see above)
-        ulim = Ephb_T_max*T     # ~ 100*T
-        # ulim > llim, since me2/E < 30*T
+        llim = me2/E            # <  50*T (see above)
+        ulim = Ephb_T_max*T     # ~ 200*T
+        # ulim > llim, since me2/E < 50*T
         # CHECKED!
 
         # Perform the integration in lin space
