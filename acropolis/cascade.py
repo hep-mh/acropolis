@@ -69,13 +69,14 @@ def _JIT_G(Ee, Eph, Ephb):
 
     # Split the function into four summands
     # and calculate all of them separately
+    # Ee + Eep = Eph + Ephb
     sud  = 0.
     sud += 4.*( (Ee + Eep)**2. )*log( (4.*Ephb*Ee*Eep)/( me2*(Ee + Eep) ) )/( Ee*Eep )
     sud += ( me2/( Ephb*(Ee + Eep) ) - 1. ) * ( (Ee + Eep)**4. )/( (Ee**2.)*(Eep**2.) )
     # ATTENTION: no additional minus sign in sud[2]
     # It is unclear whether it is a type or an artifact
     # of the scan (in the original paper)
-    sud += 2.*( 2*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
+    sud += 2.*( 2.*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
     sud += -8.*Ephb*(Ee + Eep)/me2
 
     return sud
@@ -247,6 +248,8 @@ class _ReactionWrapperScaffold(object):
     # NUMBER DENSITIES of baryons, electrons and nucleons #####################
 
     def _nb(self, T):
+        # gs does not change anymore for the relevant temperature,
+        # hence (R0/R)^3 = gs(T)T^3/( gs(T0)T0^3) = (T/T0)^3
         return self._sEta * ( 2.*zeta3/pi2 ) * (T**3.)
 
 
@@ -336,6 +339,8 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # CHECKED!
 
         # Perform the integration in lin space
+        # The limits for s are always in ascending order,
+        # i.e. 4*me2 < 4*E*x, since x > me2/E
         I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
 
         return I_fso_E2[0]/( 8.*E**2. )
