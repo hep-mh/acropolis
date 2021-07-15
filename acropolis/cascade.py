@@ -369,9 +369,9 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # PHOTON-PHOTON SCATTERING ################################################
     def _kernel_photon_photon(self, E, Ep, T):
-        #if E > me2/T:
+        #if Ep > me2/T:
         #    return 0.
-        expf = exp( -E*T/me2 )
+        expf = exp( -Ep*T/me2 )
 
         return 1112./(10125.*pi) * (alpha**4.)/(me**8.) * 8.*(pi**4.)*(T**6.)/63. \
                * Ep**2. * ( 1. - E/Ep + (E/Ep)**2. )**2. * expf
