@@ -101,9 +101,9 @@ def _JIT_ph_rate_pair_creation(y, x, T):
 
 
 @nb.jit(cache=True)
-def _JIT_ph_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_ph_kernel_inverse_compton(logx, E, Ep, T):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_F(E, Ep, x)*x/( pi2*(exp(x/T) - 1.) ) * x
 
@@ -117,17 +117,17 @@ def _JIT_el_rate_inverse_compton(y, x, E, T):
 
 
 @nb.jit(cache=True)
-def _JIT_el_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_F(Ep+x-E, Ep, x)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
 
 
 @nb.jit(cache=True)
-def _JIT_el_kernel_pair_creation(y, E, Ep, T):
+def _JIT_el_kernel_pair_creation(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
