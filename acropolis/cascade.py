@@ -343,7 +343,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # ulim > llim, since me2/E < 50*T
         # CHECKED!
 
-        # Perform the integration in lin space
+        # Perform the integration in log-log space
         # The limits for s are always in ascending order,
         # i.e. 4*me2 < 4*E*x, since x > me2/E
         I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, log(llim), log(ulim), \
