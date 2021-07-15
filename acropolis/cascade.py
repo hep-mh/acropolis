@@ -85,7 +85,10 @@ def _JIT_G(Ee, Eph, Ephb):
 # _PhotonReactionWrapper ######################################################
 
 @nb.jit(cache=True)
-def _JIT_ph_rate_pair_creation(y, x, T):
+def _JIT_ph_rate_pair_creation(logy, logx, T):
+    # Return the integrand for the 2d integral in log-space
+    x, y = exp(logx), exp(logy)
+
     # Define beta as a function of y
     b = sqrt(1. - 4.*me2/y)
 
@@ -97,7 +100,9 @@ def _JIT_ph_rate_pair_creation(y, x, T):
     # (the written limit is unitless, which must be wrong)
     # This limit is a consequence of the constraint on
     # the center-of-mass energy
-    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
+    sig_pc = .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
+
+    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * sig_pc * (x*y)
 
 
 @nb.jit(cache=True)
@@ -341,7 +346,10 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # Perform the integration in lin space
         # The limits for s are always in ascending order,
         # i.e. 4*me2 < 4*E*x, since x > me2/E
-        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
+        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, log(llim), log(ulim), \
+                             lambda logx: log(4.*me2), lambda logx: log(4.*E) + logx, \
+                             epsrel=eps, epsabs=0, args=(T,)
+                          )
 
         return I_fso_E2[0]/( 8.*E**2. )
 
