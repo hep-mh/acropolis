@@ -2,8 +2,7 @@
 CHANGES
 
 # Files from actual projects
-acropolis/cn.py
-acropolis/em.py
+acropolis/prj/*
 
 # Reference paper
 Paper/*
