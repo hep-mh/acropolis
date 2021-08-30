@@ -1,9 +1,12 @@
 # Temporary changelog
 CHANGES
 
-# File from actual projects
+# Files from actual projects
 acropolis/cn.py
 acropolis/em.py
+
+# Reference paper
+Paper/*
 
 # To-do file
 TODO
