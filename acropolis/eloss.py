@@ -62,6 +62,7 @@ class InteractingParticle(object):
         self._sQ = q # in units of e
 
 
+    # TODO: Interface correctly with ACROPOLIS
     def _ne(self, T):
         # The number density of photons
         na = 2.*zeta3*(T**3.)/pi2
@@ -83,18 +84,16 @@ class InteractingParticle(object):
     # CHARGED PARTICLES #######################################################
 
     def _dEdt_coulomb(self, E, T):
-        return 0.
-
-        """
-        # The plasma frequency squared
+        # The plasma frequency squared...
         wp2 = 4.*pi*self._ne(T)*alpha/me
+        # ... and also not squared
         wp  = sqrt(wp2)
+
         # The gamma factor of the charged particle
         ga = E/self._sM
+
         # The velocity of the charged particle
         v = sqrt( 1. - 1./ga**2. )
-
-        print(ga)
 
         if v < 2*T/me:
             # TODO
@@ -105,10 +104,10 @@ class InteractingParticle(object):
         b = max( 1, Z*alpha/v )/( ga*me*v )
 
         return -(Z**2.)*alpha*wp2*( log( 0.76*v/(wp*b) ) + v**2./2. )/v
-        """
 
 
     def _dEdt_thompson(self, E, T):
+        # The gamma factor of the charged particle
         ga = E/self._sM
 
         Z = self._sQ
