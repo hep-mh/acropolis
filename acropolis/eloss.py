@@ -1,21 +1,19 @@
 # math
 from math import log, exp, sqrt
+# numpy
+import numpy as np
 # numba
 import numba as nb
 # scipy
-from scipy.special import erf
+from scipy.integrate import quad
 
 # params
 from acropolis.params import pi, pi2, zeta3
-from acropolis.params import alpha, me
-
-"""
-#@nb.jit(cache=True)
-def _JIT_fa(E, T):
-    return (E/pi)**2. / (exp(E/T) - 1 )
+from acropolis.params import alpha, me, me2
+from acropolis.params import eps, Ephb_T_max
 
 
-#@nb.jit(cache=True)
+@nb.jit(cache=True)
 def _JIT_phi(x):
     a = [
          0.8048,
@@ -36,26 +34,34 @@ def _JIT_phi(x):
     ]
 
     if x <= 25:
-        asum = sum( a[i]*( (x-2.)**(i+1) ) for i in range(4) )
+        asum = 0
+        for i in range(4): asum += a[i]*( (x-2.)**(i+1) )
 
         return (pi/12.)*(x-2.)**4./( 1. + asum )
 
-    bsum = sum( b[j]*(log(x)**j) for j in range(4) )
-    csum = sum( c[k]/( x**(k+1) ) for k in range(3) )
+    bsum, csum = 0, 0
+    for j in range(4): bsum += b[j]*(log(x)**j)
+    for k in range(3): csum += c[k]/( x**(k+1) )
 
     return x*bsum/( 1. - csum )
 
 
-#@nb.jit(cache=True)
-def _JIT_eloss_bethe_heitler(logx, ga, T):
-    x = exp(logx) # kappa
+@nb.jit(cache=True)
+def _JIT_eloss_bethe_heitler(logx, E, T, m):
+    x = np.exp(logx) # kappa
 
-    return x * _JIT_fa( x/(2*ga), T ) * _JIT_phi(x) / x**2.
-"""
+    # Calculate gamma
+    ga = E/m
+    # Calculate nu (https://journals.aps.org/prd/pdf/10.1103/PhysRevD.1.1596)
+    nu = me/(2*ga*T)
+
+    #      log
+    return x * _JIT_phi(x)/( np.exp(nu*x) - 1. )
+
 
 class InteractingParticle(object):
 
-    def __init__(self, m, q):
+    def __init__(self, m, q=1):
         # The mass of the particle
         self._sM = m # in MeV
         # The charge of the particle
@@ -84,18 +90,18 @@ class InteractingParticle(object):
     # CHARGED PARTICLES #######################################################
 
     def _dEdt_coulomb(self, E, T):
-        # The plasma frequency squared...
+        # The plasma frequency
         wp2 = 4.*pi*self._ne(T)*alpha/me
-        # ... and also not squared
         wp  = sqrt(wp2)
 
         # The gamma factor of the charged particle
         ga = E/self._sM
 
         # The velocity of the charged particle
-        v = sqrt( 1. - 1./ga**2. )
+        v2 = 1. - 1./ga**2.
+        v = sqrt(v2) if v2 > 0 else 0
 
-        if v < 2*T/me:
+        if v2 < 2*T/me:
             # TODO
             return 0.
 
@@ -117,13 +123,31 @@ class InteractingParticle(object):
 
 
     def _dEdt_bethe_heitler(self, E, T):
-        return 0.
+        # Calculate gamma
+        ga = E/self._sM
+        # Calculate beta
+        ba2 = 1. - 1./ga**2.
+        ba  = sqrt(ba2) if ba2 > 0 else 0
+
+        Z = self._sQ
+        # Define the prefactor
+        pref = (alpha**3.)*(Z**2.)*me2*ba/( 4.*(ga**2.)*pi2 )
+
+        # Calculate appropriate integration limits
+        Emax = Ephb_T_max*T
+        xmax = 2*ga*Emax/me
+        # -->
+        xmin_log, xmax_log = log(2), log(xmax)
+        # Perform the integration
+        I = quad(_JIT_eloss_bethe_heitler, xmin_log, xmax_log,
+                  epsabs=0, epsrel=eps, args=(E, T, self._sM))
+
+        return -pref*I[0]
 
 
     def _dEdt_charged(self, E, T):
-        return self._dEdt_thompson(E, T)
-
-        #return self._dEdt_coulomb(E, T) + self._dEdt_thompson(E, T) + self._dEdt_bethe_heitler(E, T)
+        # TODO: self._dEdt_coulomb(E, T)
+        return self._dEdt_thompson(E, T) + self._dEdt_bethe_heitler(E, T)
 
 
     # NEUTRAL PARTICLES #######################################################
@@ -143,3 +167,13 @@ class InteractingParticle(object):
             return self._dEdt_neutral(E, T)
 
         return self._dEdt_charged(E, T)
+
+
+
+# from math import log10
+# x = np.logspace(0.31, 4, 100)
+# y = [_JIT_phi(xi) for xi in x]
+# import matplotlib.pyplot as plt
+# plt.loglog(x, y)
+# plt.show()
+# exit(0)
