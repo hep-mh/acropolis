@@ -98,10 +98,9 @@ class InteractingParticle(object):
         ga = E/self._sM
 
         # The velocity of the charged particle
-        v2 = 1. - 1./ga**2.
-        v = sqrt(v2) if v2 > 0 else 0
+        v = sqrt(1. - 1./ga**2.) if ga > 1 else 0
 
-        if v2 < 2*T/me:
+        if v < sqrt( me/(2*T) ):
             # TODO
             return 0.
 
@@ -123,21 +122,22 @@ class InteractingParticle(object):
 
 
     def _dEdt_bethe_heitler(self, E, T):
-        # Calculate gamma
+        # The gamma factor of the charged particle
         ga = E/self._sM
-        # Calculate beta
-        ba2 = 1. - 1./ga**2.
-        ba  = sqrt(ba2) if ba2 > 0 else 0
+
+        # The velocity of the charged particle
+        v = sqrt(1. - 1./ga**2.) if ga > 1 else 0
 
         Z = self._sQ
         # Define the prefactor
-        pref = (alpha**3.)*(Z**2.)*me2*ba/( 4.*(ga**2.)*pi2 )
+        pref = (alpha**3.)*(Z**2.)*me2*v/( 4.*(ga**2.)*pi2 )
 
-        # Calculate appropriate integration limits
+        # Calculate the appropriate integration limits
         Emax = Ephb_T_max*T
         xmax = 2*ga*Emax/me
         # -->
         xmin_log, xmax_log = log(2), log(xmax)
+
         # Perform the integration
         I = quad(_JIT_eloss_bethe_heitler, xmin_log, xmax_log,
                   epsabs=0, epsrel=eps, args=(E, T, self._sM))
@@ -146,8 +146,7 @@ class InteractingParticle(object):
 
 
     def _dEdt_charged(self, E, T):
-        # TODO: self._dEdt_coulomb(E, T)
-        return self._dEdt_thompson(E, T) + self._dEdt_bethe_heitler(E, T)
+        return self._dEdt_thompson(E, T) + self._dEdt_bethe_heitler(E, T) + self._dEdt_coulomb(E, T)
 
 
     # NEUTRAL PARTICLES #######################################################
