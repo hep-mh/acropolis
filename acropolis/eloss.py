@@ -61,11 +61,13 @@ def _JIT_eloss_bethe_heitler(logx, E, T, m):
 
 class InteractingParticle(object):
 
-    def __init__(self, m, q=1):
+    def __init__(self, m, q=1, a=0):
         # The mass of the particle
         self._sM = m # in MeV
         # The charge of the particle
         self._sQ = q # in units of e
+        # The anamolous mangentic moment
+        self._sA = a
 
 
     # TODO: Interface correctly with ACROPOLIS
@@ -89,6 +91,7 @@ class InteractingParticle(object):
 
     # CHARGED PARTICLES #######################################################
 
+    # TODO
     def _dEdt_coulomb(self, E, T):
         # The plasma frequency
         wp2 = 4.*pi*self._ne(T)*alpha/me
@@ -100,7 +103,7 @@ class InteractingParticle(object):
         # The velocity of the charged particle
         v = sqrt(1. - 1./ga**2.) if ga > 1 else 0
 
-        if v < sqrt( me/(2*T) ):
+        if v < sqrt( 2*T/me ):
             # TODO
             return 0.
 
