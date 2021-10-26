@@ -165,17 +165,10 @@ class InteractingParticle(object):
     # COMBINED ################################################################
 
     def dEdt(self, E, T):
+        if E <= self._sM:
+            return 0.
+
         if self._sQ == 0:
             return self._dEdt_neutral(E, T)
 
         return self._dEdt_charged(E, T)
-
-
-
-# from math import log10
-# x = np.logspace(0.31, 4, 100)
-# y = [_JIT_phi(xi) for xi in x]
-# import matplotlib.pyplot as plt
-# plt.loglog(x, y)
-# plt.show()
-# exit(0)
