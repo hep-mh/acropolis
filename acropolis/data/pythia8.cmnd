@@ -1,0 +1,6 @@
+Beams:frameType = 4
+
+PartonShowers:model = 2
+Vincia:EWmode = 3
+
+130:mayDecay = true
