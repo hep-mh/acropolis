@@ -1,10 +1,19 @@
-# pythia8
-import pythia8
-
 # os/sys
 import os; import sys
 # contextlib
 from contextlib import contextmanager
+
+# pprint
+from acropolis.pprint import print_error
+
+# pythia8
+try:
+    import pythia8
+except ImportError:
+    print_error(
+        "Could not import pythia8. Seems like Pythia8 (or its Python bindings) are not installed properly.",
+        "acropolis.shower"
+    )
 
 
 def _locate_cmnd_file():
@@ -34,6 +43,7 @@ def suppressed_output(to=os.devnull):
 
 Particle = pythia8.Particle
 
+
 Event    = pythia8.Event
 
 
@@ -41,18 +51,10 @@ class PythiaRunner(object):
 
     def __init__(self):
         # Create a new Pythia instance
-        with suppressed_output():
-            self._pythia = pythia8.Pythia()
+        with suppressed_output(): self._pythia = pythia8.Pythia()
 
         # Load the relevant settings
         self._pythia.readFile  ( _locate_cmnd_file() )
 
-        with suppressed_output():
-            self._pythia.init()
-
-
-    def perform_shower():
-        pass
-
-
-PythiaRunner()
+        # Initialize Pythia
+        with suppressed_output(): self._pythia.init()
