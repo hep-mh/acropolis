@@ -54,7 +54,7 @@ class PythiaRunner(object):
         with suppressed_output(): self._pythia = pythia8.Pythia()
 
         # Load the relevant settings
-        self._pythia.readFile  ( _locate_cmnd_file() )
+        self._pythia.readFile( _locate_cmnd_file() )
 
         # Initialize Pythia
         with suppressed_output(): self._pythia.init()

@@ -19,6 +19,7 @@ alterbbn/*
 
 # Temporary files
 tmp/*
+*_old*
 
 # Byte-compiled / optimized / DLL files
 __pycache__

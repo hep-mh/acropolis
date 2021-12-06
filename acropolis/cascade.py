@@ -273,6 +273,16 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
     def __init__(self, Y0, eta, db):
         super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
 
+
+    # CONTINUOUS ENERGY LOSS ##################################################
+    # E is the energy of the loosing particle
+    # T is the temperature of the background photons
+
+    # TOTAL CONTINUOUS ENERGY LOSS ############################################
+    def total_eloss(E, T):
+        return 0.
+
+
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
@@ -455,7 +465,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # RATES ###################################################################
-    # E is the energy of the outgoing particle
+    # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
@@ -631,7 +641,7 @@ class _PositronReactionWrapper(object):
 
 
     # RATES ###################################################################
-    # E is the energy of the outgoing particle
+    # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
