@@ -146,6 +146,11 @@ eps = 1e-3
 # Default: 200
 Ephb_T_max = 200.
 
+# The maximal value of E/EC up to which the
+# integration is performed when using the
+# full spectrum with exponential suppression
+E_EC_max = 10.
+
 # The number of points per decade for
 # the energy grid, which is used within
 # the solution of the cascade equation

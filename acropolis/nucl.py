@@ -19,7 +19,7 @@ from acropolis.utils import LogInterp
 from acropolis.pprint import print_error, print_warning, print_info
 # params
 from acropolis.params import me, me2, hbar, tau_n, tau_t
-from acropolis.params import approx_zero, eps
+from acropolis.params import approx_zero, eps, E_EC_max
 from acropolis.params import NT_pd, NY
 from acropolis.params import universal
 # cascade
@@ -387,7 +387,7 @@ class NuclearReactor(object):
         EC = me2/(22.*T)
         # Set the maximal energy, serving
         # as a cutoff for the integration
-        Emax = min( self._sE0, 10.*EC )
+        Emax = min( self._sE0, E_EC_max*EC )
         # For E > me2/T >> EC, the spectrum
         # is strongly suppressed
 
@@ -407,12 +407,12 @@ class NuclearReactor(object):
                             )
             # For performance reasons, also
             # cut the energy at threshold
-            Emax = EC
+            Emax = min(self._sE0, EC)
 
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
         # a linear interpolation, which also has less side effects
-        Fph = LogInterp(xsp, ysp)
+        Fph = LogInterp(xsp, ysp) # Interpolation on: Emin -> E0
         # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
             E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
