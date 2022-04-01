@@ -143,6 +143,8 @@ class InputInterface(object):
     # 1. COSMO_DATA ###########################################################
 
     def _find_index(self, x, x0):
+        # Returns an index ix such that x0
+        # lies between x[ix] and x[ix+1]
         ix = np.argmin( np.abs( x - x0 ) )
 
         # Check the edge of the array
@@ -152,7 +154,7 @@ class InputInterface(object):
             # --> No additional -1
             ix -= 1
 
-        # If not between ix and ix+1...
+        # If x0 is not between ix and ix+1,...
         if not (x[ix] <= x0 <= x[ix+1] or x[ix] >= x0 >= x[ix+1]):
             # ...it must be between ix-1 and ix
             ix -= 1
@@ -161,6 +163,9 @@ class InputInterface(object):
 
 
     def _interp_cosmo_data(self, val, xc, yc):
+        # ATTENTION: To ensure maximal performance,
+        # it is assumed that x is already sorted in
+        # either increasing or decreasing order
         x = self._sCosmoDataLog[:,xc]
         y = self._sCosmoDataLog[:,yc]
 
