@@ -77,7 +77,7 @@ def _get_E_index(E_log):
     index = int( ( Enum - 1 ) * ( E_log - Emin_log ) / ( Emax_log - Emin_log ) )
 
     # For points at the upper boundary, i+1 does not exist
-    return index if index != Enum -1 else index - 1
+    return index if index != Enum - 1 else index - 1
 
 
 @nb.jit(cache=True)
