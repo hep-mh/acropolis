@@ -1,40 +1,30 @@
-# Temporary changelog
-CHANGES
-
-# Files from actual projects
+# Files from personal projects
 acropolis/prj/*
+acropolis/data/cn.dat
 
 # Reference paper
-paper
-paper/*
-
-# To-do file
-TODO
-
-# Intermediate data files
-acropolis/data/*.dat
+paper*
 
 # AlterBBN files
-alterbbn/*
+alterbbn*
 
 # Temporary files
-tmp/*
-*_old*
-
-# Byte-compiled / optimized / DLL files
-__pycache__
-*.py[cod]
-*$py.class
+CHANGES
+TODO
 
 # Plots
 plots/*.pdf
 plots/data/*
-plots/old/*
 
 # Build files
 build/*
 dist/*
 ACROPOLIS.egg-info
+
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+*$py.class
 
 # TeX files
 *.tex
