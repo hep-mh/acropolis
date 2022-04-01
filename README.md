@@ -3,7 +3,7 @@
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.1](https://img.shields.io/badge/Current_Version-1.2.1-green.svg?style=flat-square)
+![Version: 1.2.2](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
 ![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
 ![Logo](https://acropolis.hepforge.org/ACROPOLIS.png)
@@ -33,7 +33,7 @@ v.1.3\
 
 v1.2.2\
 (In development)
- - Fixes for the issues #1 and #2 on GitHub
+ - Implemented fixes for the issues #1 and #2 on GitHub
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
  - Updated the neutron lifetime to the PDG 2020 recommended value
  - Included some example files, e.g. for parameter scans, in the directory examples/
