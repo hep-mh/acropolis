@@ -27,9 +27,13 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
-v1.3\
+v.1.3\
+(in development)
+- Made some initial plotting functions available in ``acropolis.plots``, which -- right now -- can be used to easily plot the results of parameter scans
+
+v1.2.2\
 (In development)
- - Made some initial plotting functions available in ``acropolis.plots``, which -- right now -- can be used to easily plot the results of parameter scans
+ - Fixes for the issues #1 and #2 on GitHub
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
  - Updated the neutron lifetime to the PDG 2020 recommended value
  - Included some example files, e.g. for parameter scans, in the directory examples/
