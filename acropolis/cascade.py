@@ -697,7 +697,9 @@ class _PositronReactionWrapper(object):
         )
 
 
-class _MuonReactionWrapper(_ReactionWrapperScaffold): # TODO
+# TODO: Not yet fully implemented
+#       Goal is ACROPOLIS v1.3
+class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # RATES ###################################################################
     # E is the energy of the incoming particle

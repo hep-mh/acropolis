@@ -75,7 +75,7 @@ c_si = 2.99792458e10
 tau_m = 2.1969811e-6
 
 # The neutron lifetime (in s)
-tau_n = 8.794e2 #8.802e2
+tau_n = 8.794e2 # pre PDG2020: 8.802e2
 
 # The lifetime of tritium (in s)
 # T_(1/2) = 3.885e8
