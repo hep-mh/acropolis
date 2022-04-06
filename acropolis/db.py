@@ -28,7 +28,8 @@ def import_data_from_db():
     start_time = time()
     print_info(
         "Extracting and reading database files.",
-        "acropolis.db.import_data_from_db"
+        "acropolis.db.import_data_from_db",
+        verbose_level=1
     )
 
     ratefl = gzip.open(db_file, "rb")
@@ -37,7 +38,9 @@ def import_data_from_db():
 
     end_time = time()
     print_info(
-        "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
+        "Finished after {:.1f}ms.".format( 1e3*(end_time - start_time) ),
+        "acropolis.db.import_data_from_db",
+        verbose_level=1
     )
 
     return ratedb
@@ -74,7 +77,7 @@ def _get_E_index(E_log):
     index = int( ( Enum - 1 ) * ( E_log - Emin_log ) / ( Emax_log - Emin_log ) )
 
     # For points at the upper boundary, i+1 does not exist
-    return index if index != Enum -1 else index - 1
+    return index if index != Enum - 1 else index - 1
 
 
 @nb.jit(cache=True)

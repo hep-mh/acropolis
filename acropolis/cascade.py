@@ -18,10 +18,10 @@ from acropolis.cache import cached_member
 # pprint
 from acropolis.pprint import print_warning, print_error
 # params
-from acropolis.params import me, me2, alpha, re, hbar, tau_m
+from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
-from acropolis.params import Emin
-from acropolis.params import approx_zero, eps, Ephb_T_max, E_EC_cut
+from acropolis.params import FX
+from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 from acropolis.params import NE_pd, NE_min
 
 
@@ -57,6 +57,10 @@ def _JIT_G(Ee, Eph, Ephb):
     dE_sqrt  = (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) )
     Ee_lim_m = ( Eph + Ephb - dE_sqrt )/2.
     Ee_lim_p = ( Eph + Ephb + dE_sqrt )/2.
+    # ATTENTION: White et al. impose the range in the soft
+    # photon limit, which is more difficult to handle but
+    # should lead to the same results, since the pair production
+    # kernel ensures that Ephb ~ T << Eph ~ O(MeV)
 
     if not ( me < Ee_lim_m <= Ee <= Ee_lim_p ):
         # CHECKED to never happen, since the intergration
@@ -65,13 +69,14 @@ def _JIT_G(Ee, Eph, Ephb):
 
     # Split the function into four summands
     # and calculate all of them separately
+    # Ee + Eep = Eph + Ephb
     sud  = 0.
     sud += 4.*( (Ee + Eep)**2. )*log( (4.*Ephb*Ee*Eep)/( me2*(Ee + Eep) ) )/( Ee*Eep )
     sud += ( me2/( Ephb*(Ee + Eep) ) - 1. ) * ( (Ee + Eep)**4. )/( (Ee**2.)*(Eep**2.) )
     # ATTENTION: no additional minus sign in sud[2]
     # It is unclear whether it is a type or an artifact
     # of the scan (in the original paper)
-    sud += 2.*( 2*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
+    sud += 2.*( 2.*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
     sud += -8.*Ephb*(Ee + Eep)/me2
 
     return sud
@@ -80,7 +85,10 @@ def _JIT_G(Ee, Eph, Ephb):
 # _PhotonReactionWrapper ######################################################
 
 @nb.jit(cache=True)
-def _JIT_ph_rate_pair_creation(y, x, T):
+def _JIT_ph_rate_pair_creation(logy, logx, T):
+    # Return the integrand for the 2d integral in log-space
+    x, y = exp(logx), exp(logy)
+
     # Define beta as a function of y
     b = sqrt(1. - 4.*me2/y)
 
@@ -92,13 +100,15 @@ def _JIT_ph_rate_pair_creation(y, x, T):
     # (the written limit is unitless, which must be wrong)
     # This limit is a consequence of the constraint on
     # the center-of-mass energy
-    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
+    sig_pc = .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
+
+    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * sig_pc * (x*y)
 
 
 @nb.jit(cache=True)
-def _JIT_ph_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_ph_kernel_inverse_compton(logx, E, Ep, T):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_F(E, Ep, x)*x/( pi2*(exp(x/T) - 1.) ) * x
 
@@ -112,17 +122,17 @@ def _JIT_el_rate_inverse_compton(y, x, E, T):
 
 
 @nb.jit(cache=True)
-def _JIT_el_kernel_inverse_compton(y, E, Ep, T):
+def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_F(Ep+x-E, Ep, x)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
 
 
 @nb.jit(cache=True)
-def _JIT_el_kernel_pair_creation(y, E, Ep, T):
+def _JIT_el_kernel_pair_creation(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(y)
+    x = exp(logx)
 
     return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
@@ -159,7 +169,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 # SpectrumGenerator ###########################################################
 
 @nb.jit(cache=True)
-def _JIT_set_spectra(F, i, Fi, cond):
+def _JIT_set_spectra(F, i, Fi, cond=False):
     F[:, i] = Fi
     # In the strongly compressed regime, manually
     # set the photon spectrum to zero in order to
@@ -168,10 +178,7 @@ def _JIT_set_spectra(F, i, Fi, cond):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
-    EC   = me2/(22.*T)
-    Ecut = E_EC_cut*EC
-
+def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of points in energy.
@@ -181,12 +188,12 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
 
     # Generate the grid for the different spectra
     # First index: X = photon, electron, positron
-    F_rt = np.zeros( (3, NE) )
+    F_rt = np.zeros( (NX, NE) )
 
     # Calculate F_X(E_S), NE-1
     _JIT_set_spectra(F_rt, -1, np.array([
         Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
-    ]), E_rt[-1] > Ecut)
+    ]))
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
     while i >= 0:
@@ -194,39 +201,39 @@ def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
         a = np.zeros( (NX,   ) )
 
         # Calculate the matrix B and the vector a
-        for j, X in enumerate( range(NX) ):
+        for X in range(NX):
             # Calculate B
-            B[j,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
+            B[X,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
 
             # Calculate a
-            a[j] = Sc[X,i]/G[X,i]
+            a[X] = Sc[X,i]/G[X,i]
 
-            a0  = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
-            for k in range(i+1, NE-2):
-                a0 += dy*E_rt[k]*K[X,:,i,k]*F_rt[:,k]
+            a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
+            for j in range(i+1, NE-1): # Goes to NE-2
+                a0 += dy*E_rt[j]*K[X,:,i,j]*F_rt[:,j]
 
-            for a0i in a0:
-                a[j] += a0i/G[X,i]
+            for a0X in a0:
+                a[X] += a0X/G[X,i]
 
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_rt, i,
             np.linalg.solve(np.identity(NX)-B, a)
-        , E_rt[i] > Ecut)
+        )
 
         i -= 1
 
     # Remove potential zeros
-    F_rt = F_rt.reshape( 3*NE )
+    F_rt = F_rt.reshape( NX*NE )
     for i, f in enumerate(F_rt):
         if f < approx_zero:
             F_rt[i] = approx_zero
-    F_rt = F_rt.reshape( (3, NE) )
+    F_rt = F_rt.reshape( (NX, NE) )
 
     # Define the result array...
-    res = np.zeros( (4, NE) )
+    res = np.zeros( (NX+1, NE) )
     # ...and fill it
-    res[0  , :] = E_rt
-    res[1:4, :] = F_rt
+    res[0     , :] = E_rt
+    res[1:NX+1, :] = F_rt
 
     return res
 
@@ -246,6 +253,8 @@ class _ReactionWrapperScaffold(object):
     # NUMBER DENSITIES of baryons, electrons and nucleons #####################
 
     def _nb(self, T):
+        # gs does not change anymore for the relevant temperature,
+        # hence (R0/R)^3 = gs(T)T^3/( gs(T0)T0^3) = (T/T0)^3
         return self._sEta * ( 2.*zeta3/pi2 ) * (T**3.)
 
 
@@ -264,16 +273,27 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
     def __init__(self, Y0, eta, db):
         super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
 
+
+    # CONTINUOUS ENERGY LOSS ##################################################
+    # E is the energy of the loosing particle
+    # T is the temperature of the background photons
+
+    # TOTAL CONTINUOUS ENERGY LOSS ############################################
+    def total_eloss(E, T):
+        return 0.
+
+
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
     # PHOTON-PHOTON SCATTERING ################################################
     def _rate_photon_photon(self, E, T):
-        if E > me2/T:
-            return 0.
+        #if E > me2/T:
+        #    return 0.
+        expf = exp( -E*T/me2 )
 
-        return 0.151348 * (alpha**4.) * me * (E/me)**3. * (T/me)**6.
+        return 0.151348 * (alpha**4.) * me * (E/me)**3. * (T/me)**6. * expf
 
 
     # COMPTON SCATTERING ######################################################
@@ -285,19 +305,37 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # BETHE-HEITLER PAIR PRODUCTION ###########################################
     def _rate_bethe_heitler(self, E, T):
-        # In general, it is necessary to use a different formula close to
-        # the reaction threshold, i.e. for E < 2me. However, this case never
-        # occurs as Emin = 1.5 > 2me (see 'acropolis.params')
-
-        # For small energies, the rate is best approximated by a constant
-        # (cf. 'hep-ph/0604251')
-        if E < 4.: E = 4.
+        # For small energies, the rate can be approximated by a constant
+        # (cf. 'hep-ph/0604251') --- NOT USED HERE
+        #if E < 4.: E = 4.
 
         k = E/me
 
+        # Below threshold, the rate vanishes
+        # This case never happens since Emin = 1.5 > 2me
+        # (see 'acropolis.params')
+        if k < 2:
+            return 0.
+
+        # Approximation for SMALL energies
+        if 2 <= k <= 4:
+            r = ( 2.*k - 4. )/( k + 2. + 2.*sqrt(2.*k) )
+
+            return ( alpha**3./me2 ) * self._nNZ2(T) * (2.*pi/3.) * ( (k-2.)/k )**3. * ( \
+                     1 + r/2. + (23./40.)*(r**2.) + (11./60.)*(r**3.) + (29./960.)*(r**4.) \
+                   )
+
+
+        # Approximation for LARGE energies
         log2k = log(2.*k)
-        # We implement corrections up to order (2./k)**2 ('astro-ph/9412055')
-        return ( alpha**3./me2 ) * self._nNZ2(T) * ( (28./9.)*log2k - 218./27. + (2./k)**2.*( (2./3.)*log2k**3. - log2k**2. + (6. - pi2/3.)*log2k + 2.*zeta3 + pi2/6. - 7./2. ) )
+        # We implement corrections up to order (2./k)**6 ('astro-ph/9412055')
+        # This is relevant in order to ensure a smooth transition at k = 4
+        return ( alpha**3./me2 ) * self._nNZ2(T) * ( \
+                   (28./9.)*log2k - 218./27. \
+                 + (2./k)**2. * ( (2./3.)*log2k**3. - log2k**2. + (6. - pi2/3.)*log2k + 2.*zeta3 + pi2/6. - 7./2. ) \
+                 - (2./k)**4. * ( (3./16.)*log2k + 1./8. ) \
+                 - (2./k)**6. * ( (29./2304.)*log2k - 77./13824. ) \
+               )
 
 
     # DOUBLE PHOTON PAIR PRODUCTION ###########################################
@@ -310,13 +348,18 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
         # Define the integration limits from the
         # constraint on the center-of-mass energy
-        llim = me2/E            # <  30*T (see above)
-        ulim = Ephb_T_max*T     # ~ 100*T
-        # ulim > llim, since me2/E < 30*T
+        llim = me2/E            # <  50*T (see above)
+        ulim = Ephb_T_max*T     # ~ 200*T
+        # ulim > llim, since me2/E < 50*T
         # CHECKED!
 
-        # Perform the integration in lin space
-        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, llim, ulim, lambda x: 4.*me2, lambda x: 4.*E*x, epsrel=eps, epsabs=0, args=(T,))
+        # Perform the integration in log-log space
+        # The limits for s are always in ascending order,
+        # i.e. 4*me2 < 4*E*x, since x > me2/E
+        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, log(llim), log(ulim), \
+                             lambda logx: log(4.*me2), lambda logx: log(4.*E) + logx, \
+                             epsrel=eps, epsabs=0, args=(T,)
+                          )
 
         return I_fso_E2[0]/( 8.*E**2. )
 
@@ -344,7 +387,12 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # PHOTON-PHOTON SCATTERING ################################################
     def _kernel_photon_photon(self, E, Ep, T):
-        return 1112./(10125.*pi) * (alpha**4.)/(me**8.) * 8.*(pi**4.)*(T**6.)/63. * Ep**2. * ( 1. - E/Ep + (E/Ep)**2. )**2.
+        #if Ep > me2/T:
+        #    return 0.
+        expf = exp( -Ep*T/me2 )
+
+        return 1112./(10125.*pi) * (alpha**4.)/(me**8.) * 8.*(pi**4.)*(T**6.)/63. \
+               * Ep**2. * ( 1. - E/Ep + (E/Ep)**2. )**2. * expf
 
 
     # COMPTON SCATTERING ######################################################
@@ -417,7 +465,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # RATES ###################################################################
-    # E is the energy of the outgoing particle
+    # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
@@ -538,6 +586,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         # '_PhotonReactionWrapper._rate_pair_creation'
         if Ep < me2/(50.*T):
             return 0.
+        # Ep is the incoming(!) energy
 
         dE, E2 = Ep - E, E**2.
         z1 = Ep*( me2 - 2.*dE*( sqrt(E2 - me2) - E ) )/( 4*Ep*dE + me2 )
@@ -592,7 +641,7 @@ class _PositronReactionWrapper(object):
 
 
     # RATES ###################################################################
-    # E is the energy of the outgoing particle
+    # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
@@ -648,8 +697,9 @@ class _PositronReactionWrapper(object):
         )
 
 
-class _MuonReactionWrapper(_ReactionWrapperScaffold): # TODO
-    pass
+# TODO: Not yet fully implemented
+#       Goal is ACROPOLIS v1.3
+class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # RATES ###################################################################
     # E is the energy of the incoming particle
@@ -657,7 +707,7 @@ class _MuonReactionWrapper(_ReactionWrapperScaffold): # TODO
 
     # MUON DECAY ##############################################################
     def _rate_muon_decay(self, E, T):
-        return hbar/tau_m
+        return hbar*mm/(tau_m*E)
 
 
     # INVERSE COMPTON SCATTERING ##############################################
@@ -677,15 +727,18 @@ class SpectrumGenerator(object):
         # no data in the folder 'data/', db = (None, None)
         db = import_data_from_db()
 
-        self._sY0 = Y0  # A dictionary containing the BBN parameter
+        # Define a dictionary containing the BBN parameter
+        self._sY0 = Y0
 
-        self._sRW = {   # A dictionary containing all reaction wrappers
+        # Define a dictionary containing all reaction wrappers
+        self._sRW = {
             0: _PhotonReactionWrapper  (self._sY0, eta, db),
             1: _ElectronReactionWrapper(self._sY0, eta, db),
             2: _PositronReactionWrapper(self._sY0, eta, db)
         }
 
-        self._sNX = 3   # The number of particle species (in the cascade)
+         # Set the number of particle species (in the cascade)
+        self._sNX = 1 + 2*FX
 
 
     def _rate_x(self, X, E, T):
@@ -700,46 +753,7 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def universal_spectrum(self, E0, S0, Sc, T):
-        # Define EC and EX as in 'astro-ph/0211258'
-        EC = me2/(22.*T)
-        EX = me2/(80.*T)
-
-        # Define the normalization K0 as in 'astro-ph/0211258'
-        K0 = E0/( (EX**2.) * ( 2. + log( EC/EX ) ) )
-
-        # Define the dimension of the grid
-        # as defined in 'params.py'...
-        NE = int(log10(E0/Emin)*NE_pd)
-        # ... but not less than NE_min points
-        NE = max(NE, NE_min)
-
-        # Generate the grid for the energy
-        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
-        # Generate the grid for the photon spectrum
-        F_rt = np.zeros(NE)
-
-        # Calculate the spectrum for the different energies
-        S0N = lambda T: S0[0](T) + S0[1](T) + S0[2](T)
-        for i, E in enumerate(E_rt):
-            if E < EX:
-                F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
-            elif E > EX and E < EC:
-                F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
-
-        # Remove potential zeros
-        F_rt[F_rt < approx_zero] = approx_zero
-
-        # Define the result array...
-        res = np.zeros( (2, NE) )
-        # ...and fill it
-        res[0, :] = E_rt
-        res[1, :] = F_rt
-
-        return res
-
-
-    def nonuniversal_spectrum(self, E0, S0, Sc, T, allX=False):
+    def get_spectrum(self, E0, S0, Sc, T, allX=False):
         # Define the dimension of the grid
         # as defined in 'params.py'...
         NE = int(log10(E0/Emin)*NE_pd)
@@ -767,6 +781,47 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T)
+        res = _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T)
 
+        # 'res' always has at least two columns
         return res[0:2,:] if allX == False else res
+
+
+    def get_universal_spectrum(self, E0, S0, Sc, T, offset=0.):
+        # Define EC and EX as in 'astro-ph/0211258'
+        EC = me2/(22.*T)
+        EX = me2/(80.*T)
+
+        # Define the normalization K0 as in 'astro-ph/0211258'
+        K0 = E0/( (EX**2.) * ( 2. + log( EC/EX ) ) )
+
+        # Define the dimension of the grid
+        # as defined in 'params.py'...
+        NE = int(log10(E0/Emin)*NE_pd)
+        # ... but not less than NE_min points
+        NE = max(NE, NE_min)
+
+        # Generate the grid for the energy
+        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
+        # Generate the grid for the photon spectrum
+        F_rt = np.zeros(NE)
+
+        # Calculate the spectrum for the different energies
+        # TODO: Perform integration
+        S0N = lambda T: sum(S0X(T) for S0X in S0)
+        for i, E in enumerate(E_rt):
+            if E < EX:
+                F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
+            elif E >= EX and E <= (1. + offset)*EC: # an offset enables better interpolation
+                F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
+
+        # Remove potential zeros
+        F_rt[F_rt < approx_zero] = approx_zero
+
+        # Define the result array...
+        res = np.zeros( (2, NE) )
+        # ...and fill it
+        res[0, :] = E_rt
+        res[1, :] = F_rt
+
+        return res

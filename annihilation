@@ -5,9 +5,12 @@ import sys
 
 # pprint
 from acropolis.pprint import print_Yf
-from acropolis.pprint import print_error
+from acropolis.pprint import print_error, print_version
 # models
 from acropolis.models import AnnihilationModel
+
+# Print version information
+print_version()
 
 # Extact the number of command line arguments...
 N = len(sys.argv)

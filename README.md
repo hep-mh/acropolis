@@ -3,8 +3,8 @@
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.1](https://img.shields.io/badge/Current_Version-1.2.1-green.svg?style=flat-square)
-![Dersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
+![Version: 1.2.2](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
+![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
 ![Logo](https://acropolis.hepforge.org/ACROPOLIS.png)
 When using this code for your own scientific publications, please cite
@@ -27,10 +27,21 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
+v1.2.2\
+(April 6, 2022)
+ - Implemented fixes for the issues #10 and #11 on GitHub
+ - Made some initial plotting functions available in ``acropolis.plots``, which can be used to easily plot the results of parameter scans
+ - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
+ - Updated the neutron lifetime to the PDG 2020 recommended value
+ - Included some example files, e.g. for parameter scans, in the directory examples/
+ - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to generate the file ``abundance_file.dat`` for sm.tar.gz
+ - Fixed a bug that prohibited running 2d parameter scans without 'fast' parameters
+ - Fixed a bug that caused INFO messages to be printed even for ``verbose=False``
+
 v1.2.1\
 (February 16, 2021)
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
- - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explcitly, we used ``failsafe=12``)
+ - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explicitly, we used ``failsafe=12``)
 
 v1.2\
 (January 15, 2021)
@@ -43,7 +54,7 @@ v1.2\
 v1.1\
 (December 1, 2020)
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
- - By including additional JIT compilation steps, the runtime without database files was drastically increased (by approximately a factor 15)
+ - By including additional JIT compilation steps, the runtime without database files was drastically decreased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (&#x223C;900MB &#x2192; &#x223C;20MB)
  - Fixed a bug, which could lead to NaNs when calculating heavily suppressed spectra with E<sub>0</sub> &#x226B; me<sup>2</sup>/(22T)
  - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ``ACROPOLIS``
@@ -56,24 +67,28 @@ v1.0\
 
 # Installation from PyPI
 
-This is the recommended way to install ACROPOLIS. To do so, make sure that ``pip`` is installed and afterwards simply execute the command
+*This is the recommended way to install ACROPOLIS.*
+
+To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards simply execute the command
 
 ```
 python3 -m pip install ACROPOLIS --user
 ```
 
-After the installation is completed, the different modules of ACROPOLIS can be directly imported into our own Python code (just like e.g. numpy). Using this procedure also ensures that the executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+
+If any dependencies of ACROPOLIS conflict with those for other programs in your work environment, it is strongly advised to utilize the capabilities of Python's virtual environments.
 
 
 # Installation from GitHub
 
-To install ACROPOLIS from source, first clone the respective git repository by executing the command
+To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
 
 ```
-git clone https://github.com/skumblex/acropolis.git
+git clone https://github.com/hep-mh/acropolis.git
 ```
 
-Afterward, switch into the main directory and run
+Afterward, switch into the newly created main directory and run
 
 ```
 python3 -m pip install . --user
@@ -81,19 +96,19 @@ python3 -m pip install . --user
 
 # Usage without installation
 
-If you just want to use ACROPOLIS without any additional installation steps, you have to at least make sure that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
+In case you just want to use ACROPOLIS without any additional installation steps, it is necessary to manually check that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
 
  - NumPy (> 1.19.1)
  - SciPy (>1.5.2)
  - Numba (> 0.51.1)
 
-The most recent versions of these packages can be collectively installed at user-level, i.e. without the need for root access, by executing the command
+The most recent versions of these packages can be collectively installed via the command
 
 ```
 python3 -m pip install numpy, scipy, numba --user
 ```
 
-If these dependencies conflict with those for other programs in your work environment, it is strongly advised to utilise the capabilities of Python's virtual environments.
+Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory (like ``decay`` and ``annihilation``). If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
 
 
 # Using the example models
@@ -112,4 +127,4 @@ annihilation 10 1e-25 0 0 0 1
 
 # Supported platforms
 
-ACROPOLIS should work on any platform with a working Python3 installation.
+ACROPOLIS should work on any platform that supports ``python3`` and ``clang``, the latter of which is required for ``numba`` to work.

@@ -4,11 +4,10 @@ from os import path
 from math import log10
 # numpy
 import numpy as np
-# scipy
-from scipy.interpolate import interp1d
-from scipy.integrate import cumtrapz
 # tarfilfe
 import tarfile
+# abc
+from abc import ABC, abstractmethod
 
 # util
 from acropolis.utils import cumsimp
@@ -26,28 +25,76 @@ def locate_sm_file():
     return sm_file
 
 
+def data_from_file(filename):
+    # Read the input file
+    tf, tc = tarfile.open(filename, "r:gz"), {}
+
+    # Extract the different files and
+    # store them in a dictionary
+    for m in tf.getmembers(): tc[m.name] = tf.extractfile(m)
+
+    # READ THE PREVIOUSLY GENERATED DATA
+    cosmo_data = np.genfromtxt(tc["cosmo_file.dat"]    )
+    abund_data = np.genfromtxt(tc["abundance_file.dat"])
+    param_data = np.genfromtxt(tc["param_file.dat"],
+                                        delimiter="=",
+                                        dtype=None,
+                                        encoding=None
+                                     )
+
+    return InputData(cosmo_data, abund_data, param_data)
+
+
+class AbstractData(ABC):
+
+    @abstractmethod
+    def get_cosmo_data(self):
+        pass
+
+    @abstractmethod
+    def get_abund_data(self):
+        pass
+
+    @abstractmethod
+    def get_param_data(self):
+        pass
+
+
+class InputData(AbstractData):
+
+    def __init__(self, cosmo_data, abund_data, param_data):
+        self._sCosmoData = cosmo_data
+        self._sAbundData = abund_data
+        self._sParamData = param_data
+
+
+    def get_cosmo_data(self):
+        return self._sCosmoData
+
+
+    def get_abund_data(self):
+        return self._sAbundData
+
+
+    def get_param_data(self):
+        return self._sParamData
+
+
 class InputInterface(object):
 
-    def __init__(self, input_file):
-        # Read the input file
-        tf, tc = tarfile.open(input_file, "r:gz"), {}
+    def __init__(self, input_data):
+        # If input_data is a filename, extract the data first
+        if type(input_data) == str:
+            input_data = data_from_file(input_data)
 
-        # Extract the different files and
-        # store them in a dictionary
-        for m in tf.getmembers(): tc[m.name] = tf.extractfile(m)
-
-        # READ THE PREVIOUSLY GENERATED DATA
-        self._sCosmoData = np.genfromtxt(tc["cosmo_file.dat"]    )
-        self._sAbundData = np.genfromtxt(tc["abundance_file.dat"])
-        self._sParamData = np.genfromtxt(tc["param_file.dat"],
-                                            delimiter="=",
-                                            dtype=None,
-                                            encoding=None
-                                         )
+        # Extract the provided input data
+        self._sCosmoData = input_data.get_cosmo_data()
+        self._sAbundData = input_data.get_abund_data()
+        self._sParamData = input_data.get_param_data()
 
         # Calculate the scale factor and add it
         sf = np.exp( cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
-        self._sCosmoData   = np.column_stack( [self._sCosmoData, sf] )
+        self._sCosmoData = np.column_stack( [self._sCosmoData, sf] )
 
         # Log the cosmo data for the interpolation
         # ATTENTION: At this point we have to take the
@@ -95,22 +142,42 @@ class InputInterface(object):
 
     # 1. COSMO_DATA ###########################################################
 
+    def _find_index(self, x, x0):
+        # Returns an index ix such that x0
+        # lies between x[ix] and x[ix+1]
+        ix = np.argmin( np.abs( x - x0 ) )
+
+        # Check the edge of the array
+        if ix == self._sCosmoDataShp[0] - 1:
+            # In this case, the condition
+            # below is always False
+            # --> No additional -1
+            ix -= 1
+
+        # If x0 is not between ix and ix+1,...
+        if not (x[ix] <= x0 <= x[ix+1] or x[ix] >= x0 >= x[ix+1]):
+            # ...it must be between ix-1 and ix
+            ix -= 1
+
+        return ix
+
+
     def _interp_cosmo_data(self, val, xc, yc):
+        # ATTENTION: To ensure maximal performance,
+        # it is assumed that x is already sorted in
+        # either increasing or decreasing order
         x = self._sCosmoDataLog[:,xc]
         y = self._sCosmoDataLog[:,yc]
-        N = self._sCosmoDataShp[0]
 
         val_log = log10(val)
-        # Extract the index corresponding to
-        # the data entries above and below 'val'
-        ix = np.argmin( np.abs( x - val_log ) )
-        if ix == N - 1:
-            ix -= 1
+
+        # Extract the index closest to 'val_log'
+        ix = self._find_index(x, val_log)
 
         m = (y[ix+1] - y[ix])/(x[ix+1] - x[ix])
         b = y[ix] - m*x[ix]
 
-        return 10**(m*val_log + b)
+        return 10.**(m*val_log + b)
 
 
     def temperature(self, t):
@@ -139,6 +206,10 @@ class InputInterface(object):
 
     def cosmo_column(self, yc, val, xc=1):
         return self._interp_cosmo_data(val, xc, yc)
+
+
+    def cosmo_range(self):
+        return ( min(self._sCosmoData[:,1]), max(self._sCosmoData[:,1]) )
 
 
     # 2. ABUNDANCE_DATA #######################################################

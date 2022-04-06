@@ -19,8 +19,9 @@ from acropolis.utils import LogInterp
 from acropolis.pprint import print_error, print_warning, print_info
 # params
 from acropolis.params import me, me2, hbar, tau_n, tau_t
-from acropolis.params import approx_zero, eps
-from acropolis.params import NT_pd
+from acropolis.params import approx_zero, eps, E_EC_max
+from acropolis.params import NT_pd, NY
+from acropolis.params import universal
 # cascade
 from acropolis.cascade import SpectrumGenerator
 
@@ -84,6 +85,29 @@ _eth = {
     15:  1.586627,
     16:  5.605794,
     17:  9.304680
+}
+# A dictionary containing the theoretical errors for
+# the different reaction rates (taken from 2006.14803)
+# in terms of a relative deviation from the mean value
+# 8 (He4->d+d); 10, 11; (Li6->...); 12, 14 (Li7->...)
+_rdev = {
+    1:  0.00,
+    2:  0.00,
+    3:  0.00,
+    4:  0.00,
+    5:  0.00,
+    6:  0.00,
+    7:  0.00,
+    8:  0.00,
+    9:  0.00,
+    10: 0.00,
+    11: 0.00,
+    12: 0.00,
+    13: 0.00,
+    14: 0.00,
+    15: 0.00,
+    16: 0.00,
+    17: 0.00
 }
 
 
@@ -361,8 +385,9 @@ class NuclearReactor(object):
 
     def _pdi_rates(self, T):
         EC = me2/(22.*T)
-        # Calculate the maximal energy
-        Emax = min( self._sE0, 10.*EC )
+        # Set the maximal energy, serving
+        # as a cutoff for the integration
+        Emax = min( self._sE0, E_EC_max*EC )
         # For E > me2/T >> EC, the spectrum
         # is strongly suppressed
 
@@ -372,15 +397,22 @@ class NuclearReactor(object):
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
-        xsp, ysp = self._sGen.nonuniversal_spectrum(
-                            self._sE0, self._sS0, self._sSc, T
-                        )
+        if not universal:
+            xsp, ysp = self._sGen.get_spectrum(
+                                self._sE0, self._sS0, self._sSc, T
+                            )
+        else:
+            xsp, ysp = self._sGen.get_universal_spectrum(
+                                self._sE0, self._sS0, self._sSc, T, offset=5e-2
+                            )
+            # For performance reasons, also
+            # cut the energy at threshold
+            Emax = min(self._sE0, EC)
 
         # Interpolate the photon spectrum (in log-log space)
         # With this procedure it should be sufficient to perform
         # a linear interpolation, which also has less side effects
-        # lgFph = interp1d( np.log(xsp), np.log(ysp), kind='linear' )
-        Fph = LogInterp(xsp, ysp)
+        Fph = LogInterp(xsp, ysp) # Interpolation on: Emin -> E0
         # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
             E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
@@ -391,28 +423,31 @@ class NuclearReactor(object):
 
         # Calculate the different rates by looping over all available reaction_id's
         for rid in _lrid:
-            # Do not perform the integral for energies below
-            # threshold or for strongly suppressed spectra
-            if _eth[rid] > Emax:
-                continue
-
-            # Perform the integration from the threshold energy to Emax
-            with warnings.catch_warnings(record=True) as w:
-                log_Emin, log_Emax = log(_eth[rid]), log(Emax)
-                I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
-
-                if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
-                    print_warning(
-                        "Slow convergence when calculating the pdi rates " +
-                        "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
-                        "acropolis.nucl.NuclearReactor._thermal_rates_at"
-                    )
-
-            # Calculate the 'delta-term'
+            # Calculate the 'delta-term'...
             I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+            # ... and use it as an initial value
+            pdi_rates[rid] = I_dt # might be zero due to exp. suppression!
 
-            # Add the delta term and save the result
-            pdi_rates[rid] = I_dt + I_Fs[0]
+            # Only perform the integral for energies above threshold,
+            # i.e. do not consider strongly suppressed spectra
+            if Emax > _eth[rid]:
+                # Perform the integration from the threshold energy to Emax
+                with warnings.catch_warnings(record=True) as w:
+                    log_Emin, log_Emax = log(_eth[rid]), log(Emax)
+                    I_Fs = quad(Fph_s, log_Emin, log_Emax, epsrel=eps, epsabs=0, args=(rid,))
+
+                    if len(w) == 1 and issubclass(w[0].category, IntegrationWarning):
+                        print_warning(
+                            "Slow convergence when calculating the pdi rates " +
+                            "@ rid = %i, T = %.3e, E0 = %.3e, Eth = %.3e" % (rid, T, self._sE0, _eth[rid]),
+                            "acropolis.nucl.NuclearReactor._thermal_rates_at"
+                        )
+
+                # Add the result of the integral to the 'delta' term
+                pdi_rates[rid] += I_Fs[0]
+
+            # Avoid potential zeros
+            pdi_rates[rid] = max(approx_zero, pdi_rates[rid])
 
         # Go home and play
         return pdi_rates
@@ -434,16 +469,18 @@ class NuclearReactor(object):
         start_time = time()
         print_info(
             "Calculating non-thermal spectra and reaction rates.",
-            "acropolis.nucl.NuclearReactor.get_thermal_rates"
+            "acropolis.nucl.NuclearReactor.get_pdi_grids",
+            verbose_level=1
         )
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
         for i, Ti in enumerate(Tr):
+            progress = 100*i/NT
             print_info(
-                "Progress: " + str( int( 1e3*i/NT )/10 ) + "%",
-                "acropolis.nucl.NuclearReactor.get_thermal_rates",
-                eol="\r"
+                "Progress: {:.1f}%".format(progress),
+                "acropolis.nucl.NuclearReactor.get_pdi_grids",
+                eol="\r", verbose_level=1
             )
             rates_at_i = self._pdi_rates(Ti)
             # Loop over the different reactions
@@ -452,7 +489,9 @@ class NuclearReactor(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*10 )/10 ) + "s."
+            "Finished after {:.1f}s.".format(end_time - start_time),
+            "acropolis.nucl.NuclearReactor.get_pdi_grids",
+            verbose_level=1
         )
 
         # Go get some sun
@@ -533,8 +572,9 @@ class MatrixGenerator(object):
 
         start_time = time()
         print_info(
-            "Running non-thermal nucleosynthesis.",
-            "acropolis.nucl.MatrixGenerator.get_matp"
+            "Calculating final transfer matrix.",
+            "acropolis.nucl.MatrixGenerator.get_matp",
+            verbose_level=1
         )
 
         nt = 0
@@ -543,10 +583,12 @@ class MatrixGenerator(object):
             # Columns: Loop over all relevant nuclei
             for nc in range(_nnuc):
                 nt += 1
+
+                progress = 100*nt/_nnuc**2
                 print_info(
-                    "Progress: " + str( int( 1e3*nt/_nnuc**2 )/10 ) + "%",
+                    "Progress: {:.1f}%".format(progress),
                     "acropolis.nucl.MatrixGenerator.get_matp",
-                    eol="\r"
+                    eol="\r", verbose_level=1
                 )
 
                 # Define the kernels for the integration in log-log space
@@ -559,10 +601,44 @@ class MatrixGenerator(object):
 
         end_time = time()
         print_info(
-            "Finished after " + str( int( (end_time - start_time)*1e4 )/10 ) + "ms."
+            "Finished after {:.1f}ms.".format( 1e3*(end_time - start_time) ),
+            "acropolis.nucl.MatrixGenerator.get_matp",
+            verbose_level=1
         )
 
         return (mpdi, mdcy)
+
+
+    def get_all_matp(self):
+        NT = len(self._sTemp)
+
+        start_time = time()
+        print_info(
+            "Calculating transfer matrices for all temperatures.",
+            "acropolis.nucl.MatrixGenerator.get_all_matp",
+            verbose_level=2
+        )
+
+        all_mpdi = np.zeros( (NT, NY, NY) )
+        all_mdcy = np.zeros( (NT, NY, NY) )
+        for i, temp in enumerate(self._sTemp):
+            progress = 100*i/NT
+            print_info(
+                "Progress: {:.1f}%".format(progress),
+                "acropolis.nucl.MatrixGenerator.get_all_matp",
+                eol="\r", verbose_level=2
+            )
+
+            all_mpdi[i, :, :], all_mdcy[i, :, :] = self.get_matp(temp)
+
+        end_time = time()
+        print_info(
+            "Finished after {:.1f}s.".format(end_time - start_time),
+            "acropolis.nucl.MatrixGenerator.get_all_matp",
+            verbose_level=2
+        )
+
+        return self._sTemp, (all_mpdi, all_mdcy)
 
 
     def get_final_matp(self):

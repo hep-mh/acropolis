@@ -13,12 +13,12 @@
         </p>
 
         <p>
-            ACROPOLIS is a generic framework to calculate the evolution of the light-element abundances due to photodisintegration reactions induced by different BSM particles. With ACROPOLIS, the widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. However, its modular structure also makes it possible to easily implement other BSM physics scenarios. ACROPOLIS is free software licensed under GPL3 and the full source code of the project is available at <a href="https://github.com/skumblex/acropolis">GitHub</a>, but it can also be installed from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> or by downloading one of the different .tar.gz archives from the <a href="/downloads">downloads sections</a> of this website.
+            ACROPOLIS is a generic framework to calculate the evolution of the light-element abundances due to photodisintegration reactions induced by different BSM particles. With ACROPOLIS, the widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. However, its modular structure also makes it possible to easily implement other BSM physics scenarios. ACROPOLIS is free software licensed under GPL3 and the full source code of the project is available at <a href="https://github.com/hep-mh/acropolis">GitHub</a>, but it can also be installed from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> or by downloading one of the different .tar.gz archives from the <a href="/downloads">downloads sections</a> of this website.
             <br/><br/>
             The easiest way to install ACROPOLIS, is to fetch it from <a href="https://pypi.org/project/ACROPOLIS/">PyPI</a> via pip, i.e. by running the command<br/><br/>
             <b>python3 -m pip install ACROPOLIS</b>
             <br/><br/>
-            The most recent version of the manual can be found <a href="https://github.com/skumblex/acropolis/blob/main/manual/manual.pdf">here</a>. In this document, you also find the most recent installation instructions.
+            The most recent version of the manual can be found <a href="https://github.com/hep-mh/acropolis/blob/main/manual/manual.pdf">here</a>. In this document, you also find the most recent installation instructions.
         </p>
 
         <p>
@@ -27,6 +27,21 @@
                 <li><b>ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS</b><br/>Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg<br/><a href="https://arxiv.org/abs/2011.06518">[arXiv:2011.06518]</a></li>
                 <li><b>Updated BBN constraints on electromagnetic decays of MeV-scale particles</b><br/>Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg<br/><a href="https://arxiv.org/abs/2011.06519">[arXiv:2011.06519]</a></li>
                 <li><b>BBN constraints on MeV-scale dark sectors. Part II. Electromagnetic decays</b><br/>Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild<br/><a href="https://arxiv.org/abs/1808.09324">[arXiv:1808.09324]</a></li>
+            </ul>
+        </p>
+
+        <p>
+            <h2><a href="/downloads/acropolis-1.2.2.tar.gz">v1.2.2</a> &laquo; Click here to download</h2>
+            (April 6, 2022)
+
+            <ul>
+                <li>Implemented fixes for the issues #10 and #11 on <a href="https://github.com/hep-mh/acropolis/issues">GitHub.</a></li>
+                <li>Made some initial plotting functions available in acropolis.plots, which can be used to easily plot the results of parameter scans</li>
+                <li>Improved the output that is printed to the screen (especially for parameter scans if verbose=True)</li>
+                <li>Updated the neutron lifetime to the PDG 2020 recommended value</li>
+                <li>Included a new c-file ./tools/create_sm_abundance_file.c, which can be used with <a href="https://alterbbn.hepforge.org/">AlterBBN</a> to generate the file abundance_file.dat for sm.tar.gz</li>
+                <li>Fixed a bug that prohibited running 2d parameter scans without 'fast' parameters</li>
+                <li>Fixed a bug that caused INFO messages to be printed even for verbose=False</li>
             </ul>
         </p>
 

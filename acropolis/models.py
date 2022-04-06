@@ -14,8 +14,8 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
-from acropolis.params import Emin
-from acropolis.params import NY
+from acropolis.params import Emin, NY
+from acropolis.params import universal
 # pprint
 from acropolis.pprint import print_info, print_warning
 
@@ -32,31 +32,30 @@ class AbstractModel(ABC):
         # The temperature range that is used for the calculation
         self._sTrg = self._temperature_range()
 
-        # Calculate the relevant physical quantities, i.e. ...
-        # ...the 'delta' source terms and...
-        self._sS0 = [
-            self._source_photon_0  ,
-            self._source_electron_0,
-            self._source_positron_0
-        ]
-        # ...the ISR source terms
-        self._sSc = [
-            self._source_photon_c  ,
-            self._source_electron_c,
-            self._source_positron_c
-        ]
+        # The relevant source terms
+        (self._sS0, self._sSc) = self.get_source_terms()
 
         # A buffer for high-performance scans
         self._sMatpBuffer = None
 
 
     def run_disintegration(self):
-        # Print a warning of the injection energy
+        # Print a warning if the injection energy
         # is larger than 1GeV, as this might lead
         # to wrong results
-        if int( self._sE0 ) > 1e3:
+        if not universal and int( self._sE0 ) > 1e3:
             print_warning(
                 "Injection energy > 1 GeV. Results cannot be trusted.",
+                "acropolis.models.AbstractMode.run_disintegration"
+            )
+
+        # Print a warning if the temperature range
+        # of the model is not covered by the data
+        # in cosmo_file.dat
+        cf_temp_rg = self._sII.cosmo_range()
+        if not (cf_temp_rg[0] <= self._sTrg[0] <= self._sTrg[1] <= cf_temp_rg[1]):
+            print_warning(
+                "Temperature range not covered by input data. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
 
@@ -65,7 +64,8 @@ class AbstractModel(ABC):
         if self._sE0 <= Emin:
             print_info(
                 "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractModel.run_disintegration"
+                "acropolis.models.AbstractModel.run_disintegration",
+                verbose_level=1
             )
             return self._squeeze_decays( self._sII.bbn_abundances() )
 
@@ -88,6 +88,24 @@ class AbstractModel(ABC):
         )
 
         return Yf
+
+
+    def get_source_terms(self):
+        # Collect the different source terms, i.e. ...
+        # ...the 'delta' source terms and...
+        s0 = [
+            self._source_photon_0  ,
+            self._source_electron_0,
+            self._source_positron_0
+        ]
+        # ...the continous source terms
+        sc = [
+            self._source_photon_c  ,
+            self._source_electron_c,
+            self._source_positron_c
+        ]
+
+        return (s0, sc)
 
 
     def _pdi_matrix(self):
@@ -175,9 +193,8 @@ class AbstractModel(ABC):
         return self._source_electron_0(T)
 
 
-    @abstractmethod
     def _source_photon_c(self, E, T):
-        pass
+        return 0.
 
 
     def _source_electron_c(self, E, T):
@@ -266,7 +283,6 @@ class DecayModel(AbstractModel):
 
         _sp = self._source_electron_0(T)
 
-        # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
 
 
@@ -298,6 +314,7 @@ class AnnihilationModel(AbstractModel):
 
         # Call the super constructor
         super(AnnihilationModel, self).__init__(self._sE0, self._sII)
+
 
     # DEPENDENT QUANTITIES ##############################################################
 
@@ -363,5 +380,4 @@ class AnnihilationModel(AbstractModel):
 
         _sp = self._source_electron_0(T)
 
-        # Divide by 2. since only one photon is produced
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )

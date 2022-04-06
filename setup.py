@@ -3,6 +3,9 @@ from setuptools import setup
 # os
 from os import path
 
+# version
+from acropolis.info import version, description, url, authors
+
 # Read the README.md file
 cwd = path.abspath( path.dirname(__file__) )
 with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
@@ -11,19 +14,19 @@ with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
 # Perform the actual setup
 setup(
     name='ACROPOLIS',
-    version='1.2.1',
-    python_requires=">=3.6",
-    description='A generiC fRamework fOr Photodisintegration Of LIght elementS',
+    version=version,
+    python_requires='>=3.6',
+    description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://acropolis.hepforge.org',
-    author='Paul Frederik Depta, Marco Hufnagel, Kai Schmidt-Hoberg',
+    url=url,
+    author=authors,
     license='GPL3',
     packages=[
         'acropolis'
     ],
     package_data={
-        'acropolis': ["data/*"]
+        'acropolis': ['data/*']
     },
     include_package_data=True,
     scripts=[
