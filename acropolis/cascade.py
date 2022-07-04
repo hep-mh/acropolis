@@ -4,11 +4,8 @@ from math import pi, log, log10, exp, sqrt
 import numpy as np
 # scipy
 from scipy.integrate import quad, dblquad
-from scipy.integrate import IntegrationWarning
 # numba
 import numba as nb
-# warnings
-import warnings
 
 # db
 from acropolis.db import import_data_from_db
@@ -16,7 +13,7 @@ from acropolis.db import in_rate_db, interp_rate_db
 # cache
 from acropolis.cache import cached_member
 # pprint
-from acropolis.pprint import print_warning, print_error
+from acropolis.pprint import print_error
 # params
 from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2

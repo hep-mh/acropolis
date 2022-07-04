@@ -7,7 +7,6 @@ import numpy as np
 # scipy
 from scipy.integrate import quad
 from scipy.integrate import IntegrationWarning
-from scipy.linalg import expm
 # time
 from time import time
 # warnings
@@ -18,7 +17,7 @@ from acropolis.utils import LogInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
-from acropolis.params import me, me2, hbar, tau_n, tau_t
+from acropolis.params import me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps, E_EC_max
 from acropolis.params import NT_pd, NY
 from acropolis.params import universal

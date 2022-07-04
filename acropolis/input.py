@@ -217,6 +217,7 @@ class InputInterface(object):
     def bbn_abundances(self):
         return self._sAbundData
 
+
     def bbn_abundances_0(self):
         return self._sAbundData[:,0]
 
