@@ -71,8 +71,8 @@ def _JIT_G(Ee, Eph, Ephb):
     sud += 4.*( (Ee + Eep)**2. )*log( (4.*Ephb*Ee*Eep)/( me2*(Ee + Eep) ) )/( Ee*Eep )
     sud += ( me2/( Ephb*(Ee + Eep) ) - 1. ) * ( (Ee + Eep)**4. )/( (Ee**2.)*(Eep**2.) )
     # ATTENTION: no additional minus sign in sud[2]
-    # It is unclear whether it is a type or an artifact
-    # of the scan (in the original paper)
+    # It is unclear whether it is a typo or an artifact
+    # of scanning the original document
     sud += 2.*( 2.*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
     sud += -8.*Ephb*(Ee + Eep)/me2
 
@@ -140,7 +140,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
     Em = Ee                                                      # E_-
     Ep = Eph - Ee                                                # E_+
 
-    # Define the various parameters that enter the x-section
+    # Define the various parameters that enter the cross-section
     pm = sqrt(Em*Em - me2)                                       # p_-
     pp = sqrt(Ep*Ep - me2)                                       # p_+
 
@@ -175,7 +175,7 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
+def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of points in energy.
@@ -184,10 +184,11 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
     dy = log(E_rt[-1]/Emin)/(NE-1)
 
     # Generate the grid for the different spectra
-    # First index: X = photon, electron, positron
+    # First index : X = photon, electron, positron
+    # Second index: Energy grid
     F_rt = np.zeros( (NX, NE) )
 
-    # Calculate F_X(E_S), NE-1
+    # Calculate F_X(E_0), NE-1
     _JIT_set_spectra(F_rt, -1, np.array([
         Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
     ]))
@@ -211,6 +212,11 @@ def _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T):
 
             for a0X in a0:
                 a[X] += a0X/G[X,i]
+        
+        # TODO In the Thomson limit, the coefficients for X=1
+        # remain the same. Hence, we can use range(1) in the
+        # loop above. The remaining components then need to
+        # be calculated seperately
 
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_rt, i,
@@ -269,15 +275,6 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     def __init__(self, Y0, eta, db):
         super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
-
-
-    # CONTINUOUS ENERGY LOSS ##################################################
-    # E is the energy of the loosing particle
-    # T is the temperature of the background photons
-
-    # TOTAL CONTINUOUS ENERGY LOSS ############################################
-    def total_eloss(E, T):
-        return 0.
 
 
     # RATES ###################################################################
@@ -459,6 +456,28 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
     def __init__(self, Y0, eta, db):
         super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
+
+
+    # CONTINUOUS ENERGY LOSS ##################################################
+    # E is the energy of the energy-loosing particle
+    # T is the temperature of the background photons
+
+    # THOMPSON SCATTERING #####################################################
+    def _eloss_thomson(self, E, T):
+        # The gamma factor of the charged particle
+        ga = E/me
+
+        Z = 1
+        # This relation also remains for non-relativistic
+        # particles, in which case gamma^2-1 = 0
+        # For the comparison with the White et al. paper
+        # use zeta(4) = p^4/90 and ga^2 - 1 --> ga^2
+        return -32.*(pi**3.)*(alpha**2.)*(ga**2. - 1)*(T**4.)*(Z**4.)/(135.*me2)
+
+
+    # TOTAL CONTINUOUS ENERGY LOSS ############################################
+    def total_eloss(self, E, T):
+        return _eloss_thomson(E, T)
 
 
     # RATES ###################################################################
@@ -709,6 +728,7 @@ class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # INVERSE COMPTON SCATTERING ##############################################
     def _rate_inverse_compton(self, E, T):
+        # TODO
         return 0.
 
 
@@ -778,7 +798,7 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, E0, S0, Sc, T)
+        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T)
 
         # 'res' always has at least two columns
         return res[0:2,:] if allX == False else res
