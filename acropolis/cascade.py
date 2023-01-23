@@ -18,7 +18,7 @@ from acropolis.pprint import print_error
 from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
 from acropolis.params import FX
-from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
+from acropolis.params import Emin, y_th, approx_zero, eps, Ephb_T_max
 from acropolis.params import NE_pd, NE_min
 
 
@@ -175,68 +175,83 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T):
+def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
     # Extract the number of particle species...
     NX = len(G)
-    # ...and the number of points in energy.
-    NE = len(E_rt)
+    # ...and the number of energy points
+    NE = len(E_grid)
 
-    dy = log(E_rt[-1]/Emin)/(NE-1)
+    dy = log(E_grid[-1]/Emin)/(NE-1)
 
     # Generate the grid for the different spectra
-    # First index : X = photon, electron, positron
-    # Second index: Energy grid
-    F_rt = np.zeros( (NX, NE) )
+    # 1. index: X = photon, electron, positron
+    # 2. index: Position in the energy grid
+    F_grid = np.zeros( (NX, NE) )
 
-    # Calculate F_X(E_0), NE-1
-    _JIT_set_spectra(F_rt, -1, np.array([
+    # Calculate F_X(E_0), last index NE-1
+    _JIT_set_spectra(F_grid, -1, np.array([
         Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
     ]))
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
-    while i >= 0:
+    while i >= 0: # Counting down
         B = np.zeros( (NX, NX) )
         a = np.zeros( (NX,   ) )
 
+        # Check if the approximation of continuous energy
+        # loss is justified (i.e. if inverse Compton
+        # scattering happens in the Thomson regime)
+        thomson_regime = False # TODO ( E_grid[i] < y_th*me2/T )
+
         # Calculate the matrix B and the vector a
-        for X in range(NX):
+        for X in range(1 if thomson_regime else NX):
             # Calculate B
-            B[X,:] = .5*dy*E_rt[i]*K[X,:,i,i]/G[X,i]
+            B[X,:] = .5*dy*E_grid[i]*K[X,:,i,i]/G[X,i]
 
             # Calculate a
             a[X] = Sc[X,i]/G[X,i]
 
-            a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_rt[-1]*K[X,:,i,-1]*F_rt[:,-1]
+            a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_grid[-1]*K[X,:,i,-1]*F_grid[:,-1]
             for j in range(i+1, NE-1): # Goes to NE-2
-                a0 += dy*E_rt[j]*K[X,:,i,j]*F_rt[:,j]
+                a0 += dy*E_grid[j]*K[X,:,i,j]*F_grid[:,j]
 
             for a0X in a0:
                 a[X] += a0X/G[X,i]
         
-        # TODO In the Thomson limit, the coefficients for X=1
-        # remain the same. Hence, we can use range(1) in the
-        # loop above. The remaining components then need to
-        # be calculated seperately
+        # In the Thomson regime, the coefficients for X=1
+        # remain the same (see loop above). However, the
+        # remaining components (electrons/positrons) need
+        # to be calculated differently in this regime
+        if thomson_regime:
+            a_th = 0 # TODO
+            B_th = 0
+
+            for X in range(1, NX): # no photons
+                # Calculate B
+                B[X,0] = B_th
+
+                # Calculate a
+                a[X] = a_th
 
         # Solve the system of linear equations for F
-        _JIT_set_spectra(F_rt, i,
+        _JIT_set_spectra(F_grid, i,
             np.linalg.solve(np.identity(NX)-B, a)
         )
 
         i -= 1
 
     # Remove potential zeros
-    F_rt = F_rt.reshape( NX*NE )
-    for i, f in enumerate(F_rt):
+    F_grid = F_grid.reshape( NX*NE )
+    for i, f in enumerate(F_grid):
         if f < approx_zero:
-            F_rt[i] = approx_zero
-    F_rt = F_rt.reshape( (NX, NE) )
+            F_grid[i] = approx_zero
+    F_grid = F_grid.reshape( (NX, NE) )
 
     # Define the result array...
     res = np.zeros( (NX+1, NE) )
     # ...and fill it
-    res[0     , :] = E_rt
-    res[1:NX+1, :] = F_rt
+    res[0     , :] = E_grid
+    res[1:NX+1, :] = F_grid
 
     return res
 
@@ -778,14 +793,14 @@ class SpectrumGenerator(object):
         NE = max(NE, NE_min)
 
         # Generate the grid for the energy
-        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
+        E_grid = np.logspace(log(Emin), log(E0), NE, base=np.e)
 
         # Generate the grid for the rates
-        G = np.array([[self._rate_x(X, E, T) for E in E_rt] for X in range(self._sNX)])
+        G = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in range(self._sNX)])
             # first index: X, second index according to energy E
 
         # Generate the grid for the kernels
-        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_rt] for E in E_rt] for Xp in range(self._sNX)] for X in range(self._sNX)])
+        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in range(self._sNX)] for X in range(self._sNX)])
             # first index: X, second index: Xp
             # third index according to energy E
             # fourth index according to energy Ep;
@@ -794,11 +809,11 @@ class SpectrumGenerator(object):
         # Generate the grids for the source terms
         # injection + final-state radiation
         S0 = np.array([S(T) for S in S0])
-        Sc = np.array([[ScX(E, T) for E in E_rt] for ScX in Sc])
+        Sc = np.array([[ScX(E, T) for E in E_grid] for ScX in Sc])
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_rt, G, K, S0, Sc, T)
+        res = _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T)
 
         # 'res' always has at least two columns
         return res[0:2,:] if allX == False else res
@@ -819,26 +834,26 @@ class SpectrumGenerator(object):
         NE = max(NE, NE_min)
 
         # Generate the grid for the energy
-        E_rt = np.logspace(log(Emin), log(E0), NE, base=np.e)
+        E_grid = np.logspace(log(Emin), log(E0), NE, base=np.e)
         # Generate the grid for the photon spectrum
-        F_rt = np.zeros(NE)
+        F_grid = np.zeros(NE)
 
         # Calculate the spectrum for the different energies
         # TODO: Perform integration
         S0N = lambda T: sum(S0X(T) for S0X in S0)
-        for i, E in enumerate(E_rt):
+        for i, E in enumerate(E_grid):
             if E < EX:
-                F_rt[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
+                F_grid[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
             elif E >= EX and E <= (1. + offset)*EC: # an offset enables better interpolation
-                F_rt[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
+                F_grid[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
 
         # Remove potential zeros
-        F_rt[F_rt < approx_zero] = approx_zero
+        F_grid[F_grid < approx_zero] = approx_zero
 
         # Define the result array...
         res = np.zeros( (2, NE) )
         # ...and fill it
-        res[0, :] = E_rt
-        res[1, :] = F_rt
+        res[0, :] = E_grid
+        res[1, :] = F_grid
 
         return res

@@ -111,7 +111,6 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 # not include all injected particle types
 # 0: Photons
 # 1: Photons, Electrons/Positrons
-# 2: Photons, Electrons/Positrons, Anti-/Muons (not yet implemented)
 # Default: 1
 FX = 1
 
@@ -132,6 +131,12 @@ NC = 5
 # (reaction_id: 15 in 'astro-ph/0211258')
 # Default: 1.5
 Emin = 1.5
+
+# The threshold value for y = E_e*T/me^2 at which
+# inverse Compton scattering is assumed to happen
+# in the Thompson regime
+# Default: 0.05
+y_th = 0.05
 
 # The value that is used for 'approximately' zero
 # Default: 1e-200
