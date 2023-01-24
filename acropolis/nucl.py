@@ -195,11 +195,11 @@ class NuclearReactor(object):
         # The baryon-to-photon ratio at the time of the CMB
         self._sEta = self._sII.parameter("eta")
 
-        # The source terms without the detla function
+        # The prefactor of the delta source term
         self._sS0 = s0
 
-        # The FSR source terms
-        self._sSc = sc
+        # The continouos source terms
+        self._sSC = sc
 
         # The approximate decay temperature of the mediator
         self._sTrg  = temp_rg
@@ -398,11 +398,11 @@ class NuclearReactor(object):
         # Calculate the spectra for the given temperature
         if not universal:
             xsp, ysp = self._sGen.get_spectrum(
-                                self._sE0, self._sS0, self._sSc, T
+                                self._sE0, self._sS0, self._sSC, T
                             )
         else:
             xsp, ysp = self._sGen.get_universal_spectrum(
-                                self._sE0, self._sS0, self._sSc, T, offset=5e-2
+                                self._sE0, self._sS0, self._sSC, T, offset=5e-2
                             )
             # For performance reasons, also
             # cut the energy at threshold

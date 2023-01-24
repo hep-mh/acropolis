@@ -175,7 +175,7 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
+def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of energy points
@@ -190,7 +190,7 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
 
     # Calculate F_X(E_0), last index NE-1
     _JIT_set_spectra(F_grid, -1, np.array([
-        Sc[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
+        SC[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
     ]))
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
@@ -204,12 +204,12 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
         thomson_regime = False # TODO ( E_grid[i] < y_th*me2/T )
 
         # Calculate the matrix B and the vector a
-        for X in range(1 if thomson_regime else NX):
+        for X in range(NX):
             # Calculate B
             B[X,:] = .5*dy*E_grid[i]*K[X,:,i,i]/G[X,i]
 
             # Calculate a
-            a[X] = Sc[X,i]/G[X,i]
+            a[X] = SC[X,i]/G[X,i]
 
             a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_grid[-1]*K[X,:,i,-1]*F_grid[:,-1]
             for j in range(i+1, NE-1): # Goes to NE-2
@@ -217,21 +217,6 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
 
             for a0X in a0:
                 a[X] += a0X/G[X,i]
-        
-        # In the Thomson regime, the coefficients for X=1
-        # remain the same (see loop above). However, the
-        # remaining components (electrons/positrons) need
-        # to be calculated differently in this regime
-        if thomson_regime:
-            a_th = 0 # TODO
-            B_th = 0
-
-            for X in range(1, NX): # no photons
-                # Calculate B
-                B[X,0] = B_th
-
-                # Calculate a
-                a[X] = a_th
 
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_grid, i,
@@ -247,13 +232,13 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T):
             F_grid[i] = approx_zero
     F_grid = F_grid.reshape( (NX, NE) )
 
-    # Define the result array...
-    res = np.zeros( (NX+1, NE) )
+    # Define the output array...
+    out = np.zeros( (NX+1, NE) )
     # ...and fill it
-    res[0     , :] = E_grid
-    res[1:NX+1, :] = F_grid
+    out[0     , :] = E_grid
+    out[1:NX+1, :] = F_grid
 
-    return res
+    return out
 
 
 ###############################################################################
@@ -290,6 +275,15 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     def __init__(self, Y0, eta, db):
         super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
+
+
+    # CONTINUOUS ENERGY LOSS ##################################################
+    # E is the energy of the energy-loosing particle
+    # T is the temperature of the background photons
+
+    # TOTAL CONTINUOUS ENERGY LOSS ############################################
+    def total_eloss(self, E, T):
+        return 0.
 
 
     # RATES ###################################################################
@@ -492,7 +486,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
     # TOTAL CONTINUOUS ENERGY LOSS ############################################
     def total_eloss(self, E, T):
-        return _eloss_thomson(E, T)
+        return self._eloss_thomson(E, T)
 
 
     # RATES ###################################################################
@@ -671,6 +665,20 @@ class _PositronReactionWrapper(object):
         self._sER = _ElectronReactionWrapper(Y0, eta, db)
 
 
+    # CONTINUOUS ENERGY LOSS ##################################################
+    # E is the energy of the energy-loosing particle
+    # T is the temperature of the background photons
+
+    # THOMPSON SCATTERING #####################################################
+    def _eloss_thomson(self, E, T):
+        return self._sER._eloss_thomson(E, T)
+
+
+    # TOTAL CONTINUOUS ENERGY LOSS ############################################
+    def total_eloss(self, E, T):
+        return self._eloss_thomson(E, T)
+
+
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
@@ -785,7 +793,7 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def get_spectrum(self, E0, S0, Sc, T, allX=False):
+    def get_spectrum(self, E0, S0f, SCf, T, allX=False):
         # Define the dimension of the grid
         # as defined in 'params.py'...
         NE = int(log10(E0/Emin)*NE_pd)
@@ -808,18 +816,18 @@ class SpectrumGenerator(object):
 
         # Generate the grids for the source terms
         # injection + final-state radiation
-        S0 = np.array([S(T) for S in S0])
-        Sc = np.array([[ScX(E, T) for E in E_grid] for ScX in Sc])
+        S0 = np.array([S(T) for S in S0f])
+        SC = np.array([[SCX(E, T) for E in E_grid] for SCX in SCf])
 
         # Calculate the spectra by solving
         # the cascade equation
-        res = _JIT_solve_cascade_equation(E_grid, G, K, S0, Sc, T)
+        out = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T)
 
-        # 'res' always has at least two columns
-        return res[0:2,:] if allX == False else res
+        # 'out' always has at least two columns
+        return out[0:2,:] if allX == False else out
 
 
-    def get_universal_spectrum(self, E0, S0, Sc, T, offset=0.):
+    def get_universal_spectrum(self, E0, S0f, SCf, T, offset=0.):
         # Define EC and EX as in 'astro-ph/0211258'
         EC = me2/(22.*T)
         EX = me2/(80.*T)
@@ -840,7 +848,7 @@ class SpectrumGenerator(object):
 
         # Calculate the spectrum for the different energies
         # TODO: Perform integration
-        S0N = lambda T: sum(S0X(T) for S0X in S0)
+        S0N = lambda T: sum(S0X(T) for S0X in S0f)
         for i, E in enumerate(E_grid):
             if E < EX:
                 F_grid[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
@@ -850,10 +858,10 @@ class SpectrumGenerator(object):
         # Remove potential zeros
         F_grid[F_grid < approx_zero] = approx_zero
 
-        # Define the result array...
-        res = np.zeros( (2, NE) )
+        # Define the output array...
+        out = np.zeros( (2, NE) )
         # ...and fill it
-        res[0, :] = E_grid
-        res[1, :] = F_grid
+        out[0, :] = E_grid
+        out[1, :] = F_grid
 
-        return res
+        return out
