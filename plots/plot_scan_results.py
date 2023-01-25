@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 # sys
-import sys; sys.path.append('../..')
+import sys; sys.path.append('..')
 
 # plots
 from acropolis.plots import tex_title, tex_labels

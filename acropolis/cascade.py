@@ -198,29 +198,33 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
         B = np.zeros( (NX, NX) )
         a = np.zeros( (NX,   ) )
 
-        # Check if the approximation of continuous energy
-        # loss is justified (i.e. if inverse Compton
-        # scattering happens in the Thomson regime)
-        thomson_regime = False # TODO ( E_grid[i] < y_th*me2/T )
-
+        I = np.identity(NX)
         # Calculate the matrix B and the vector a
         for X in range(NX):
-            # Calculate B
-            B[X,:] = .5*dy*E_grid[i]*K[X,:,i,i]/G[X,i]
+            # Calculate B, : <--> Xp
+            B[X,:] = -.5*dy*E_grid[i]*K[X,:,i,i] + G[X,i]*I[X,:]
 
             # Calculate a
-            a[X] = SC[X,i]/G[X,i]
+            a[X] = SC[X,i]
+            for Xp in range(NX):
+                a[X] += K[X,Xp,i,-1]*S0[Xp]/G[Xp,-1] + .5*dy*E_grid[-1]*K[X,Xp,i,-1]*F_grid[Xp,-1]
+                for j in range(i+1, NE-1): # Goes from i+1 to NE-2
+                    a[X] += dy*E_grid[j]*K[X,Xp,i,j]*F_grid[Xp,j]
+            
+            # Alternative implementation
+            if False:
+                # One entry for each value of X'
+                a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_grid[-1]*K[X,:,i,-1]*F_grid[:,-1]
+                for j in range(i+1, NE-1): # Goes to NE-2
+                    a0 += dy*E_grid[j]*K[X,:,i,j]*F_grid[:,j]
 
-            a0 = K[X,:,i,-1]*S0[:]/G[:,-1] + .5*dy*E_grid[-1]*K[X,:,i,-1]*F_grid[:,-1]
-            for j in range(i+1, NE-1): # Goes to NE-2
-                a0 += dy*E_grid[j]*K[X,:,i,j]*F_grid[:,j]
-
-            for a0X in a0:
-                a[X] += a0X/G[X,i]
+                # Perform the sum over X' in a
+                for a0X in a0:
+                    a[X] += a0X
 
         # Solve the system of linear equations for F
         _JIT_set_spectra(F_grid, i,
-            np.linalg.solve(np.identity(NX)-B, a)
+            np.linalg.solve(B, a)
         )
 
         i -= 1
@@ -275,15 +279,6 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     def __init__(self, Y0, eta, db):
         super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
-
-
-    # CONTINUOUS ENERGY LOSS ##################################################
-    # E is the energy of the energy-loosing particle
-    # T is the temperature of the background photons
-
-    # TOTAL CONTINUOUS ENERGY LOSS ############################################
-    def total_eloss(self, E, T):
-        return 0.
 
 
     # RATES ###################################################################
@@ -467,28 +462,6 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
 
 
-    # CONTINUOUS ENERGY LOSS ##################################################
-    # E is the energy of the energy-loosing particle
-    # T is the temperature of the background photons
-
-    # THOMPSON SCATTERING #####################################################
-    def _eloss_thomson(self, E, T):
-        # The gamma factor of the charged particle
-        ga = E/me
-
-        Z = 1
-        # This relation also remains for non-relativistic
-        # particles, in which case gamma^2-1 = 0
-        # For the comparison with the White et al. paper
-        # use zeta(4) = p^4/90 and ga^2 - 1 --> ga^2
-        return -32.*(pi**3.)*(alpha**2.)*(ga**2. - 1)*(T**4.)*(Z**4.)/(135.*me2)
-
-
-    # TOTAL CONTINUOUS ENERGY LOSS ############################################
-    def total_eloss(self, E, T):
-        return self._eloss_thomson(E, T)
-
-
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
@@ -665,20 +638,6 @@ class _PositronReactionWrapper(object):
         self._sER = _ElectronReactionWrapper(Y0, eta, db)
 
 
-    # CONTINUOUS ENERGY LOSS ##################################################
-    # E is the energy of the energy-loosing particle
-    # T is the temperature of the background photons
-
-    # THOMPSON SCATTERING #####################################################
-    def _eloss_thomson(self, E, T):
-        return self._sER._eloss_thomson(E, T)
-
-
-    # TOTAL CONTINUOUS ENERGY LOSS ############################################
-    def total_eloss(self, E, T):
-        return self._eloss_thomson(E, T)
-
-
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
@@ -795,9 +754,10 @@ class SpectrumGenerator(object):
 
     def get_spectrum(self, E0, S0f, SCf, T, allX=False):
         # Define the dimension of the grid
-        # as defined in 'params.py'...
+        # from the params in 'params.py'...
         NE = int(log10(E0/Emin)*NE_pd)
-        # ... but not less than NE_min points
+        # ... but do not use less than NE_min
+        # points
         NE = max(NE, NE_min)
 
         # Generate the grid for the energy
