@@ -7,11 +7,13 @@ from scipy.integrate import quad, dblquad
 # numba
 import numba as nb
 
+# eloss
+from acropolis.eloss import dEdt_thomson
 # db
 from acropolis.db import import_data_from_db
 from acropolis.db import in_rate_db, interp_rate_db
 # cache
-from acropolis.cache import cached_member
+from acropolis.cache import cached_rate_or_kernel
 # pprint
 from acropolis.pprint import print_error
 # params
@@ -175,7 +177,7 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
 
 
 @nb.jit(cache=True)
-def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
+def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, De_th, T):
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of energy points
@@ -189,9 +191,12 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
     F_grid = np.zeros( (NX, NE) )
 
     # Calculate F_X(E_0), last index NE-1
-    _JIT_set_spectra(F_grid, -1, np.array([
+    FX_E0 = np.array([
         SC[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
-    ]))
+    ])
+    # -->
+    _JIT_set_spectra(F_grid, -1, FX_E0)
+
     # Loop over all energies
     i = (NE - 1) - 1 # start at the second to last index, NE-2
     while i >= 0: # Counting down
@@ -210,7 +215,7 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
                 a[X] += K[X,Xp,i,-1]*S0[Xp]/G[Xp,-1] + .5*dy*E_grid[-1]*K[X,Xp,i,-1]*F_grid[Xp,-1]
                 for j in range(i+1, NE-1): # Goes from i+1 to NE-2
                     a[X] += dy*E_grid[j]*K[X,Xp,i,j]*F_grid[Xp,j]
-            
+
             # Alternative implementation
             if False:
                 # One entry for each value of X'
@@ -222,7 +227,7 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
                 for a0X in a0:
                     a[X] += a0X
 
-        # Solve the system of linear equations for F
+        # Solve the system of linear equations of the form BF = a
         _JIT_set_spectra(F_grid, i,
             np.linalg.solve(B, a)
         )
@@ -374,7 +379,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
+    def total_rate(self, E, T, enforce_thomson=False):
         return self._rate_photon_photon(E, T) + self._rate_compton(E, T) + self._rate_bethe_heitler(E, T) + self._rate_pair_creation_db(E, T)
 
 
@@ -407,7 +412,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_member
+    @cached_rate_or_kernel
     def _kernel_inverse_compton(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -440,7 +445,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
-    def total_kernel_x(self, E, Ep, T, X):
+    def total_kernel_x(self, E, Ep, T, X, enforce_thomson=False):
         if X == 0: return self._kernel_photon_photon(E, Ep, T) + self._kernel_compton(E, Ep, T)
         # Photon -> Photon
 
@@ -467,7 +472,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_member
+    @cached_rate_or_kernel
     def _rate_inverse_compton(self, E, T):
         # Define the upper limit for the integration over x
         ulim = min( E - me2/(4.*E), Ephb_T_max*T )
@@ -486,7 +491,10 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(E**2.)
 
 
-    def _rate_inverse_compton_db(self, E, T):
+    def _rate_inverse_compton_db(self, E, T, enforce_thomson=False):
+        if enforce_thomson and E < y_th*me2/T:
+            return 0.
+
         E_log, T_log = log10(E), log10(T)
         if ( self._sRateDb is None ) or ( not in_rate_db(E_log, T_log) ):
             return self._rate_inverse_compton(E, T)
@@ -495,8 +503,8 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
-        return self._rate_inverse_compton_db(E, T)
+    def total_rate(self, E, T, enforce_thomson=False):
+        return self._rate_inverse_compton_db(E, T, enforce_thomson)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -505,8 +513,11 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
     # T  is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_member
-    def _kernel_inverse_compton(self, E, Ep, T):
+    @cached_rate_or_kernel
+    def _kernel_inverse_compton(self, E, Ep, T, enforce_thomson=False):
+        if enforce_thomson and E < y_th*me2/T:
+            return 0.
+
         # E == Ep leads to a divergence in
         # the Bose-Einstein distribution
         # TODO ???
@@ -564,7 +575,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # BETHE_HEITLER PAIR CREATION #############################################
-    @cached_member
+    @cached_rate_or_kernel
     def _kernel_bethe_heitler(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -576,7 +587,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # DOUBLE PHOTON PAIR CREATION #############################################
-    @cached_member
+    @cached_rate_or_kernel
     def _kernel_pair_creation(self, E, Ep, T):
         # In general, the threshold is Ep >~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
@@ -616,11 +627,11 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
-    def total_kernel_x(self, E, Ep, T, X):
+    def total_kernel_x(self, E, Ep, T, X, enforce_thomson=False):
         if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation(E, Ep, T)
         # Photon -> Electron
 
-        if X == 1: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 1: return self._kernel_inverse_compton(E, Ep, T, enforce_thomson)
         # Electron -> Electron
 
         if X == 2: return 0.
@@ -643,13 +654,13 @@ class _PositronReactionWrapper(object):
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    def _rate_inverse_compton_db(self, E, T):
-        return self._sER._rate_inverse_compton_db(E, T)
+    def _rate_inverse_compton_db(self, E, T, enforce_thomson=False):
+        return self._sER._rate_inverse_compton_db(E, T, enforce_thomson)
 
 
     # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
-        return self._rate_inverse_compton_db(E, T)
+    def total_rate(self, E, T, enforce_thomson=False):
+        return self._rate_inverse_compton_db(E, T, enforce_thomson)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -658,8 +669,8 @@ class _PositronReactionWrapper(object):
     # T  is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    def _kernel_inverse_compton(self, E, Ep, T):
-        return self._sER._kernel_inverse_compton(E, Ep, T)
+    def _kernel_inverse_compton(self, E, Ep, T, enforce_thomson=False):
+        return self._sER._kernel_inverse_compton(E, Ep, T, enforce_thomson)
 
 
     # COMPTON SCATTERING ######################################################
@@ -679,14 +690,14 @@ class _PositronReactionWrapper(object):
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
-    def total_kernel_x(self, E, Ep, T, X):
+    def total_kernel_x(self, E, Ep, T, X, enforce_thomson=False):
         if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation(E, Ep, T)
         # Photon -> Positron
 
         if X == 1: return 0.
         # Electron -> Positron
 
-        if X == 2: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 2: return self._kernel_inverse_compton(E, Ep, T, enforce_thomson)
         # Positron -> Positron
 
         print_error(
@@ -740,12 +751,12 @@ class SpectrumGenerator(object):
         self._sNX = 1 + 2*FX
 
 
-    def _rate_x(self, X, E, T):
-        return self._sRW[X].total_rate(E, T)
+    def _rate_x(self, X, E, T, enforce_thomson=False):
+        return self._sRW[X].total_rate(E, T, enforce_thomson)
 
 
-    def _kernel_x_xp(self, X, Xp, E, Ep, T):
-        return self._sRW[X].total_kernel_x(E, Ep, T, Xp)
+    def _kernel_x_xp(self, X, Xp, E, Ep, T, enforce_thomson=False):
+        return self._sRW[X].total_kernel_x(E, Ep, T, Xp, enforce_thomson)
 
 
     def rate_photon(self, E, T):
@@ -775,13 +786,16 @@ class SpectrumGenerator(object):
             # For Ep < E, the kernel is simply 0.
 
         # Generate the grids for the source terms
-        # injection + final-state radiation
+        # monochromatic + continuous
         S0 = np.array([S(T) for S in S0f])
         SC = np.array([[SCX(E, T) for E in E_grid] for SCX in SCf])
 
+        # Generate the grid for the energy-loss terms
+        De_th = np.array([dEdt_thomson(E, T, me) for E in E_grid])
+
         # Calculate the spectra by solving
         # the cascade equation
-        out = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T)
+        out = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, De_th, T)
 
         # 'out' always has at least two columns
         return out[0:2,:] if allX == False else out
@@ -807,13 +821,13 @@ class SpectrumGenerator(object):
         F_grid = np.zeros(NE)
 
         # Calculate the spectrum for the different energies
-        # TODO: Perform integration
-        S0N = lambda T: sum(S0X(T) for S0X in S0f)
+        # TODO: Perform integration of continouos source terms
+        SN = lambda T: sum(S0X(T) for S0X in S0f) # Normalization
         for i, E in enumerate(E_grid):
             if E < EX:
-                F_grid[i] = S0N(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
+                F_grid[i] = SN(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
             elif E >= EX and E <= (1. + offset)*EC: # an offset enables better interpolation
-                F_grid[i] = S0N(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
+                F_grid[i] = SN(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
 
         # Remove potential zeros
         F_grid[F_grid < approx_zero] = approx_zero
