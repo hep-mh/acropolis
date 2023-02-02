@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+echo "Select the repository for the upload:"
+# Ask the user to select a repository
+repo=$(gum choose 'testpypi' 'pypi')
+
+# Upload to the selected repository
+twine upload --repository $repo dist/*
