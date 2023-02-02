@@ -27,8 +27,9 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
-v1.2.2\
-(April 6, 2022)
+<details>
+<summary>v1.2.2 (April 6, 2022)</summary>
+
  - Implemented fixes for the issues #10 and #11 on GitHub
  - Made some initial plotting functions available in ``acropolis.plots``, which can be used to easily plot the results of parameter scans
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
@@ -37,22 +38,28 @@ v1.2.2\
  - Included a new c-file tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to generate the file ``abundance_file.dat`` for sm.tar.gz
  - Fixed a bug that prohibited running 2d parameter scans without 'fast' parameters
  - Fixed a bug that caused INFO messages to be printed even for ``verbose=False``
+</details><br />
 
-v1.2.1\
-(February 16, 2021)
+<details>
+<summary>v1.2.1 (February 16, 2021)</summary>
+
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
  - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explicitly, we used ``failsafe=12``)
+</details><br />
 
-v1.2\
-(January 15, 2021)
+<details>
+<summary>v1.2 (January 15, 2021)</summary>
+
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
  - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 -m pip install . --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
+</details><br />
 
 
-v1.1\
-(December 1, 2020)
+<details>
+<summary>v1.1 (December 1, 2020)</summary>
+
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically decreased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (&#x223C;900MB &#x2192; &#x223C;20MB)
@@ -60,16 +67,19 @@ v1.1\
  - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ``ACROPOLIS``
  - Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines
  - Added additional info and warning messages for the user's convenience
+</details><br />
 
-v1.0\
-(November 12, 2020)
+<details>
+<summary>v1.0 (November 12, 2020)</summary>
+
  - Initial release
+</details><br />
 
 # Installation from PyPI
 
-*This is the recommended way to install ACROPOLIS.*
+*This is the recommended way to install ACROPOLIS!*
 
-To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards simply execute the command
+To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards execute the command
 
 ```
 python3 -m pip install ACROPOLIS --user
@@ -82,6 +92,9 @@ If any dependencies of ACROPOLIS conflict with those for other programs in your 
 
 # Installation from GitHub
 
+<details>
+<summary>Click to expand</summary>
+
 To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
 
 ```
@@ -93,8 +106,12 @@ Afterward, switch into the newly created main directory and run
 ```
 python3 -m pip install . --user
 ```
+</details><br />
 
 # Usage without installation
+
+<details>
+<summary>Click to expand</summary>
 
 In case you just want to use ACROPOLIS without any additional installation steps, it is necessary to manually check that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
 
@@ -109,6 +126,7 @@ python3 -m pip install numpy, scipy, numba --user
 ```
 
 Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory (like ``decay`` and ``annihilation``). If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
+</details><br />
 
 
 # Using the example models
@@ -127,4 +145,4 @@ annihilation 10 1e-25 0 0 0 1
 
 # Supported platforms
 
-ACROPOLIS should work on any platform that supports ``python3`` and ``clang``, the latter of which is required for ``numba`` to work.
+ACROPOLIS works on any platform that supports ``python3`` and ``clang``, the latter of which is required for ``numba`` to work.
