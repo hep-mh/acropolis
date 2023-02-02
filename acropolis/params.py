@@ -32,6 +32,15 @@ verbose = True
 debug = False
 
 # If this flag is set to 'True',
+# the thomson limit will be applied
+# to inverse Compton scattering of
+# electrons and positrons, i.e. the
+# energy loss will be approximated
+# as contiuous
+# Default: True
+thomson_limit = False
+
+# If this flag is set to 'True',
 # the universal spectrum is used
 # for all points in parameter space
 # ATTENTION:

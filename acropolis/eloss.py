@@ -62,6 +62,7 @@ def _JIT_eloss_bethe_heitler(logx, E, T, M):
 # E is the energy of the energy-loosing particle
 # T is the temperature of the background photons
 
+@nb.jit(cache=True)
 def dEdt_thomson(E, T, M, Q=1):
     # The gamma factor of the charged particle
     ga = E/M
