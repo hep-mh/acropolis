@@ -19,7 +19,7 @@ When using this code for your own scientific publications, please cite
   Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild\
   https://arxiv.org/abs/1808.09324
 
-The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.
+*The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.*
 
 # Abstract
 
@@ -27,7 +27,7 @@ The remarkable agreement between observations of the primordial light element ab
 
 # Changelog
 
-<details>
+<details open>
 <summary>v1.2.2 (April 6, 2022)</summary>
 
  - Implemented fixes for the issues #10 and #11 on GitHub
@@ -79,13 +79,15 @@ The remarkable agreement between observations of the primordial light element ab
 
 *This is the recommended way to install ACROPOLIS!*
 
-To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards execute the command
+To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards install ACROPOLIS at user-level by executing the command
 
 ```
 python3 -m pip install ACROPOLIS --user
 ```
 
 Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+
+If you want to install ACROPOLIS system wide, drop the ``--user`` flag in the command above and run with ``sudo``.
 
 If any dependencies of ACROPOLIS conflict with those for other programs in your work environment, it is strongly advised to utilize the capabilities of Python's virtual environments.
 
