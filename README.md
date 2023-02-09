@@ -94,9 +94,6 @@ If any dependencies of ACROPOLIS conflict with those for other programs in your 
 
 # Installation from GitHub
 
-<details>
-<summary>Click to expand</summary>
-
 To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
 
 ```
@@ -108,12 +105,8 @@ Afterward, switch into the newly created main directory and run
 ```
 python3 -m pip install . --user
 ```
-</details><br />
 
 # Usage without installation
-
-<details>
-<summary>Click to expand</summary>
 
 In case you just want to use ACROPOLIS without any additional installation steps, it is necessary to manually check that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
 
@@ -128,7 +121,6 @@ python3 -m pip install numpy, scipy, numba --user
 ```
 
 Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory (like ``decay`` and ``annihilation``). If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
-</details><br />
 
 
 # Using the example models

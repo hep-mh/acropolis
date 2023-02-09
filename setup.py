@@ -26,7 +26,7 @@ setup(
         'acropolis'
     ],
     package_data={
-        'acropolis': ['data/*']
+        'acropolis': ['data/rates.db.gz', 'data/sm.tar.gz', 'data/pythia8.cmnd']
     },
     include_package_data=True,
     scripts=[
