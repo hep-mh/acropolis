@@ -2,11 +2,12 @@
 
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
+![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
 ![Version: 1.2.2](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
 ![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
-![Logo](https://acropolis.hepforge.org/ACROPOLIS.png)
+<img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
 When using this code for your own scientific publications, please cite
 
 - **ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS**\
@@ -87,23 +88,17 @@ python3 -m pip install ACROPOLIS --user
 
 Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
 
-If you want to install ACROPOLIS system wide, drop the ``--user`` flag in the command above and run with ``sudo``.
+If you want to install ACROPOLIS system wide or within a virtual environment, drop the ``--user`` flag in the command above and run with ``sudo``.
 
 If any dependencies of ACROPOLIS conflict with those for other programs in your work environment, it is strongly advised to utilize the capabilities of Python's virtual environments.
 
 
 # Installation from GitHub
 
-To install ACROPOLIS directly from source on GitHub, start by cloning the respective git repository via the command
+To install ACROPOLIS directly from GitHub, execute the command
 
 ```
-git clone https://github.com/hep-mh/acropolis.git
-```
-
-Afterward, switch into the newly created main directory and run
-
-```
-python3 -m pip install . --user
+python3 -m pip install git+https://github.com/hep-mh/acropolis.git --user
 ```
 
 # Usage without installation

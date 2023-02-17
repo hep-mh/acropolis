@@ -15,7 +15,7 @@ print_version()
 # Extact the number of command line arguments...
 N = len(sys.argv)
 
-# ...and check if there are exactly six
+# ...and check if there are six or seven
 if N not in [7, 8]:
     print_error("Would you kindly specify the following command-line arguments:\n"
                 + "         1. The mass of the dark-matter particle           [in MeV]\n"

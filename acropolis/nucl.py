@@ -377,7 +377,7 @@ class NuclearReactor(object):
 
         # If no match is found, exit with error
         print_error(
-            "Reaction with reaction_id" + str(reaction_id) + "does not exist.",
+            "Reaction with reaction_id " + str(reaction_id) + " does not exist.",
             "acropolis.nucl.NuclearReactor.get_cross_section"
         )
 
