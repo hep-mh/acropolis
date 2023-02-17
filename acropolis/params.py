@@ -37,7 +37,8 @@ debug = False
 # electrons and positrons, i.e. the
 # energy loss will be approximated
 # as contiuous
-# Default: True
+# TODO
+# Default: False
 thomson_limit = False
 
 # If this flag is set to 'True',
