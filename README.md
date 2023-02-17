@@ -88,7 +88,7 @@ python3 -m pip install ACROPOLIS --user
 
 Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
 
-If you want to install ACROPOLIS system wide or within a virtual environment, drop the ``--user`` flag in the command above and run with ``sudo``.
+If you want to install ACROPOLIS system wide or within a virtual environment, drop the ``--user`` flag in the command above and run with ``sudo`` if necessary.
 
 If any dependencies of ACROPOLIS conflict with those for other programs in your work environment, it is strongly advised to utilize the capabilities of Python's virtual environments.
 
