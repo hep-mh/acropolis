@@ -375,7 +375,7 @@ class NuclearReactor(object):
         if reaction_id == 17: return self._Be7a_ppnHe4(E)        # 17. Be7 + a -> 2p + n + He4
 
 
-        # If no match is found, return 0.
+        # If no match is found, exit with error
         print_error(
             "Reaction with reaction_id" + str(reaction_id) + "does not exist.",
             "acropolis.nucl.NuclearReactor.get_cross_section"
