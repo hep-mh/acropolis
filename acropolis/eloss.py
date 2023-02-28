@@ -1,10 +1,10 @@
 # math
 from math import pi, log, exp, sqrt
-# numba
-import numba as nb
 # scipy
 from scipy.integrate import quad
 
+# jit
+from acropolis.jit import jit_decorator
 # params
 from acropolis.params import alpha, me, me2
 from acropolis.params import pi2
@@ -12,7 +12,7 @@ from acropolis.params import Ephb_T_max, eps
 # -->
 E_T_max = Ephb_T_max
 
-@nb.jit(cache=True)
+@jit_decorator
 def _JIT_phi(x):
     a = [
          0.8048,
@@ -45,7 +45,7 @@ def _JIT_phi(x):
     return x*bsum/( 1. - csum )
 
 
-@nb.jit(cache=True)
+@jit_decorator
 def _JIT_eloss_bethe_heitler(logx, E, T, M):
     x = exp(logx) # kappa
 
@@ -62,7 +62,7 @@ def _JIT_eloss_bethe_heitler(logx, E, T, M):
 # E is the energy of the energy-loosing particle
 # T is the temperature of the background photons
 
-@nb.jit(cache=True)
+@jit_decorator
 def dEdt_thomson(E, T, M, Q=1):
     # The gamma factor of the charged particle
     ga = E/M

@@ -2,7 +2,7 @@
 from functools import wraps
 
 
-def cached_member(f_uncached):
+def cached_rate_or_kernel(f_uncached):
     # Define the cache as a dictionary
     cache = {}
     Tc = {"_": -1.}
