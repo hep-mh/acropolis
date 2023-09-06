@@ -32,16 +32,6 @@ verbose = True
 debug = False
 
 # If this flag is set to 'True',
-# the thomson limit will be applied
-# to inverse Compton scattering of
-# electrons and positrons, i.e. the
-# energy loss will be approximated
-# as contiuous
-# TODO
-# Default: False
-thomson_limit = False
-
-# If this flag is set to 'True',
 # the universal spectrum is used
 # for all points in parameter space
 # ATTENTION:
@@ -141,12 +131,6 @@ NC = 5
 # (reaction_id: 15 in 'astro-ph/0211258')
 # Default: 1.5
 Emin = 1.5
-
-# The threshold value for y = E_e*T/me^2 at which
-# inverse Compton scattering is assumed to happen
-# in the Thompson regime
-# Default: 0.05
-y_th = 0.05
 
 # The value that is used for 'approximately' zero
 # Default: 1e-200
