@@ -4,7 +4,7 @@
 
 ![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.2](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
+![Version: 1.2.3](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
 ![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
@@ -27,6 +27,14 @@ When using this code for your own scientific publications, please cite
 The remarkable agreement between observations of the primordial light element abundances and the corresponding theoretical predictions within the standard cosmological history provides a powerful method to constrain physics beyond the standard model of particle physics (BSM). For a given BSM model these primordial element abundances are generally determined by (i) Big Bang Nucleosynthesis and (ii) possible subsequent disintegration processes. The latter potentially change the abundance values due to late-time high-energy injections which may be present in these scenarios. While there are a number of public codes for the first part, no such code is currently available for the second. Here we close this gap and present ACROPOLIS, A generiC fRamework fOr Photodisintegration Of LIght elementS. The widely discussed cases of decays as well as annihilations can be run without prior coding knowledge within example programs. Furthermore, due to its modular structure, ACROPOLIS can easily be extended also to other scenarios.
 
 # Changelog
+
+<details open>
+<summary>v1.2.3 (September 7, 2023)</summary>
+
+ - Fixed warnings caused by new versions of ``numba`` by using the new package ``acropolis.jit``
+ - Unified the plotting script in ``plots/plot_scan_results.py`` by using the methods defined in ``acropolis.plots``
+ - Added PDG2021 and PDG2022 values to ``acropolis.obs``
+</details><br />
 
 <details open>
 <summary>v1.2.2 (April 6, 2022)</summary>
