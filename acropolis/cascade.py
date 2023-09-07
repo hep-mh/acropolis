@@ -687,7 +687,7 @@ class _PositronReactionWrapper(object):
         )
 
 
-# TODO: Not yet fully implemented
+# TODO: Not yet implemented
 class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # RATES ###################################################################
