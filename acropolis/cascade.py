@@ -7,8 +7,6 @@ from scipy.integrate import quad, dblquad
 
 # jit
 from acropolis.jit import jit_decorator
-# eloss
-from acropolis.eloss import dEdt_thomson
 # db
 from acropolis.db import import_data_from_db
 from acropolis.db import in_rate_db, interp_rate_db
@@ -17,11 +15,10 @@ from acropolis.cache import cached_rate_or_kernel
 # pprint
 from acropolis.pprint import print_error
 # params
-from acropolis.params import thomson_limit
 from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
 from acropolis.params import FX
-from acropolis.params import Emin, y_th, approx_zero, eps, Ephb_T_max
+from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 from acropolis.params import NE_pd, NE_min
 
 
@@ -216,36 +213,6 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
                 a[X] += K[X,Xp,i,-1]*S0[Xp]/G[Xp,-1] + .5*dy*E_grid[-1]*K[X,Xp,i,-1]*F_grid[Xp,-1]
                 for j in range(i+1, NE-1): # Goes from i+1 to NE-2
                     a[X] += dy*E_grid[j]*K[X,Xp,i,j]*F_grid[Xp,j]
-        
-            # THOMSON_LIMIT ##############################################
-            ##############################################################
-            if thomson_limit and X != 0: # photons remain unchaned
-                # Energy-loss term for e^\pm from Thomson scattering
-                De_TH = np.array([dEdt_thomson(E, T, me) for E in E_grid])
-                # Negative! rate for e^\pm from inverse Compton scattering
-                Ge_IC = G[X,:]
-                # Negative! kernel for e^\pm from inverse Compton scattering
-                # Only electron -> electron or positron -> positron contribute
-                # Hence, we can set Xp = X
-                Ke_IC = K[X,X,:,:]
-                # -->
-                # (De_TH Fe)' + Ge_IC Fe - \int Ke_IC Fe = 0
-                # Hence, we effectively add a zero to the equation
-
-                # Define the other relevant quantities
-                Fe, S0e  = F_grid[X,:], S0[X]
-
-                if E_grid[i] < y_th*me2/T:
-                    # Modify B, : <--> Xp
-                    #                                                    energy loss
-                    B[X,:] -= ( -.5*dy*E_grid[i]*Ke_IC[i,i] + Ge_IC[i] - (De_TH[i]/E_grid[i])/dy )*I[X,:]
-
-                    # Modify a, Xp = X
-                    #                                                                         energy loss
-                    a[X] -= Ke_IC[i,-1]*S0e/Ge_IC[-1] + .5*dy*E_grid[-1]*Ke_IC[i,-1]*Fe[-1] - (De_TH[i+1]/E_grid[i+1])*Fe[i+1]/dy
-                    for j in range(i+1, NE-1): # Goes from i+1 to NE-2
-                        a[X] -= dy*E_grid[j]*Ke_IC[i,j]*Fe[j]
-            ###################################################################
 
         # Solve the system of linear equations of the form BF = a
         _JIT_set_spectra(F_grid, i,
@@ -721,7 +688,6 @@ class _PositronReactionWrapper(object):
 
 
 # TODO: Not yet fully implemented
-#       Goal is ACROPOLIS v1.3
 class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # RATES ###################################################################

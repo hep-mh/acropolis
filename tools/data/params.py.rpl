@@ -4,6 +4,12 @@ from math import pi
 from scipy.special import zeta
 
 
+# ATTENTION !!!!!111elf
+# Only parameters that specify a default value are
+# meant to be changed by the user, i.e. everything
+# under FLAGS and ALGORITHM-SPECIFIC PARAMETERS
+
+
 # FLAGS #############################################################
 
 # If this flag is set to 'True',
@@ -17,13 +23,23 @@ usedb = True
 # additional output is printed
 # to the screen
 # Default: True
-verbose = False
+verbose = True
 
 # If this flag is set to 'True',
 # additional debug information
 # is printed to the screen
 # Default: False
 debug = False
+
+# If this flag is set to 'True',
+# the universal spectrum is used
+# for all points in parameter space
+# ATTENTION:
+# Change with caution and only if
+# you know what you are doing.
+# World destruction possible!
+# Default: False
+universal = False
 
 
 # PHYSICAL CONSTANTS ################################################
@@ -36,6 +52,12 @@ me = 0.511
 
 # The electron mass squared (in MeV^2)
 me2 = me**2.
+
+# The muon mass (in MeV)
+mm = 105.658
+
+# The muon mass squared (in MeV^2)
+mm2 = mm**2.
 
 # The classical electron radius (in 1/MeV)
 re = alpha/me
@@ -53,7 +75,7 @@ c_si = 2.99792458e10
 tau_m = 2.1969811e-6
 
 # The neutron lifetime (in s)
-tau_n = 8.802e2
+tau_n = 8.794e2 # pre PDG2020: 8.802e2
 
 # The lifetime of tritium (in s)
 # T_(1/2) = 3.885e8
@@ -82,18 +104,32 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
-# The number of elements/isotops that
-# are considered in the calculation
+# A specifier to descide which particles
+# are considered in the Boltzmann equation
+# for the electromagnetic cascade
+# ATTENTION: Do not use a value that does
+# not include all injected particle types
+# 0: Photons
+# 1: Photons, Electrons/Positrons
+# Default: 1
+FX = 1
+
+# The number of nuclei that are
+# considered in the Boltzmann equation
+# for non-thermal nucleosynthesis
+# Default: 9
 NY = 9
 
 # The number of mandatory columns in
 # 'cosmo_file.dat'
+# Default: 5
 NC = 5
 
-# Minimum energy for the different spectra (in MeV)
+# The minimum energy for the different spectra (in MeV)
 # This value should not be larger than the minimal
 # nucleon-interaction threshold of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
+# Default: 1.5
 Emin = 1.5
 
 # The value that is used for 'approximately' zero
@@ -109,10 +145,10 @@ eps = 1e-3
 # Default: 200
 Ephb_T_max = 200.
 
-# The energy in units of EC at which to
-# cutoff strongly suppressed spectra
-# Default: 500.
-E_EC_cut = 500.
+# The maximal value of E/EC up to which the
+# integration is performed when using the
+# full spectrum with exponential suppression
+E_EC_max = 10.
 
 # The number of points per decade for
 # the energy grid, which is used within
