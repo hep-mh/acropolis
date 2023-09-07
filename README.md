@@ -4,7 +4,7 @@
 
 ![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.3](https://img.shields.io/badge/Current_Version-1.2.2-green.svg?style=flat-square)
+![Version: 1.2.3](https://img.shields.io/badge/Current_Version-1.2.3-green.svg?style=flat-square)
 ![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
