@@ -9,7 +9,7 @@ from matplotlib.ticker import FixedLocator, FixedFormatter
 import warnings
 
 # obs
-from acropolis.obs import pdg2020
+from acropolis.obs import pdg2022
 # pprint
 from acropolis.pprint import print_info
 # params
@@ -30,7 +30,7 @@ plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{mathpazo
 _plot_number = 0
 
 
-# The number of sigmas at which a
+# The number of sigmas beyond which a
 # point is considered excluded
 _95cl = 1.95996 # 95% C.L.
 
@@ -90,8 +90,9 @@ def _get_deviations(data, obs):
             pass
 
     # Take care of potential NaNs
-    HeD[ mDH < obs['DH'].err ] =  10
-    DH [     np.isnan(DH)    ] = -10
+    HeD[ mDH  < obs['DH' ].err ] =  10
+    HeD[ mHeD < obs['HeD'].err ] =  10
+    DH [     np.isnan(DH)      ] = -10
 
     # Return (without reshaping)
     return Yp, DH, HeD, LiH
@@ -254,7 +255,7 @@ def save_figure(output_file=None):
     )
 
 
-def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pdf=True, show_fig=False, obs=pdg2020):
+def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pdf=True, fix_helium=False, show_fig=False, obs=pdg2022):
     # If data is a filename, load the data first
     if type(data) == str:
         data = np.loadtxt(data)
@@ -280,6 +281,19 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     DH  =  DH.reshape(shape)
     HeD = HeD.reshape(shape)
     LiH = LiH.reshape(shape)
+
+    # Fix potential 'holes' in the
+    # exclusion region of HeD
+    if fix_helium:
+        for j, column in enumerate(HeD.T):
+
+            excl = False
+            for i, el in enumerate(column):
+                if el < _95cl and excl == True:
+                    HeD[i, j] = 10
+
+                if el > _95cl and excl == False:
+                    excl = True
 
     # Extract the overall exclusion limit
     max = np.maximum( np.abs(DH), np.abs(Yp) )
