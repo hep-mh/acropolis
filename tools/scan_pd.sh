@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Define a function that is called 'Ctrl+C' presses
+# Define a function that is called when 'Ctrl+C' presses
 function control_c {
     # Cleanup
     if [ "$dir" == "tools" ] && [ -f "$dir/data/params.py~" ]; then
@@ -62,7 +62,7 @@ cd ..
 # Back up the original 'params.py' file
 cp acropolis/params.py $data/params.py~
 
-# Scan the different values for NE_pd
+# Scan over the different values for NE_pd
 echo "NE_pd"
 for NE_PD in $(cat $data/NE_pd.list); do
     # Adjust NE_pd
@@ -76,7 +76,7 @@ for NE_PD in $(cat $data/NE_pd.list); do
     echo $NE_PD $Y2H 2>&1 | tee -a $data/NE_pd.dat
 done
 
-# Scan the different values for NT_pd
+# Scan over the different values for NT_pd
 echo "NT_pd"
 for NT_PD in $(cat $data/NT_pd.list); do
     # Adjust NT_pd
