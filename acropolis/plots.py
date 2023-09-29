@@ -181,7 +181,7 @@ def tex_labels(key_x, key_y):
 
 # FIGURE HANDLING ###################################################
 
-def _init_figure():
+def init_figure():
     fig = plt.figure(figsize=(4.8, 4.4), dpi=150, edgecolor='white')
     ax  = fig.add_subplot(1, 1, 1)
 
@@ -238,7 +238,7 @@ def _set_tick_labels(ax, x, y):
     ax.set_ylim(ymin_log, ymax_log)
 
 
-def save_figure(output_file=None):
+def save_figure(output_file=None, show_fig=False):
     global _plot_number
 
     # If no name for the output file is given
@@ -248,6 +248,9 @@ def save_figure(output_file=None):
         _plot_number += 1
 
     plt.savefig(output_file)
+    # Show the figure on request
+    if show_fig:
+        plt.show()
 
     print_info(
         "Figure has been saved as '{}'".format(output_file),
@@ -300,7 +303,7 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     max = np.maximum( max, HeD )
 
     # Init the figure and...
-    fig, ax = _init_figure()
+    fig, ax = init_figure()
     # ...set the tick labels
     _set_tick_labels(ax, x, y)
 
