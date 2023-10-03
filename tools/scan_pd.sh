@@ -40,12 +40,26 @@ function extract_deuterium {
 
 # START #######################################################################
 
+cmd_flag=1
+# Check if there is a least 8 command-line argument, the
+# first of which is either 'decay' or 'annihilation'
+if [ $# -ge 7 ]; then
+    if [ "$1" == "decay" ] || [ "$1" == "annihilation" ]; then
+        cmd_flag=0
+    fi
+fi
+# -->
+# Stop if the previous check did not succeed
+if [ $cmd_flag == 1 ]; then
+    echo "ERROR: The command-line arguments must be either 'decay [...]' or 'annihilation [...]'. Stop!"
+    exit 1
+fi
+
 # Extract the current working directory
 dir=$(basename $PWD)
 
 # Check if the current working directory is 'acropolis/tools'
-if [ "$dir" != "tools" ];
-then
+if [ "$dir" != "tools" ]; then
     echo "ERROR: This script needs to be executed in the tools/ directory. Stop!"
     exit 1
 fi
