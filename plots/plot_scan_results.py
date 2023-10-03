@@ -12,7 +12,8 @@ from acropolis.plots import plot_scan_results, save_figure
 data_dir = 'data/'
 
 
-# s-wave, a vs mchi
+# PLOT 1 ######################################################################
+# s-wave, a vs mchi ###########################################################
 _, ax1 = plot_scan_results(
     data_dir + 'annih_swave_ee.dat', output_file=None, save_pdf=False,
     title=tex_title(b=0, tempkd=0, braa=0), labels=tex_labels('mchi', 'a')
@@ -24,26 +25,27 @@ ax1.plot(1, -24, '*', color='crimson')
 save_figure('annih_swave_ee.pdf')
 
 
-# p-wave, b vs mchi, tempkd = 1 MeV
+
+# PLOT 2 ######################################################################
+# p-wave, b vs mchi, tempkd = 1 MeV ###########################################
 plot_scan_results(
     data_dir + 'annih_pwave_Tkd_1e+00MeV_ee.dat', output_file='annih_pwave_1e0MeV_ee.pdf',
     title=tex_title(a=0, tempkd=1, braa=0), labels=tex_labels('mchi', 'b')
 )
 
 
-# decay, n0a vs mphi, tau = 1e7 s
-_, ax3 = plot_scan_results(
-    data_dir + 'decay_tau_1e+07s_aa.dat', output_file=None, save_pdf=False,
+
+# PLOT 3 ######################################################################
+# decay, n0a vs mphi, tau = 1e7 s #############################################
+plot_scan_results(
+    data_dir + 'decay_tau_1e+07s_aa.dat', output_file='decay_1e7s_aa.pdf',
     title=tex_title(tau=1e7, temp0=10, braa=1), labels=tex_labels('mphi', 'n0a')
 )
 
-# Plot the reference point for the NE_pd/NT_pd scans
-ax3.plot(1, -9, '*', color='mediumorchid')
-# -->
-save_figure('decay_1e7s_aa.pdf')
 
 
-# decay, n0a vs tau, mphi = 50 MeV
+# PLOT 4 ######################################################################
+# decay, n0a vs tau, mphi = 50 MeV ############################################
 _, ax4 = plot_scan_results(
     data_dir + 'decay_mphi_5e+01MeV_aa.dat', output_file=None, save_pdf=False, fix_helium=True,
     title=tex_title(mphi=50, temp0=10, braa=1), labels=tex_labels('tau', 'n0a')
@@ -54,5 +56,9 @@ ax4.text(4.0, -10.0, r"D/$^1$H low"               , color='0.6'           , font
 ax4.text(7.5, -11.0, r"$^3$He/D high"             , color='mediumseagreen', fontsize=16)
 ax4.text(6.3,  -4.2, r"$\mathcal{Y}_\text{p}$ low", color='dodgerblue'    , fontsize=16)
 ax4.text(7.3,  -8.0, r"D/$^1$H high"              , color='tomato'        , fontsize=16)
+
+# Plot the reference point for the NE_pd/NT_pd scans
+ax4.plot(5, -8, '*', color='mediumorchid')
+
 # -->
 save_figure('decay_50MeV_aa.pdf')
