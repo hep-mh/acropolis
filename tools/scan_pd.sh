@@ -41,8 +41,8 @@ function extract_deuterium {
 # START #######################################################################
 
 cmd_flag=1
-# Check if there is a least 8 command-line argument, the
-# first of which is either 'decay' or 'annihilation'
+# Check if there are a least 8 command-line arguments,
+# the first of which is either 'decay' or 'annihilation'
 if [ $# -ge 7 ]; then
     if [ "$1" == "decay" ] || [ "$1" == "annihilation" ]; then
         cmd_flag=0
