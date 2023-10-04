@@ -124,7 +124,9 @@ class BufferedScanner(object):
         # Get the number of 'fast' parameters (Np_fast <= Np - 1)
         self._sNP_fast = list( self._sFastf.values() ).count(True)
 
-        # ERRORS for not-yet-implemented features (TODO) ################################
+        # ERRORS for scenarios that are not yet covered
+        # TODO: Remove this part once the features in
+        #       question have been implemented
         if self._sNP_fast > 1 or self._sNP != 2:
             print_error(
                 "Currently only exactly 2 scan parameters with <= 1 fast parameter are supported!",
@@ -132,7 +134,8 @@ class BufferedScanner(object):
             )
 
 
-    # TODO!!!
+    # TODO: Implement option to use more than one sequential
+    #       parameter, as well as multiple 'fast' parameters
     def _build_batches(self):
         # Generate all possible parameter combinations, thereby
         # NOT! including the parameter used for the parallelisation

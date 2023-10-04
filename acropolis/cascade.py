@@ -501,7 +501,7 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
     def _kernel_inverse_compton(self, E, Ep, T):
         # E == Ep leads to a divergence in
         # the Bose-Einstein distribution
-        # TODO ???
+        # TODO: Check if this can be handled any better
         if E == Ep:
             return 0.
 
@@ -687,7 +687,7 @@ class _PositronReactionWrapper(object):
         )
 
 
-# TODO: Not yet implemented
+# TODO: Incoroprate muons into the cascade equations
 class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # RATES ###################################################################
@@ -701,7 +701,7 @@ class _MuonReactionWrapper(_ReactionWrapperScaffold):
 
     # INVERSE COMPTON SCATTERING ##############################################
     def _rate_inverse_compton(self, E, T):
-        # TODO
+        # TODO: Replace with actual implementation
         return 0.
 
 
@@ -798,7 +798,8 @@ class SpectrumGenerator(object):
         F_grid = np.zeros(NE)
 
         # Calculate the spectrum for the different energies
-        # TODO: Perform integration of continouos source terms
+        # TODO: Incoporate the continuous source terms in the
+        #       normalization by integrating it over the energy
         SN = lambda T: sum(S0X(T) for S0X in S0f) # Normalization
         for i, E in enumerate(E_grid):
             if E < EX:

@@ -137,7 +137,7 @@ def tex_title(**kwargs):
         if type(val) == float:
             power = log10( val )
             if power != int(power):
-                # TODO
+                # TODO: Implement this special case
                 pass
 
             return r'10^' + str( int(power) )
