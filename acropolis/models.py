@@ -1,9 +1,10 @@
 # math
-from math import pi, exp, log, log10
+from math import pi, exp, log, log10, sqrt
 # numpy
 import numpy as np
 # scipy
 from scipy.linalg import expm
+from scipy.integrate import quad
 # abc
 from abc import ABC, abstractmethod
 
@@ -15,9 +16,18 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin, NY
+from acropolis.params import approx_zero, eps
 from acropolis.params import universal
 # pprint
-from acropolis.pprint import print_info, print_warning
+from acropolis.pprint import print_info, print_warning, print_error
+
+
+# https://stackoverflow.com/questions/1167617/in-python-how-do-i-indicate-im-overriding-a-method
+def overrides(interface_class):
+    def overrider(method):
+        assert(method.__name__ in dir(interface_class))
+        return method
+    return overrider
 
 
 class AbstractModel(ABC):
@@ -297,8 +307,8 @@ class AnnihilationModel(AbstractModel):
         # The s-wave and p-wave parts of <sigma v>
         self._sSwave = a            # in cm^3/s
         self._sPwave = b            # in cm^3/s
-        # The dark matter decoupling temperature in MeV
-        # For Tkd=0, the dark matter partices stays in
+        # The dark-matter decoupling temperature. For
+        # Tkd=0, the dark matter partices stays in
         # kinetic equilibrium with the SM heat bath
         self._sTkd   = tempkd       # in MeV
         # The injection energy
@@ -381,3 +391,211 @@ class AnnihilationModel(AbstractModel):
         _sp = self._source_electron_0(T)
 
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
+
+
+def _JIT_RM_sigma_v_full_kernel(log_u, gammad, gammav, mchi, deltam, nd, T):
+    u = exp(log_u)
+    # -->
+    sqrt_u = sqrt(u)
+
+    x  = mchi / T
+    m2 = mchi**2.
+    ur = m2 * deltam
+    mr = mchi * ( 2. + deltam ) 
+
+    decay_width = gammav * mr + gammad * mr * (sqrt_u/mchi)**(2.*nd + 1.)
+
+    return u * exp(-u*x/m2) * (u/m2)**(nd+.5) / ( (u - ur)**2. + m2*( decay_width/2. )**2. )
+
+
+# This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
+# When using this model, please cite arXiv:2310:XXXX
+class ResonanceModel(AnnihilationModel):
+    
+    def __init__(self, mchi, deltam, gammad, gammav, nd, tempkd, bree, braa, C=None, S=1, omegah2=0.12):
+
+        # NEW PARAMETERS ##################################
+        ###################################################
+
+        # The mass splitting between the resonant
+        # particle and the dark-matter particle
+        # mr = mchi * ( 2 + deltam )
+        self._sDeltam = deltam
+        # The couplings to the dark and to the
+        # visible sector
+        self._sGammad = gammad
+        self._sGammav = gammav
+        # The parameter to distinguish between a
+        # s- (nd=0) and a p-wave (nd=1) resonance 
+        self._sNd     = nd
+        # The symmetry factor for the annihilation cross-section
+        self._sS      = S
+
+        # The mass of the resonant particle
+        self._sMr     = mchi * ( 2. + deltam ) # in MeV
+        # The resonance momentum
+        self._sPr     = mchi * sqrt(deltam)    # in MeV
+
+        # Estimate the decoupling temperature on request
+        if tempkd is None:
+            if C is None:
+                print_error(
+                    "When requesting to calculate the decoupling temperature with " +
+                    "'tempkd = None', the parameter C must not be 'None' as well!",
+                    "acropolis.models.ResonanceModel._estimate_tempkd"
+                )
+            
+            if bree < 1 or braa > 0:
+                print_error(
+                    "Currently, the calculation of the decoupling temperature does " +
+                    "not take into account scattering with photons. Hence, only "   +
+                    "'bree = 1' and 'braa = 0' is currently valid if 'tempkd = None'.",
+                    "acropolis.models.ResonanceModel._estimate_tempkd"
+                )
+            
+            tempkd = self._estimate_tempkd_ee( C )
+            
+        # Check the input parameters
+        if self._sDeltam > 1:
+            print_error(
+                "The mass splitting must be < 1. The calculation cannot be trusted.",
+                "acropolis.models.ResonanceModel.__init__"
+            )
+        
+        if self._sNd not in [0, 1]:
+            print_error(
+                "Currently only s-wave annihilations with 'nd = 0' and p-wave " + \
+                "annihilations with 'nd = 1' are supported.",
+                "acropolis.models.ResonanceModel.__init__"
+            )
+
+        ###################################################
+
+        # Call the super constructor (of AnnihilationModel)
+        super(ResonanceModel, self).__init__(
+        #   mchi, a   , b   , tempkd, bree, braa, omegah2
+            mchi, None, None, tempkd, bree, braa, omegah2
+        )
+
+        # A flag to determine whether the narrow-
+        # width approximation is applicable
+        self._sNwa    = self._check_nwa()
+
+
+    def _estimate_tempkd_ee(self, C):
+        # TODO: Implement
+        return 0.
+
+
+    def _check_nwa(self, eps=0.1):
+        y = self._decay_width() / self._sMr
+        # In the NWA limit, we have y -> 0, i.e. y < eps
+
+        # For the second condition, see the supplementary
+        # material of https://arxiv.org/abs/1810.04709
+        if y < eps and self._sGammad < eps * ( 2.*self._sDeltam**.5 )**(1. - 2.*self._sNd):
+            return True
+
+        return False
+    
+
+    # DEPENDENT QUANTITIES ##############################################################
+
+
+    # The total decay width of the resonant 
+    # particle into dark-sector states
+    # p = -1 corresponds to p = pR
+    def _decay_width_d(self, p=-1):
+        if p == -1: p = self._sPr
+
+        return self._sGammad * self._sMr * (p / self._sMchi)**(2.*self._sNd + 1.)
+    
+
+    # The total decay width of the resonant 
+    # particle into visible-sector states
+    def _decay_width_v(self):
+        # p_f ~ m_\chi
+        return self._sGammav * self._sMr
+
+    
+    # The total decay width of the resonant
+    # particle
+    # p = -1 corresponds to p = pR
+    def _decay_width(self, p=-1):
+        if p == -1: p = self._sPr
+
+        return self._decay_width_d(p) + self._decay_width_v()
+
+
+    # The thermally average annihilation
+    # cross-section in the resonant regime
+    def _sigma_v_res(self, T):
+        x = self._sMchi/T
+
+        # Here, the delta function forces p = pR
+        # in the decay width in the denominator
+        return 8. * self._sS * (pi*x)**1.5 * self._sGammad * self._sGammav * self._sMr**2. * self._sDeltam**(self._sNd+.5) * exp(-self._sDeltam*x) \
+                / self._decay_width() / self._sMchi**3.
+
+    
+    # The thermally averaged annihilation
+    # cross-section in the non-resonant regime
+    def _sigma_v_non_res(self, T):
+        x = self._sMchi/T
+
+        # Speed up the calculation: only nd = 0, 1 are allowed
+        # gamma(self._sNd+1.5)
+        gamma = {
+            0:      sqrt(pi) / 2., # \gamma(1.5)
+            1: 3. * sqrt(pi) / 4.  # \gamma(2.5)
+        }[self._sNd]
+
+        return 4. * self._sS * sqrt(pi) * x**(-self._sNd) * self._sGammad * self._sGammav * self._sMr**2. * gamma \
+                / self._sMchi**4. / self._sDeltam**2.
+    
+
+    # The full (non-approximate) thermally
+    # averaged annihilation cross section
+    def _sigma_v_full(self, T):
+        x = self._sMchi/T
+
+        # Define the prefactor
+        pref = 4. * x * sqrt(x*pi) * self._sS * self._sGammad * self._sGammav * (self._sMr/self._sMchi)**2.
+
+        # Define the position of the resonance
+        ur   = (self._sMchi**2.) * self._sDeltam
+        # Define the upper integration limit
+        umax = 200.*self._sMchi**2./x
+
+        args = (self._sGammad, self._sGammav, self._sMchi, self._sDeltam, self._sNd, T)
+        # Perform the integration
+        I = quad(
+            _JIT_RM_sigma_v_full_kernel, log(approx_zero), log(umax), epsrel=eps, epsabs=0, points=(log(ur),), args=args
+        )
+
+        return pref*I[0]
+
+
+    @overrides(AnnihilationModel)
+    def _sigma_v(self, T):
+        # Calculate the dark-matter temperature
+        # TODO: revert
+        Tdm  = T #self._dm_temperature(T)
+
+        x = self._sMchi/Tdm
+
+        sigv_res     = self._sigma_v_res(Tdm)
+        sigv_non_res = self._sigma_v_non_res(Tdm)
+
+        xpeak = 3./( 2.*self._sDeltam )
+
+        # ???
+        if self._sNwa and (x <= xpeak or sigv_res > 2.*sigv_non_res):
+            return sigv_res
+
+        # Check if the resonance is in the exponential cutoff
+        if x > 100.*xpeak:
+            return sigv_non_res
+
+        # Only calculate the full cross-section if needed
+        return self._sigma_v_full(Tdm)
