@@ -412,8 +412,8 @@ class ResonanceModel(AnnihilationModel):
     
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, bree, braa, S=1, C=None, omegah2=0.12):
 
-        # Estimate the decoupling temperature from the
-        # elastic cross-section if requested by the user
+        # Estimate the decoupling temperature from the elastic
+        # cross-section on request, i.e. if 'tempkd = None'
         if tempkd is None:
             if C is None:
                 print_error(
@@ -438,12 +438,12 @@ class ResonanceModel(AnnihilationModel):
             mchi, None, None, tempkd, bree, braa, omegah2
         )
 
-        # NEW PARAMETERS ##################################
-        ###################################################
+        # NEW PARAMETERS ############################################
+        #############################################################
 
         # The mass splitting between the resonant
         # particle and the dark-matter particle
-        # mr = mchi * ( 2 + deltam )
+        # mr = mchi * ( 2 + delta )
         self._sDelta  = delta
         # The couplings to the dark and to the
         # visible sector
@@ -456,15 +456,15 @@ class ResonanceModel(AnnihilationModel):
         self._sS      = S
 
         # The mass of the resonant particle
-        self._sMR     = mchi * ( 2. + delta ) # in MeV
+        self._sMR     = self._sMchi * ( 2. + self._sDelta ) # in MeV
         # The resonance momentum
-        self._sPR     = mchi * sqrt(delta)    # in MeV
+        self._sPR     = self._sMchi * sqrt(self._sDelta)    # in MeV
         # The decay width of the resonant particle
-        self._sWidth  = self._decay_width()
+        self._sWidth  = self._decay_width()                 # in MeV
             
-        ###################################################
+        #############################################################
 
-        self._check_input()
+        self._check_input_parameters()
 
 
     def _estimate_tempkd_ee(self, C):
@@ -484,7 +484,7 @@ class ResonanceModel(AnnihilationModel):
         return False
     
 
-    def _check_input(self):
+    def _check_input_parameters(self):
         if self._sDelta > 1:
             print_error(
                 "The mass splitting must be < 1. The calculation cannot be trusted.",
