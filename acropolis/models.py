@@ -395,17 +395,6 @@ class AnnihilationModel(AbstractModel):
         return (_sp/EX) * (alpha/pi) * ( 1. + (1.-x)**2. )/x * log( (1.-x)/y )
 
 
-@jit_decorator
-def _JIT_RM_sigma_v_full_kernel(log_u, width, mchi, delta, nd, T):
-    u = exp(log_u)
-
-    x  = mchi / T
-    m2 = mchi**2.
-    ur = m2 * delta
-
-    return u * exp(-u*x/m2) * (u/m2)**(nd+.5) / ( (u - ur)**2. + ( mchi*width/2. )**2. )
-
-
 # This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
 # When using this model, please cite arXiv:2310:XXXX
 class ResonanceModel(AnnihilationModel):
@@ -451,7 +440,8 @@ class ResonanceModel(AnnihilationModel):
         self._sGammav = gammav
         # The parameter to distinguish between
         # s- (nd=0) and p-wave (nd=1) resonances
-        self._sL      = nd
+        self._sLd     = nd
+        self._sLv     = 1
         # The symmetry factor for the annihilation cross-section
         self._sS      = S
 
@@ -459,8 +449,8 @@ class ResonanceModel(AnnihilationModel):
         self._sMR     = self._sMchi * ( 2. + self._sDelta ) # in MeV
         # The resonance momentum
         self._sPR     = self._sMchi * sqrt(self._sDelta)    # in MeV
-        # The decay width of the resonant particle
-        self._sWidth  = self._decay_width()                 # in MeV
+        # The total decay width of the resonant particle
+        self._sWidth  = self._decay_width(self._sPR)        # in MeV
             
         #############################################################
 
@@ -478,7 +468,7 @@ class ResonanceModel(AnnihilationModel):
 
         # For the second condition, see the supplementary
         # material of https://arxiv.org/abs/1810.04709
-        if y < eps and self._sGammad < eps * ( 2.*self._sDelta**.5 )**(1. - 2.*self._sL):
+        if y < eps and self._sGammad < eps * ( 2.*self._sDelta**.5 )**(1. - 2.*self._sLd):
             return True
 
         return False
@@ -491,7 +481,7 @@ class ResonanceModel(AnnihilationModel):
                 "acropolis.models.ResonanceModel.__init__"
             )
         
-        if self._sL not in [0, 1]:
+        if self._sLd not in [0, 1]:
             print_error(
                 "Currently only s-wave annihilations with 'nd = 0' and p-wave " + \
                 "annihilations with 'nd = 1' are supported.",
@@ -505,27 +495,21 @@ class ResonanceModel(AnnihilationModel):
 
     # The total decay width of the resonant 
     # particle into dark-sector states
-    # p = -1 corresponds to p = pR
-    def _decay_width_d(self, p=-1):
-        if p == -1: p = self._sPR
-
-        return self._sGammad * self._sMR * (p / self._sMchi)**(2.*self._sL + 1.)
+    def _decay_width_d(self, p):
+        return self._sGammad * self._sMR * (p / self._sMchi)**(2.*self._sLd + 1.)
     
 
     # The total decay width of the resonant 
     # particle into visible-sector states
-    def _decay_width_v(self):
+    def _decay_width_v(self, p):
         # p_f ~ m_\chi
-        return self._sGammav * self._sMR
+        return self._sGammav * self._sMR * (p / self._sMchi)**(2.*self._sLv + 1.)
 
     
     # The total decay width of the resonant
     # particle
-    # p = -1 corresponds to p = pR
-    def _decay_width(self, p=-1):
-        if p == -1: p = self._sPR
-
-        return self._decay_width_d(p) + self._decay_width_v()
+    def _decay_width(self, p):
+        return self._decay_width_d(p) + self._decay_width_v(p)
 
 
     # The thermally average annihilation
@@ -533,9 +517,7 @@ class ResonanceModel(AnnihilationModel):
     def _sigma_v_res(self, T):
         x = self._sMchi/T
 
-        # Here, the delta function forces p = pR
-        # in the decay width in the denominator
-        return 8. * self._sS * (pi*x)**1.5 * self._sGammad * self._sGammav * self._sMR**2. * self._sDelta**(self._sL+.5) * exp(-self._sDelta*x) \
+        return 8. * self._sS * (pi*x)**1.5 * self._sGammad * self._sGammav * self._sMR**2. * self._sDelta**(self._sLd+.5) * exp(-self._sDelta*x) \
                 / self._sWidth / self._sMchi**3.
 
     
@@ -545,14 +527,14 @@ class ResonanceModel(AnnihilationModel):
         x = self._sMchi/T
 
         # Speed up the calculation: only nd = 0, 1 are allowed
-        # gamma(self._sNd+1.5)
+        # gamma(self._sL+1.5)
         gamma = {
             0:      sqrt(pi) / 2., # \gamma(1.5)
             1: 3. * sqrt(pi) / 4.  # \gamma(2.5)
-        }[self._sL]
+        }[self._sLd]
 
-        return 4. * self._sS * sqrt(pi) * x**(-self._sL) * self._sGammad * self._sGammav * self._sMR**2. * gamma \
-                / ( self._sMchi**4. * self._sDelta**2. + ( self._sMchi * self._sWidth / 2. )**2. )
+        return 4. * self._sS * sqrt(pi) * x**(-self._sLd) * self._sGammad * self._sGammav * self._sMR**2. * gamma \
+                / ( self._sMchi**4. * self._sDelta**2. )
     
 
     # The full (non-approximate) thermally
@@ -560,18 +542,30 @@ class ResonanceModel(AnnihilationModel):
     def _sigma_v_full(self, T):
         x = self._sMchi/T
 
+        # The maximal exponent in the integral that
+        # still leads to relevant contributions
+        exp_cutoff = 200.
+
         # Define the prefactor
         pref = 4. * x * sqrt(x*pi) * self._sS * self._sGammad * self._sGammav * (self._sMR/self._sMchi)**2.
 
-        # Define the position of the resonance
-        ur   = (self._sMchi**2.) * self._sDelta
         # Define the upper integration limit
-        umax = 200.*self._sMchi**2./x
+        umax = exp_cutoff * self._sMchi**2. / x
 
-        args = (self._decay_width(), self._sMchi, self._sDelta, self._sL, T)
+        def _sigma_v_full_kernel(log_u):
+            u      = exp(log_u)
+            sqrt_u = sqrt(u)    # = p
+
+            uR = self._sPR**2.
+            m2 = self._sMchi**2.
+
+            width = self._decay_width(sqrt_u)
+
+            return u * exp( -u*x/m2 ) * ( u/m2 )**(self._sLd+.5) / ( (u - uR)**2. + ( self._sMchi*width/2. )**2. )
+
         # Perform the integration
         I = quad(
-            _JIT_RM_sigma_v_full_kernel, log(approx_zero), log(umax), epsrel=eps, epsabs=0, points=(log(ur),), args=args
+            _sigma_v_full_kernel, log(approx_zero), log(umax), epsrel=eps, epsabs=0, points=(2.*log(self._sPR),)
         )
 
         return pref*I[0]
@@ -581,6 +575,19 @@ class ResonanceModel(AnnihilationModel):
     def _sigma_v(self, T):
         # Calculate the dark-matter temperature
         Tdm  = self._dm_temperature(T)
+        # -->
+        xdm  = self._sMchi/Tdm
 
+        # To be in the RESONANT regime...
         # TODO
+
+        # To be in the NON-RESONANT regime, we have to
+        # make sure that p/pR << 1 over the full integration
+        # range. This is possible, since only momenta
+        # with p^2 ~ mchi^2/x have a relevant contribution
+        # TODO
+        if False and xdm > 1e3/self._sDelta:
+            return self._sigma_v_non_res(Tdm)
+
+        # Only calculate the full cross-section if necessary
         return self._sigma_v_full(Tdm)
