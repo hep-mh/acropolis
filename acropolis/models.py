@@ -399,7 +399,7 @@ class AnnihilationModel(AbstractModel):
 # When using this model, please cite arXiv:2310:XXXX
 class ResonanceModel(AnnihilationModel):
     
-    def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, bree, braa, S=1, C=None, omegah2=0.12):
+    def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, C=None, omegah2=0.12):
 
         # Estimate the decoupling temperature from the elastic
         # cross-section on request, i.e. if 'tempkd = None'
@@ -411,20 +411,12 @@ class ResonanceModel(AnnihilationModel):
                     "acropolis.models.ResonanceModel._estimate_tempkd_ee"
                 )
             
-            if bree < 1 or braa > 0:
-                print_error(
-                    "Currently, the calculation of the decoupling temperature does " +
-                    "not take into account scattering with photons. Hence, only "   +
-                    "'bree = 1' and 'braa = 0' is currently valid if 'tempkd = None'.",
-                    "acropolis.models.ResonanceModel._estimate_tempkd_ee"
-                )
-            
             tempkd = self._estimate_tempkd_ee( C )
 
         # Call the super constructor (of AnnihilationModel)
         super(ResonanceModel, self).__init__(
         #   mchi, a   , b   , tempkd, bree, braa, omegah2
-            mchi, None, None, tempkd, bree, braa, omegah2
+            mchi, None, None, tempkd, 1   , 0   , omegah2
         )
 
         # NEW PARAMETERS ############################################
@@ -439,9 +431,9 @@ class ResonanceModel(AnnihilationModel):
         self._sGammad = gammad
         self._sGammav = gammav
         # The parameter to distinguish between
-        # s- (nd=0) and p-wave (nd=1) resonances
-        self._sLd     = nd
-        self._sLv     = 1
+        # s- (nd=0) and p-wave (nd=1) processes
+        self._sNd     = nd
+        self._sNv     = 1
         # The symmetry factor for the annihilation cross-section
         self._sS      = S
 
@@ -468,7 +460,7 @@ class ResonanceModel(AnnihilationModel):
 
         # For the second condition, see the supplementary
         # material of https://arxiv.org/abs/1810.04709
-        if y < eps and self._sGammad < eps * ( 2.*self._sDelta**.5 )**(1. - 2.*self._sLd):
+        if y < eps and self._sGammad < eps * ( 2.*self._sDelta**.5 )**(1. - 2.*self._sNd):
             return True
 
         return False
@@ -478,14 +470,20 @@ class ResonanceModel(AnnihilationModel):
         if self._sDelta > 1:
             print_error(
                 "The mass splitting must be < 1. The calculation cannot be trusted.",
-                "acropolis.models.ResonanceModel.__init__"
+                "acropolis.models.ResonanceModel._check_input_parameters"
             )
         
-        if self._sLd not in [0, 1]:
+        if (self._sGammad >= 1 or self._sGammav >= 1): 
+            print_error(
+                "The couplings must be small. The calculation cannot be trusted.",
+                "acropolis.model.ResonanceModel._check_input_parameters"
+            )
+        
+        if self._sNd not in [0, 1]:
             print_error(
                 "Currently only s-wave annihilations with 'nd = 0' and p-wave " + \
                 "annihilations with 'nd = 1' are supported.",
-                "acropolis.models.ResonanceModel.__init__"
+                "acropolis.models.ResonanceModel._check_input_parameters"
             )
 
 
@@ -496,14 +494,14 @@ class ResonanceModel(AnnihilationModel):
     # The total decay width of the resonant 
     # particle into dark-sector states
     def _decay_width_d(self, p):
-        return self._sGammad * self._sMR * (p / self._sMchi)**(2.*self._sLd + 1.)
+        return self._sGammad * self._sMR * (p / self._sMchi)**(2.*self._sNd + 1.)
     
 
     # The total decay width of the resonant 
     # particle into visible-sector states
     def _decay_width_v(self, p):
         # p_f ~ m_\chi
-        return self._sGammav * self._sMR * (p / self._sMchi)**(2.*self._sLv + 1.)
+        return self._sGammav * self._sMR * (p / self._sMchi)**(2.*self._sNv + 1.)
 
     
     # The total decay width of the resonant
@@ -517,7 +515,7 @@ class ResonanceModel(AnnihilationModel):
     def _sigma_v_res(self, T):
         x = self._sMchi/T
 
-        return 8. * self._sS * (pi*x)**1.5 * self._sGammad * self._sGammav * self._sMR**2. * self._sDelta**(self._sLd+.5) * exp(-self._sDelta*x) \
+        return 8. * self._sS * (pi*x)**1.5 * self._sGammad * self._sGammav * self._sMR**2. * self._sDelta**(self._sNd+.5) * exp(-self._sDelta*x) \
                 / self._sWidth / self._sMchi**3.
 
     
@@ -527,13 +525,13 @@ class ResonanceModel(AnnihilationModel):
         x = self._sMchi/T
 
         # Speed up the calculation: only nd = 0, 1 are allowed
-        # gamma(self._sL+1.5)
+        # gamma(self._sNd+1.5)
         gamma = {
             0:      sqrt(pi) / 2., # \gamma(1.5)
             1: 3. * sqrt(pi) / 4.  # \gamma(2.5)
-        }[self._sLd]
+        }[self._sNd]
 
-        return 4. * self._sS * sqrt(pi) * x**(-self._sLd) * self._sGammad * self._sGammav * self._sMR**2. * gamma \
+        return 4. * self._sS * sqrt(pi) * x**(-self._sNd) * self._sGammad * self._sGammav * self._sMR**2. * gamma \
                 / ( self._sMchi**4. * self._sDelta**2. )
     
 
@@ -559,9 +557,9 @@ class ResonanceModel(AnnihilationModel):
             uR = self._sPR**2.
             m2 = self._sMchi**2.
 
-            width = self._decay_width(sqrt_u)
+            width_u = self._decay_width(sqrt_u)
 
-            return u * exp( -u*x/m2 ) * ( u/m2 )**(self._sLd+.5) / ( (u - uR)**2. + ( self._sMchi*width/2. )**2. )
+            return u * exp( -u*x/m2 ) * ( u/m2 )**(self._sNd+.5) / ( (u - uR)**2. + ( self._sMchi*width_u/2. )**2. )
 
         # Perform the integration
         I = quad(
