@@ -102,16 +102,6 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
-# A specifier to descide which particles
-# are considered in the Boltzmann equation
-# for the electromagnetic cascade
-# ATTENTION: Do not use a value that does
-# not include all injected particle types
-# 0: Photons
-# 1: Photons, Electrons/Positrons
-# Default: 1
-FX = 1
-
 # The number of nuclei that are
 # considered in the Boltzmann equation
 # for non-thermal nucleosynthesis

@@ -17,9 +17,8 @@ from acropolis.cache import cached_rate_or_kernel
 # pprint
 from acropolis.pprint import print_error
 # params
-from acropolis.params import me, me2, mm, mm2, alpha, re, hbar, tau_m
+from acropolis.params import me, me2, alpha, re, hbar, tau_m
 from acropolis.params import zeta3, pi2
-from acropolis.params import FX
 from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 from acropolis.params import NE_pd, NE_min
 
@@ -730,7 +729,7 @@ class SpectrumGenerator(object):
         }
 
          # Set the number of particle species (in the cascade)
-        self._sNX = 1 + 2*FX
+        self._sNX = 3
 
 
     def _rate_x(self, X, E, T):
