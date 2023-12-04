@@ -719,7 +719,7 @@ class SpectrumGenerator(object):
         # no data in the folder 'data/', db = (None, None)
         db = import_data_from_db()
 
-        # Define a dictionary containing the BBN parameter
+        # Define a dictionary containing the initial abundances
         self._sY0 = Y0
 
         # Define a dictionary containing all reaction wrappers

@@ -49,14 +49,12 @@ alpha = 1./137.036
 
 # The electron mass (in MeV)
 me = 0.511
-
-# The electron mass squared (in MeV^2)
+# -->
 me2 = me**2.
 
 # The muon mass (in MeV)
 mm = 105.658
-
-# The muon mass squared (in MeV^2)
+# -->
 mm2 = mm**2.
 
 # The classical electron radius (in 1/MeV)
