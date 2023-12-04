@@ -4,6 +4,8 @@ from math import pi, log, log10, exp, sqrt
 import numpy as np
 # scipy
 from scipy.integrate import quad, dblquad
+# abc
+from abc import ABCMeta, abstractmethod
 
 # jit
 from acropolis.jit import jit_decorator
@@ -448,10 +450,10 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         )
 
 
-class _ElectronReactionWrapper(_ReactionWrapperScaffold):
+class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMeta):
 
     def __init__(self, Y0, eta, db):
-        super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
+        super(_AbstractElectronReactionWrapper, self).__init__(Y0, eta, db)
 
 
     # RATES ###################################################################
@@ -487,8 +489,9 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL RATE ##############################################################
+    @abstractmethod
     def total_rate(self, E, T):
-        return self._rate_inverse_compton_db(E, T)
+        pass
 
 
     # INTEGRAL KERNELS ########################################################
@@ -534,25 +537,9 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # COMPTON SCATTERING ######################################################
+    @abstractmethod
     def _kernel_compton(self, E, Ep, T):
-        # Perform a subsitution of the parameters.
-        # Compared to the formula for photons, only
-        # the arguments of the cross-section are different
-        E_s  = Ep + me - E   # E , substituted
-        Ep_s = Ep            # Ep, substituted
-
-        # Use the same formula as in case of photons with
-        # E  -> E_s
-        # Ep -> Ep_s
-        # Check that the energies do not exceed the 'Compton edge'
-        # ATTENTION: This condition is missing in some other papers
-        if Ep_s/(1. + 2.*Ep_s/me) > E_s:
-            return 0.
-
-        # ATTENTION:
-        # If the last term is + 2.*me*(1./E_s - 1./Ep_s), Serpico
-        # If the last term is - 2.*me*(1./E_s - 1./Ep_s), correct
-        return pi*(re**2.)*me/(Ep_s**2.) * self._ne(T) * ( Ep_s/E_s + E_s/Ep_s + (me/E_s - me/Ep_s)**2. - 2.*me*(1./E_s - 1./Ep_s) )
+        pass
 
 
     # BETHE_HEITLER PAIR CREATION #############################################
@@ -608,6 +595,59 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
+    @abstractmethod
+    def total_kernel_x(self, E, Ep, T, X):
+        pass
+
+
+class _ElectronReactionWrapper(_AbstractElectronReactionWrapper):
+
+    def __init__(self, Y0, eta, db):
+        super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
+    
+
+    # RATES ###################################################################
+    # E is the energy of the incoming particle
+    # T is the temperature of the background photons
+
+    # [...]
+
+    # TOTAL RATE ##############################################################
+    def total_rate(self, E, T):
+        return self._rate_inverse_compton_db(E, T)
+
+
+    # INTEGRAL KERNELS ########################################################
+    # E  is the energy of the outgoing particle
+    # Ep is the energy of the incoming particle
+    # T  is the temperature of the background photons
+
+    # [...]
+
+    # COMPTON SCATTERING ######################################################
+    def _kernel_compton(self, E, Ep, T):
+        # Perform a subsitution of the parameters.
+        # Compared to the formula for photons, only
+        # the arguments of the cross-section are different
+        E_s  = Ep + me - E   # E , substituted
+        Ep_s = Ep            # Ep, substituted
+
+        # Use the same formula as in case of photons with
+        # E  -> E_s
+        # Ep -> Ep_s
+        # Check that the energies do not exceed the 'Compton edge'
+        # ATTENTION: This condition is missing in some other papers
+        if Ep_s/(1. + 2.*Ep_s/me) > E_s:
+            return 0.
+
+        # ATTENTION:
+        # If the last term is + 2.*me*(1./E_s - 1./Ep_s), Serpico
+        # If the last term is - 2.*me*(1./E_s - 1./Ep_s), correct
+        return pi*(re**2.)*me/(Ep_s**2.) * self._ne(T) * ( Ep_s/E_s + E_s/Ep_s + (me/E_s - me/Ep_s)**2. - 2.*me*(1./E_s - 1./Ep_s) )
+
+    # [...]
+
+    # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
         if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
         # Photon -> Electron
@@ -624,20 +664,17 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         )
 
 
-class _PositronReactionWrapper(object):
+class _PositronReactionWrapper(_AbstractElectronReactionWrapper):
 
     def __init__(self, Y0, eta, db):
-        self._sER = _ElectronReactionWrapper(Y0, eta, db)
-
+        super(_PositronReactionWrapper, self).__init__(Y0, eta, db)
+    
 
     # RATES ###################################################################
     # E is the energy of the incoming particle
     # T is the temperature of the background photons
 
-    # INVERSE COMPTON SCATTERING ##############################################
-    def _rate_inverse_compton_db(self, E, T):
-        return self._sER._rate_inverse_compton_db(E, T)
-
+    # [...]
 
     # TOTAL RATE ##############################################################
     def total_rate(self, E, T):
@@ -649,26 +686,14 @@ class _PositronReactionWrapper(object):
     # Ep is the energy of the incoming particle
     # T  is the temperature of the background photons
 
-    # INVERSE COMPTON SCATTERING ##############################################
-    def _kernel_inverse_compton(self, E, Ep, T):
-        return self._sER._kernel_inverse_compton(E, Ep, T)
-
+    # [...]
 
     # COMPTON SCATTERING ######################################################
     def _kernel_compton(self, E, Ep, T):
-        # There are no thermal positrons
+        # There are (almost) no thermal positrons
         return 0.
 
-
-    # BETHE_HEITLER PAIR CREATION #############################################
-    def _kernel_bethe_heitler(self, E, Ep, T):
-        return self._sER._kernel_bethe_heitler(E, Ep, T)
-
-
-    # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
-    def _kernel_pair_creation_ae(self, E, Ep, T):
-        return self._sER._kernel_pair_creation_ae(E, Ep, T)
-
+    # [...]
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
@@ -685,36 +710,6 @@ class _PositronReactionWrapper(object):
             "Particle with identifier X =" + str(X) + "does not exist.",
             "acropolis.cascade._PositronReactionWrapper.total_kernel_x"
         )
-
-
-# TODO: Incorporate neutrinos into the cascade equations
-class _NeutrinoReactionWrapper(_ReactionWrapperScaffold):
-
-    def __init__(self, Y0, eta, db):
-        super(_NeutrinoReactionWrapper, self).__init__(Y0, eta, db)
-
-
-# TODO: Incoroprate muons into the cascade equations
-class _MuonReactionWrapper(_ReactionWrapperScaffold):
-
-    # RATES ###################################################################
-    # E is the energy of the incoming particle
-    # T is the temperature of the background photons
-
-    # MUON DECAY ##############################################################
-    def _rate_muon_decay(self, E, T):
-        return hbar*mm/(tau_m*E)
-
-
-    # INVERSE COMPTON SCATTERING ##############################################
-    def _rate_inverse_compton(self, E, T):
-        # TODO: Replace with actual implementation
-        return 0.
-
-
-    # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
-        return self._rate_inverse_compton(E, T) + self._rate_muon_decay(E, T)
 
 
 class SpectrumGenerator(object):
