@@ -92,8 +92,8 @@ def _get_T_index(T_log):
 def interp_rate_db(rate_db, id, E_log, T_log):
     # Extract the correct index for the datafile
     c = {
-        'ph:rate_pair_creation'  : 0,
-        'el:rate_inverse_compton': 1
+        'ph:rate_pair_creation_ae': 0,
+        'el:rate_inverse_compton' : 1
     }[id]
 
     # Calculate the respective indices in the interpolation file
@@ -127,9 +127,9 @@ def interp_rate_db(rate_db, id, E_log, T_log):
 @jit_decorator
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
     c = {
-        'ph:kernel_inverse_compton': 0,
-        'el:kernel_pair_creation'  : 1,
-        'el:kernel_inverse_compton': 2
+        'ph:kernel_inverse_compton' : 0,
+        'el:kernel_pair_creation_ae': 1,
+        'el:kernel_inverse_compton' : 2
     }[id]
 
     # Calculate the respective indices in the interpolation file

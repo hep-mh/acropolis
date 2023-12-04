@@ -82,7 +82,7 @@ def _JIT_G(Ee, Eph, Ephb):
 # _PhotonReactionWrapper ######################################################
 
 @jit_decorator
-def _JIT_ph_rate_pair_creation(logy, logx, T):
+def _JIT_ph_rate_pair_creation_ae(logy, logx, T):
     # Return the integrand for the 2d integral in log-space
     x, y = exp(logx), exp(logy)
 
@@ -127,7 +127,7 @@ def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
 
 
 @jit_decorator
-def _JIT_el_kernel_pair_creation(logx, E, Ep, T):
+def _JIT_el_kernel_pair_creation_ae(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
 
@@ -293,7 +293,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         return ( 2.*pi*(re**2.)/x ) * self._ne(T) * ( (1. - 4./x - 8./(x**2.))*log(1.+x) + .5 + 8./x - 1./(2.*(1.+x)**2.) )
 
 
-    # BETHE-HEITLER PAIR PRODUCTION ###########################################
+    # BETHE-HEITLER PAIR CREATION #############################################
     def _rate_bethe_heitler(self, E, T):
         # For small energies, the rate can be approximated by a constant
         # (cf. 'hep-ph/0604251') --- NOT USED HERE
@@ -328,8 +328,8 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
                )
 
 
-    # DOUBLE PHOTON PAIR PRODUCTION ###########################################
-    def _rate_pair_creation(self, E, T):
+    # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
+    def _rate_pair_creation_ae(self, E, T):
         # In general, the threshold is E ~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
         # in order to guarantee a smooth transition
@@ -346,7 +346,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # Perform the integration in log-log space
         # The limits for s are always in ascending order,
         # i.e. 4*me2 < 4*E*x, since x > me2/E
-        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation, log(llim), log(ulim), \
+        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation_ae, log(llim), log(ulim), \
                              lambda logx: log(4.*me2), lambda logx: log(4.*E) + logx, \
                              epsrel=eps, epsabs=0, args=(T,)
                           )
@@ -354,20 +354,20 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         return I_fso_E2[0]/( 8.*E**2. )
 
 
-    def _rate_pair_creation_db(self, E, T):
+    def _rate_pair_creation_ae_db(self, E, T):
         if E < me2/(50.*T):
             return 0.
 
         E_log, T_log = log10(E), log10(T)
         if ( self._sRateDb is None ) or ( not in_rate_db(E_log, T_log) ):
-            return self._rate_pair_creation(E, T)
+            return self._rate_pair_creation_ae(E, T)
 
-        return interp_rate_db(self._sRateDb, 'ph:rate_pair_creation', E_log, T_log)
+        return interp_rate_db(self._sRateDb, 'ph:rate_pair_creation_ae', E_log, T_log)
 
 
     # TOTAL RATE ##############################################################
     def total_rate(self, E, T):
-        return self._rate_photon_photon(E, T) + self._rate_compton(E, T) + self._rate_bethe_heitler(E, T) + self._rate_pair_creation_db(E, T)
+        return self._rate_photon_photon(E, T) + self._rate_compton(E, T) + self._rate_bethe_heitler(E, T) + self._rate_pair_creation_ae_db(E, T)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -567,9 +567,9 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
         return self._nNZ2(T)*_JIT_dsdE_Z2(E, Ep)
 
 
-    # DOUBLE PHOTON PAIR CREATION #############################################
+    # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
     @cached_rate_or_kernel
-    def _kernel_pair_creation(self, E, Ep, T):
+    def _kernel_pair_creation_ae(self, E, Ep, T):
         # In general, the threshold is Ep >~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
         # in acordance with the implementation we use in
@@ -602,14 +602,14 @@ class _ElectronReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fG_E2 = quad(_JIT_el_kernel_pair_creation, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fG_E2 = quad(_JIT_el_kernel_pair_creation_ae, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
 
         return 0.25*pi*(alpha**2.)*me2*I_fG_E2[0]/(Ep**3.)
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
-        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation(E, Ep, T)
+        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
         # Photon -> Electron
 
         if X == 1: return self._kernel_inverse_compton(E, Ep, T)
@@ -665,14 +665,14 @@ class _PositronReactionWrapper(object):
         return self._sER._kernel_bethe_heitler(E, Ep, T)
 
 
-    # DOUBLE PHOTON PAIR CREATION #############################################
-    def _kernel_pair_creation(self, E, Ep, T):
-        return self._sER._kernel_pair_creation(E, Ep, T)
+    # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
+    def _kernel_pair_creation_ae(self, E, Ep, T):
+        return self._sER._kernel_pair_creation_ae(E, Ep, T)
 
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
-        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation(E, Ep, T)
+        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
         # Photon -> Positron
 
         if X == 1: return 0.
@@ -685,6 +685,13 @@ class _PositronReactionWrapper(object):
             "Particle with identifier X =" + str(X) + "does not exist.",
             "acropolis.cascade._PositronReactionWrapper.total_kernel_x"
         )
+
+
+# TODO: Incorporate neutrinos into the cascade equations
+class _NeutrinoReactionWrapper(_ReactionWrapperScaffold):
+
+    def __init__(self, Y0, eta, db):
+        super(_NeutrinoReactionWrapper, self).__init__(Y0, eta, db)
 
 
 # TODO: Incoroprate muons into the cascade equations
