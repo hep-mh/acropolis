@@ -488,9 +488,8 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 
     # TOTAL RATE ##############################################################
-    @abstractmethod
     def total_rate(self, E, T):
-        pass
+        return self._rate_inverse_compton_db(E, T)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -603,17 +602,6 @@ class _ElectronReactionWrapper(_AbstractElectronReactionWrapper):
 
     def __init__(self, Y0, eta, db):
         super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
-    
-
-    # RATES ###################################################################
-    # E is the energy of the incoming particle
-    # T is the temperature of the background photons
-
-    # [...]
-
-    # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
-        return self._rate_inverse_compton_db(E, T)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -667,17 +655,6 @@ class _PositronReactionWrapper(_AbstractElectronReactionWrapper):
 
     def __init__(self, Y0, eta, db):
         super(_PositronReactionWrapper, self).__init__(Y0, eta, db)
-    
-
-    # RATES ###################################################################
-    # E is the energy of the incoming particle
-    # T is the temperature of the background photons
-
-    # [...]
-
-    # TOTAL RATE ##############################################################
-    def total_rate(self, E, T):
-        return self._rate_inverse_compton_db(E, T)
 
 
     # INTEGRAL KERNELS ########################################################
