@@ -2,13 +2,13 @@
 from functools import wraps
 
 
-def cached_rate_or_kernel(f_uncached):
+def cached(f):
     # Define the cache as a dictionary
     cache = {}
     Tc = {"_": -1.}
 
     # Define the wrapper function
-    @wraps(f_uncached)
+    @wraps(f)
     def f_cached(*args):
         T     = args[-1]
         # Drop the first argument 'self'
@@ -22,7 +22,7 @@ def cached_rate_or_kernel(f_uncached):
             cache.clear()
 
         if pargs not in cache:
-            cache[pargs] = f_uncached(*args)
+            cache[pargs] = f(*args)
 
         return cache[pargs]
 

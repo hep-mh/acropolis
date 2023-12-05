@@ -8,12 +8,12 @@ from scipy.integrate import quad, dblquad
 from abc import ABCMeta, abstractmethod
 
 # jit
-from acropolis.jit import jit_decorator
+from acropolis.jit import jit
 # db
 from acropolis.db import import_data_from_db
 from acropolis.db import in_rate_db, interp_rate_db
 # cache
-from acropolis.cache import cached_rate_or_kernel
+from acropolis.cache import cached
 # pprint
 from acropolis.pprint import print_error
 # params
@@ -25,7 +25,7 @@ from acropolis.params import NE_pd, NE_min
 
 # _ReactionWrapperScaffold ####################################################
 
-@jit_decorator
+@jit
 def _JIT_F(Eph, Ee, Ephb):
     # ATTENTION: Here we use the range given in '10.1103/PhysRev.167.1159',
     # because the translation to 0 < q < 1 is questionable
@@ -43,7 +43,7 @@ def _JIT_F(Eph, Ee, Ephb):
     return 2.*q*log(q) + (1.+2.*q)*(1.-q) + (G*q)**2. * (1.-q)/(2.+2.*G*q)
 
 
-@jit_decorator
+@jit
 def _JIT_G(Ee, Eph, Ephb):
     # Define the energy of the positron
     Eep = Eph + Ephb - Ee
@@ -82,7 +82,7 @@ def _JIT_G(Ee, Eph, Ephb):
 
 # _PhotonReactionWrapper ######################################################
 
-@jit_decorator
+@jit
 def _JIT_ph_rate_pair_creation_ae(logy, logx, T):
     # Return the integrand for the 2d integral in log-space
     x, y = exp(logx), exp(logy)
@@ -103,7 +103,7 @@ def _JIT_ph_rate_pair_creation_ae(logy, logx, T):
     return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * sig_pc * (x*y)
 
 
-@jit_decorator
+@jit
 def _JIT_ph_kernel_inverse_compton(logx, E, Ep, T):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -113,13 +113,13 @@ def _JIT_ph_kernel_inverse_compton(logx, E, Ep, T):
 
 # _ElectronReactionWrapper ####################################################
 
-@jit_decorator
+@jit
 def _JIT_el_rate_inverse_compton(y, x, E, T):
     # Return the integrand for the 2d-integral; y = Eph, x = Ephb
     return _JIT_F(y, E, x)*x/( (pi**2.)*(exp(x/T) - 1.) )
 
 
-@jit_decorator
+@jit
 def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -127,7 +127,7 @@ def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
     return _JIT_F(Ep+x-E, Ep, x)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
 
 
-@jit_decorator
+@jit
 def _JIT_el_kernel_pair_creation_ae(logx, E, Ep, T):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -135,7 +135,7 @@ def _JIT_el_kernel_pair_creation_ae(logx, E, Ep, T):
     return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
 
-@jit_decorator
+@jit
 def _JIT_dsdE_Z2(Ee, Eph):
     # Define the energies (here: nucleon is at rest)
     Em = Ee                                                      # E_-
@@ -166,7 +166,7 @@ def _JIT_dsdE_Z2(Ee, Eph):
 
 # SpectrumGenerator ###########################################################
 
-@jit_decorator
+@jit
 def _JIT_set_spectra(F, i, Fi, cond=False):
     F[:, i] = Fi
     # In the strongly compressed regime, manually
@@ -175,7 +175,7 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
     if cond: F[0, i] = 0.
 
 
-@jit_decorator
+@jit
 def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
     # Extract the number of particle species...
     NX = len(G)
@@ -400,7 +400,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_rate_or_kernel
+    @cached
     def _kernel_inverse_compton(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -460,7 +460,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_rate_or_kernel
+    @cached
     def _rate_inverse_compton(self, E, T):
         # Define the upper limit for the integration over x
         ulim = min( E - me2/(4.*E), Ephb_T_max*T )
@@ -499,7 +499,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
     # T  is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached_rate_or_kernel
+    @cached
     def _kernel_inverse_compton(self, E, Ep, T):
         # E == Ep leads to a divergence in
         # the Bose-Einstein distribution
@@ -542,7 +542,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 
     # BETHE_HEITLER PAIR CREATION #############################################
-    @cached_rate_or_kernel
+    @cached
     def _kernel_bethe_heitler(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -554,7 +554,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 
     # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
-    @cached_rate_or_kernel
+    @cached
     def _kernel_pair_creation_ae(self, E, Ep, T):
         # In general, the threshold is Ep >~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold

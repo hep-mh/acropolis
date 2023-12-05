@@ -7,8 +7,8 @@ except ImportError:
     _use_numba_jit = False
 
 
-def _null_decorator(func):
-    return func
+def _null_decorator(f):
+    return f
 
 
-jit_decorator = nb.njit(cache=True) if _use_numba_jit else _null_decorator
+jit = nb.njit(cache=True) if _use_numba_jit else _null_decorator

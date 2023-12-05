@@ -8,7 +8,7 @@ from os import path
 from time import time
 
 # jit
-from acropolis.jit import jit_decorator
+from acropolis.jit import jit
 # pprint
 from acropolis.pprint import print_info
 # params
@@ -62,17 +62,17 @@ def in_kernel_db(E_log, Ep_log, T_log):
     return False
 
 
-@jit_decorator
+@jit
 def _get_E_log(i):
     return Emin_log + (Emax_log - Emin_log)*i/(Enum - 1)
 
 
-@jit_decorator
+@jit
 def _get_T_log(i):
     return Tmin_log + (Tmax_log - Tmin_log)*i/(Tnum - 1)
 
 
-@jit_decorator
+@jit
 def _get_E_index(E_log):
     index = int( ( Enum - 1 ) * ( E_log - Emin_log ) / ( Emax_log - Emin_log ) )
 
@@ -80,7 +80,7 @@ def _get_E_index(E_log):
     return index if index != Enum - 1 else index - 1
 
 
-@jit_decorator
+@jit
 def _get_T_index(T_log):
     index = int( ( Tnum - 1 ) * ( T_log - Tmin_log ) / ( Tmax_log - Tmin_log ) )
 
@@ -88,7 +88,7 @@ def _get_T_index(T_log):
     return index if index != Tnum - 1 else index - 1
 
 
-@jit_decorator
+@jit
 def interp_rate_db(rate_db, id, E_log, T_log):
     # Extract the correct index for the datafile
     c = {
@@ -124,13 +124,9 @@ def interp_rate_db(rate_db, id, E_log, T_log):
     return 10.**( a0 + a1*x + a2*y + a3*x*y )
 
 
-@jit_decorator
+@jit
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
-    c = {
-        'ph:kernel_inverse_compton' : 0,
-        'el:kernel_pair_creation_ae': 1,
-        'el:kernel_inverse_compton' : 2
-    }[id]
+    pass
 
     # Calculate the respective indices in the interpolation file
     iE, iEp, iT  = _get_E_index(E_log), _get_E_index(Ep_log), _get_T_index(T_log)
