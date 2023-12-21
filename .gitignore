@@ -8,6 +8,10 @@ paper*
 # AlterBBN files
 alterbbn*
 
+# Files for external projects
+prj/*
+*prj.tar.gz
+
 # Temporary files
 CHANGES
 TODO
