@@ -5,18 +5,17 @@ import numpy as np
 # scipy
 from scipy.linalg import expm
 from scipy.integrate import quad
+from scipy.optimize import root
 # abc
 from abc import ABC, abstractmethod
 
 # input
 from acropolis.input import InputInterface, locate_sm_file
-# jit
-from acropolis.jit import jit_decorator
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
-from acropolis.params import zeta3
-from acropolis.params import hbar, c_si, me2, alpha, tau_t
+from acropolis.params import zeta3, pi2
+from acropolis.params import hbar, c_si, me, me2, alpha, tau_t
 from acropolis.params import Emin, NY
 from acropolis.params import approx_zero, eps
 from acropolis.params import universal
@@ -399,28 +398,19 @@ class AnnihilationModel(AbstractModel):
 # When using this model, please cite arXiv:2310:XXXX
 class ResonanceModel(AnnihilationModel):
     
-    def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, C=None, omegah2=0.12):
+    def __init__(self, mchi, delta, gammad, gammav, nd, tempkd=None, C=None, S=1, omegah2=0.12):
 
-        # Estimate the decoupling temperature from the elastic
-        # cross-section on request, i.e. if 'tempkd = None'
-        if tempkd is None:
-            if C is None:
-                print_error(
-                    "When requesting to calculate the decoupling temperature with " +
-                    "'tempkd = None', the parameter C must not be 'None' as well!",
-                    "acropolis.models.ResonanceModel._estimate_tempkd_ee"
-                )
-            
-            tempkd = self._estimate_tempkd_ee( C )
+        # CALL THE SUPER CONSTRUCTOR (OF ANNIHILATION_MODEL) ##################
+        #######################################################################
 
-        # Call the super constructor (of AnnihilationModel)
         super(ResonanceModel, self).__init__(
         #   mchi, a   , b   , tempkd, bree, braa, omegah2
             mchi, None, None, tempkd, 1   , 0   , omegah2
         )
 
-        # NEW PARAMETERS ############################################
-        #############################################################
+
+        # SPECIFY THE NEW PARAMETERS ##########################################
+        #######################################################################
 
         # The mass splitting between the resonant
         # particle and the dark-matter particle
@@ -444,23 +434,82 @@ class ResonanceModel(AnnihilationModel):
         # The total decay width of the resonant particle
         self._sWidth  = self._decay_width(self._sPR)        # in MeV
             
-        #############################################################
 
+        # UPDATE TKD (IF NECESARRY) ###########################################
+        #######################################################################
+
+        if tempkd is None:
+            if C is None:
+                print_error(
+                    "When requesting to calculate the decoupling temperature with " +
+                    "'tempkd = None', the parameter C must not be 'None' as well!",
+                    "acropolis.models.ResonanceModel._init__"
+                )
+            
+            self._sTkd = self._estimate_tempkd_ee( C )
+
+
+        # CHECK THE INPUT PARAMATERS ##########################################
+        #######################################################################
+        
         self._check_input_parameters()
 
 
     def _estimate_tempkd_ee(self, C):
-        # TODO: Implement
-        return 0.
+
+        def _tempkd_ee_root(logT):
+            T = exp( logT )
+
+            return log( self._sigma_v_xe_xe(C, T) * self._nee(T) / self._sII.hubble_rate(T) )
+        
+        # H ~ sig_v * _nee
+        tempk = exp( root(_tempkd_ee_root, 0.).x )
+
+        if tempk >= self._sMchi:
+            print_error(
+                "The kinetik decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
+                "acropolis.models.ResonanceModel._estimate_tempkd_ee"
+            )
+        
+        return tempk
+
+
+    def _nee(self, T):
+        x = me/T
+
+        # 1. EQUILIBRIUM WITH VANISHING CHEM. POTENTIAL
+        def _f_kernel(y, x): # ne = ge * T^3 * quad(f) / 2 pi^2
+            if x > y:
+                return 0.
+
+            return y * sqrt(y**2. - x**2.) / ( exp(y) + 1 )
+        # -->
+        f = quad(_f_kernel, x, 200, epsabs=0, epsrel=eps, args=(x,))[0]
+        # -->
+        nee_1 = 4. * f * (T**3.) / ( 2. * pi2 )
+
+        # 1. EQUILIBRIUM WITH NON-VANISHING CHEM. POTENTIAL
+        Y = self._sII.bbn_abundances_0()
+        # -->
+        nee_2 = ( Y[0] + 2.*Y[5] ) * self._sII.parameter('eta') * ( 2.*zeta3/pi2 ) * (T**3.)
+
+        return max(nee_1, nee_2)
+
+
+    # TODO
+    def _sigma_v_xe_xe(self, C, T):
+        mchi = self._sMchi
+        # -->
+        x = mchi/T
+
+        return 0 #16. * C * self._sGammav * self._sGammad * sqrt( me/(mchi + me) ) / ( sqrt(2*pi*x) * x * (mchi**2) )
 
 
     def _check_nwa(self, eps=0.1):
         y = self._sWidth / self._sMR
         # In the NWA limit, we have y -> 0, i.e. y < eps
 
-        # For the second condition, see the supplementary
-        # material of https://arxiv.org/abs/1810.04709
-        if y < eps and self._sGammad < eps * ( 2.*self._sDelta**.5 )**(1. - 2.*self._sNd):
+        if y < eps and self._sNd != 0:
             return True
 
         return False
@@ -551,7 +600,7 @@ class ResonanceModel(AnnihilationModel):
         umax = exp_cutoff * self._sMchi**2. / x
 
         def _sigma_v_full_kernel(log_u):
-            u      = exp(log_u)
+            u      = exp(log_u) # = p^2
             sqrt_u = sqrt(u)    # = p
 
             uR = self._sPR**2.
@@ -573,19 +622,5 @@ class ResonanceModel(AnnihilationModel):
     def _sigma_v(self, T):
         # Calculate the dark-matter temperature
         Tdm  = self._dm_temperature(T)
-        # -->
-        xdm  = self._sMchi/Tdm
 
-        # To be in the RESONANT regime...
-        # TODO
-
-        # To be in the NON-RESONANT regime, we have to
-        # make sure that p/pR << 1 over the full integration
-        # range. This is possible, since only momenta
-        # with p^2 ~ mchi^2/x have a relevant contribution
-        # TODO
-        if False and xdm > 1e3/self._sDelta:
-            return self._sigma_v_non_res(Tdm)
-
-        # Only calculate the full cross-section if necessary
         return self._sigma_v_full(Tdm)
