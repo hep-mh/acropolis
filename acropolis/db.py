@@ -104,7 +104,6 @@ def interp_rate_db(rate_db, id, E_log, T_log):
     x , y = T_log, E_log
     x0, y0 = _get_T_log(iT  ), _get_E_log(iE  )
     x1, y1 = _get_T_log(iT+1), _get_E_log(iE+1)
-    xd, yd = (x-x0)/(x1-x0), (y-y0)/(y1-y0)
 
     # Define the index function
     k = lambda jT, jE: jT*Enum + jE
@@ -128,6 +127,7 @@ def interp_rate_db(rate_db, id, E_log, T_log):
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
     pass
 
+    """
     # Calculate the respective indices in the interpolation file
     iE, iEp, iT  = _get_E_index(E_log), _get_E_index(Ep_log), _get_T_index(T_log)
 
@@ -176,3 +176,4 @@ def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
     a7 = ( c000 - c001 - c010 + c011 - c100 + c101 + c110 - c111 )/d
 
     return 10.**( a0 + a1*x + a2*y + a3*z + a4*x*y + a5*x*z + a6*y*z + a7*x*y*z )
+    """
