@@ -162,6 +162,9 @@ class BufferedScanner(object):
         # Initialize the buffer
         matpb = None
 
+        # Initialize fastp
+        fastp = None
+
         nb, ib = 0, 0
         # Loop over the non-parallel parameter(s)
         for i, scanp in enumerate(scanp_ls):

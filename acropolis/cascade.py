@@ -172,7 +172,8 @@ def _JIT_set_spectra(F, i, Fi, cond=False):
     # In the strongly compressed regime, manually
     # set the photon spectrum to zero in order to
     # avoid floating-point errors
-    if cond: F[0, i] = 0.
+    if cond:
+        F[0, i] = 0.
 
 
 @jit
@@ -434,13 +435,16 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
-        if X == 0: return self._kernel_photon_photon(E, Ep, T) + self._kernel_compton(E, Ep, T)
+        if X == 0:
+            return self._kernel_photon_photon(E, Ep, T) + self._kernel_compton(E, Ep, T)
         # Photon -> Photon
 
-        if X == 1: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 1:
+            return self._kernel_inverse_compton(E, Ep, T)
         # Electron -> Photon
 
-        if X == 2: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 2:
+            return self._kernel_inverse_compton(E, Ep, T)
         # Positron -> Photon
 
         print_error(
@@ -636,13 +640,16 @@ class _ElectronReactionWrapper(_AbstractElectronReactionWrapper):
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
-        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
+        if X == 0:
+            return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
         # Photon -> Electron
 
-        if X == 1: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 1:
+            return self._kernel_inverse_compton(E, Ep, T)
         # Electron -> Electron
 
-        if X == 2: return 0.
+        if X == 2:
+            return 0.
         # Positron -> Electron
 
         print_error(
@@ -673,13 +680,16 @@ class _PositronReactionWrapper(_AbstractElectronReactionWrapper):
 
     # TOTAL INTEGRAL KERNEL ####################################################
     def total_kernel_x(self, E, Ep, T, X):
-        if X == 0: return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
+        if X == 0:
+            return self._kernel_compton(E, Ep, T) + self._kernel_bethe_heitler(E, Ep, T) + self._kernel_pair_creation_ae(E, Ep, T)
         # Photon -> Positron
 
-        if X == 1: return 0.
+        if X == 1:
+            return 0.
         # Electron -> Positron
 
-        if X == 2: return self._kernel_inverse_compton(E, Ep, T)
+        if X == 2:
+            return self._kernel_inverse_compton(E, Ep, T)
         # Positron -> Positron
 
         print_error(

@@ -41,7 +41,8 @@ class LogInterp(object):
         ix = int( ( x_log - self._sXminLog )*( self._sN - 1 )/( self._sXmaxLog - self._sXminLog ) )
 
         # Handle the case for which ix+1 is out-of-bounds
-        if ix == self._sN - 1: ix -= 1
+        if ix == self._sN - 1:
+            ix -= 1
 
         x1_log, x2_log = self._sXLog[ix], self._sXLog[ix+1]
         y1_log, y2_log = self._sYLog[ix], self._sYLog[ix+1]

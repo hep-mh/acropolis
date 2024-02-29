@@ -1,11 +1,9 @@
 # math
-from math import pi, exp, log, log10, sqrt
+from math import pi, exp, log, log10
 # numpy
 import numpy as np
 # scipy
 from scipy.linalg import expm
-from scipy.integrate import quad
-from scipy.optimize import root
 # abc
 from abc import ABC, abstractmethod
 
@@ -14,13 +12,12 @@ from acropolis.input import InputInterface, locate_sm_file
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
-from acropolis.params import zeta3, pi2
-from acropolis.params import hbar, c_si, me, me2, alpha, tau_t
+from acropolis.params import zeta3
+from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin, NY
-from acropolis.params import approx_zero, eps
 from acropolis.params import universal
 # pprint
-from acropolis.pprint import print_info, print_warning, print_error
+from acropolis.pprint import print_info, print_warning
 
 
 class AbstractModel(ABC):

@@ -357,23 +357,40 @@ class NuclearReactor(object):
     @_convert_mb_to_iMeV2
     def get_cross_section(self, reaction_id, E):
         # There is no switch statement in python :(
-        if reaction_id ==  1: return self._da_np(E)              #  1. d + a -> n + p
-        if reaction_id ==  2: return self._ta_nd(E)              #  2. t + a -> n + d
-        if reaction_id ==  3: return self._ta_npn(E)             #  3. t + a -> 2n + p
-        if reaction_id ==  4: return self._He3a_pd(E)            #  4. He3 + a -> p + d
-        if reaction_id ==  5: return self._He3a_npp(E)           #  5. He3 + a -> n + 2p
-        if reaction_id ==  6: return self._He4a_pt(E)            #  6. He4 + a -> p + t
-        if reaction_id ==  7: return self._He4a_nHe3(E)          #  7. He4 + a -> n + He3
-        if reaction_id ==  8: return self._He4a_dd(E)            #  8. He4 + a -> 2d
-        if reaction_id ==  9: return self._He4a_npd(E)           #  9. He4 + a -> n + p + d
-        if reaction_id == 10: return self._Li6a_npHe4(E)         # 10. Li6 + a -> n + p + He4
-        if reaction_id == 11: return self._Li6a_XA3(E)           # 11. Li7 + a -> X + A3
-        if reaction_id == 12: return self._Li7a_tHe4(E)          # 12. Li7 + a -> t + He4
-        if reaction_id == 13: return self._Li7a_nLi6(E)          # 13. Li7 + a -> n + Li6
-        if reaction_id == 14: return self._Li7a_nnpHe4(E)        # 14. Li7 + a -> 2n + p + He4
-        if reaction_id == 15: return self._Be7a_He3He4(E)        # 15. Be7 + a -> He3 + He4
-        if reaction_id == 16: return self._Be7a_pLi6(E)          # 16. Be7 + a -> p + Li6
-        if reaction_id == 17: return self._Be7a_ppnHe4(E)        # 17. Be7 + a -> 2p + n + He4
+        if reaction_id ==  1:
+            return self._da_np(E)              #  1. d + a -> n + p
+        if reaction_id ==  2:
+            return self._ta_nd(E)              #  2. t + a -> n + d
+        if reaction_id ==  3:
+            return self._ta_npn(E)             #  3. t + a -> 2n + p
+        if reaction_id ==  4:
+            return self._He3a_pd(E)            #  4. He3 + a -> p + d
+        if reaction_id ==  5:
+            return self._He3a_npp(E)           #  5. He3 + a -> n + 2p
+        if reaction_id ==  6:
+            return self._He4a_pt(E)            #  6. He4 + a -> p + t
+        if reaction_id ==  7:
+            return self._He4a_nHe3(E)          #  7. He4 + a -> n + He3
+        if reaction_id ==  8:
+            return self._He4a_dd(E)            #  8. He4 + a -> 2d
+        if reaction_id ==  9:
+            return self._He4a_npd(E)           #  9. He4 + a -> n + p + d
+        if reaction_id == 10:
+            return self._Li6a_npHe4(E)         # 10. Li6 + a -> n + p + He4
+        if reaction_id == 11:
+            return self._Li6a_XA3(E)           # 11. Li7 + a -> X + A3
+        if reaction_id == 12:
+            return self._Li7a_tHe4(E)          # 12. Li7 + a -> t + He4
+        if reaction_id == 13:
+            return self._Li7a_nLi6(E)          # 13. Li7 + a -> n + Li6
+        if reaction_id == 14:
+            return self._Li7a_nnpHe4(E)        # 14. Li7 + a -> 2n + p + He4
+        if reaction_id == 15:
+            return self._Be7a_He3He4(E)        # 15. Be7 + a -> He3 + He4
+        if reaction_id == 16:
+            return self._Be7a_pLi6(E)          # 16. Be7 + a -> p + Li6
+        if reaction_id == 17:
+            return self._Be7a_ppnHe4(E)        # 17. Be7 + a -> 2p + n + He4
 
 
         # If no match is found, exit with error
@@ -415,7 +432,9 @@ class NuclearReactor(object):
         Fph = LogInterp(xsp, ysp) # Interpolation on: Emin -> E0
         # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
-            E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
+            E = exp( log_E )
+            
+            return Fph( E ) * E * self.get_cross_section(rid, E)
 
         # Define the total rate of interactions altering the photon spectrum,
         # evaluated at the relevant injection energy E0

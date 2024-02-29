@@ -134,7 +134,7 @@ def tex_title(**kwargs):
     # that need to be printed in scientific
     # notation
     def _val_to_string(val):
-        if type(val) == float:
+        if isinstance(val, float):
             power = log10( val )
             if power != int(power):
                 # TODO: Implement this special case
@@ -260,7 +260,7 @@ def save_figure(output_file=None, show_fig=False):
 
 def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pdf=True, fix_helium=False, show_fig=False, obs=pdg2022):
     # If data is a filename, load the data first
-    if type(data) == str:
+    if isinstance(data, str):
         data = np.loadtxt(data)
 
     # Get the set of input parameters...
@@ -292,10 +292,10 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
 
             excl = False
             for i, el in enumerate(column):
-                if el < _95cl and excl == True:
+                if el < _95cl and excl:
                     HeD[i, j] = 10
 
-                if el > _95cl and excl == False:
+                if el > _95cl and not excl:
                     excl = True
 
     # Extract the overall exclusion limit
@@ -358,10 +358,10 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     # Set tight layout
     plt.tight_layout()
 
-    if save_pdf == True:
+    if save_pdf:
         save_figure(output_file)
 
-    if show_fig == True:
+    if show_fig:
         plt.show()
 
     # Return figure and axis in case

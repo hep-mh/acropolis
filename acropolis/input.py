@@ -31,7 +31,8 @@ def data_from_file(filename):
 
     # Extract the different files and
     # store them in a dictionary
-    for m in tf.getmembers(): tc[m.name] = tf.extractfile(m)
+    for m in tf.getmembers():
+        tc[m.name] = tf.extractfile(m)
 
     # READ THE PREVIOUSLY GENERATED DATA
     cosmo_data = np.genfromtxt(tc["cosmo_file.dat"]    )
@@ -84,7 +85,7 @@ class InputInterface(object):
 
     def __init__(self, input_data):
         # If input_data is a filename, extract the data first
-        if type(input_data) == str:
+        if isinstance(input_data, str):
             input_data = data_from_file(input_data)
 
         # Extract the provided input data

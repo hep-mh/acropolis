@@ -11,7 +11,7 @@ _max_verbose_level = 1
 
 
 def print_version():
-    if verbose == True:
+    if verbose:
         # Differentiate between stable and dev version
         version_str = ""
         # Stable version
@@ -64,7 +64,7 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
 
 def print_error(error, loc="", eol="\n"):
     locf = ""
-    if debug == True and loc != "":
+    if debug and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
     stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + locf + eol)
@@ -73,7 +73,7 @@ def print_error(error, loc="", eol="\n"):
 
 def print_warning(warning, loc="", eol="\n"):
     locf = ""
-    if debug == True and loc != "":
+    if debug and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
     stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
@@ -88,7 +88,7 @@ def print_info(info, loc="", eol="\n", verbose_level=None):
     _max_verbose_level = max( _max_verbose_level, verbose_level )
 
     locf = ""
-    if debug == True and loc != "":
+    if debug and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
     if verbose and verbose_level >= _max_verbose_level:
