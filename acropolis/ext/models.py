@@ -22,6 +22,10 @@ def overrides(interface_class):
     return overrider
 
 
+def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S):
+    pass
+
+
 # This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
 # When using this model, please cite arXiv:2310:XXXX
 class ResonanceModel(AnnihilationModel):

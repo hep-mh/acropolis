@@ -1,0 +1,10 @@
+exclude = [
+    "~*",
+    "data",
+    "future",
+    "prj",
+    "v1.3"
+]
+
+[lint]
+ignore = ["E731"]
