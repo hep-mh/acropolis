@@ -1,10 +1,15 @@
 # math
 from math import sqrt, exp, log
+# numpy
+import numpy as np
 # scipy
 from scipy.integrate import quad
 
 # models
 from acropolis.models import AnnihilationModel
+# params
+from acropolis.params import pi
+from acropolis.params import eps
 # pprint
 from acropolis.pprint import print_error
 
@@ -23,10 +28,13 @@ class ResonanceModel(AnnihilationModel):
     
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, omegah2=0.12):
 
+        # CALCULATE TKD FROM THE GIVEN FUNCTION IF REQUESTED ##################
+        #######################################################################
         if callable(tempkd):
             tempkd = tempkd(
                 mchi=mchi, delta=delta, gammad=gammad, gammav=gammav, nd=nd, S=S
             )
+
 
         # CALL THE SUPER CONSTRUCTOR (OF ANNIHILATION_MODEL) ##################
         #######################################################################
@@ -48,10 +56,10 @@ class ResonanceModel(AnnihilationModel):
         # visible sector
         self._sGammad = gammad
         self._sGammav = gammav
-        # The parameter to distinguish between
+        # The parameters to distinguish between
         # s- (nd=0) and p-wave (nd=1) processes
         self._sNd     = nd
-        self._sNv     = 1
+        self._sNv     = 1 # NOTE: Only electrons are allowed in the final state for now
         # The symmetry factor for the annihilation cross-section
         self._sS      = S
 
@@ -67,11 +75,6 @@ class ResonanceModel(AnnihilationModel):
         #######################################################################
         
         self._check_input_parameters()
-        mchi = self._sMchi
-        # -->
-        x = mchi/T
-
-        return 0 #16. * C * self._sGammav * self._sGammad * sqrt( me/(mchi + me) ) / ( sqrt(2*pi*x) * x * (mchi**2) )
 
 
     def _check_nwa(self, eps=0.1):
@@ -93,7 +96,7 @@ class ResonanceModel(AnnihilationModel):
         
         if (self._sGammad >= 1 or self._sGammav >= 1): 
             print_error(
-                "The couplings must be small. The calculation cannot be trusted.",
+                "The couplings must be small (< 1). The calculation cannot be trusted.",
                 "acropolis.model.ResonanceModel._check_input_parameters"
             )
         
@@ -103,7 +106,6 @@ class ResonanceModel(AnnihilationModel):
                 "annihilations with 'nd = 1' are supported.",
                 "acropolis.models.ResonanceModel._check_input_parameters"
             )
-
 
 
     # DEPENDENT QUANTITIES ##############################################################
@@ -118,7 +120,6 @@ class ResonanceModel(AnnihilationModel):
     # The total decay width of the resonant 
     # particle into visible-sector states
     def _decay_width_v(self, p):
-        # p_f ~ m_\chi
         return self._sGammav * self._sMR * (p / self._sMchi)**(2.*self._sNv + 1.)
 
     
@@ -156,40 +157,65 @@ class ResonanceModel(AnnihilationModel):
     # The full (non-approximate) thermally
     # averaged annihilation cross section
     def _sigma_v_full(self, T):
-        x = self._sMchi/T
+        x  = self._sMchi/T
 
-        # The maximal exponent in the integral that
-        # still leads to relevant contributions
+        uR = self._sPR**2.
+        m2 = self._sMchi**2.
+
+        # Set the maximal exponent in the integral
+        # beyond which the integrand is cut off
         exp_cutoff = 200.
 
         # Define the prefactor
-        pref = 4. * x * sqrt(x*pi) * self._sS * self._sGammad * self._sGammav * (self._sMR/self._sMchi)**2.
+        pref = 4. * x * sqrt(x*pi) * self._sS * self._sGammad * self._sGammav * (self._sMR/self._sMchi)**2.    
 
-        # Define the upper integration limit
-        umax = exp_cutoff * self._sMchi**2. / x
-
+        # Define the integration kernel
         def _sigma_v_full_kernel(log_u):
             u      = exp(log_u) # = p^2
             sqrt_u = sqrt(u)    # = p
 
-            uR = self._sPR**2.
-            m2 = self._sMchi**2.
-
             width_u = self._decay_width(sqrt_u)
 
+            #      | from log integration
             return u * exp( -u*x/m2 ) * ( u/m2 )**(self._sNd+.5) / ( (u - uR)**2. + ( self._sMchi*width_u/2. )**2. )
 
-        # Perform the integration
-        I = quad(
-            _sigma_v_full_kernel, log(approx_zero), log(umax), epsrel=eps, epsabs=0, points=(2.*log(self._sPR),)
-        )
+        # Calculate the upper integration limit
+        umax = exp_cutoff * m2 / x
 
-        return pref*I[0]
+        ubrk = uR/100
+        # Perform the integration (in two parts)
+        # PART 1: 0 < u < ubrk
+        I1 = quad(
+            _sigma_v_full_kernel, -np.inf  , log(ubrk), epsrel=eps, epsabs=0
+        )[0]
+        # PART 2: ubrk < u < umax
+        I2 = quad(
+            _sigma_v_full_kernel, log(ubrk), log(umax), epsrel=eps, epsabs=0, points=(log(uR),)
+        )[0]
+
+        return pref*(I1+I2)
 
 
     @overrides(AnnihilationModel)
     def _sigma_v(self, T):
+        # Calculate the resonance peak
+        x_res_peak = 1.5/self._sDelta
+
+        # Define a cutoff factor for discriminating
+        # between the resonant and non-resonant region
+        cutoff = 100
+
         # Calculate the dark-matter temperature
-        Tdm  = self._dm_temperature(T)
+        Tdm  = T # TODO self._dm_temperature(T)
+        # -->
+        x = self._sMchi/Tdm
+
+        # RESONANT APPROXIMATION
+        if self._check_nwa() and x < x_res_peak/cutoff:
+            return self._sigma_v_res(Tdm)
+        
+        # NON-RESONANT APPROXIMATION
+        if x > (cutoff**2.) * x_res_peak:
+            return self._sigma_v_non_res(Tdm)
 
         return self._sigma_v_full(Tdm)
