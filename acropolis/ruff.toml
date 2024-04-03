@@ -6,5 +6,7 @@ exclude = [
     "v1.3"
 ]
 
+indent-width = 4
+
 [lint]
 ignore = ["E731"]
