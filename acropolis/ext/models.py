@@ -4,11 +4,13 @@ from math import sqrt, exp, log
 import numpy as np
 # scipy
 from scipy.integrate import quad
+from scipy.optimize import root
 
 # models
 from acropolis.models import AnnihilationModel
 # params
-from acropolis.params import pi
+from acropolis.params import me
+from acropolis.params import pi, pi2, zeta3
 from acropolis.params import eps
 # pprint
 from acropolis.pprint import print_error
@@ -22,9 +24,47 @@ def overrides(interface_class):
     return overrider
 
 
-def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S):
-    pass
+def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
+    # The cross-section for \chi e^\pm -> \chi e^\pm scattering
+    def _sigma_v_xe_xe(T):
+        # TODO
+        pass
 
+    # The number density of e^\pm
+    def _nee(T):
+        xe = me/T
+
+        # 1. EQUILIBRIUM WITH VANISHING CHEM. POTENTIAL
+        f_kernel = lambda y, x: y * sqrt(y**2. - x**2.) / ( exp(y) + 1 ) if x <= y else 0. # x = me/T, y = Ee/T
+        # -->
+        f = quad(f_kernel, xe, 200, epsabs=0, epsrel=eps, args=(xe,))[0]
+        # -->
+        nee_1 = 4. * f * (T**3.) / ( 2. * pi2 )
+        # ne = ge * T^3 * quad(f) / 2 pi^2
+
+        # 1. EQUILIBRIUM WITH NON-VANISHING CHEM. POTENTIAL
+        Y = ii.bbn_abundances_0()
+        # -->
+        nee_2 = ( Y[0] + 2.*Y[5] ) * ii.parameter('eta') * ( 2.*zeta3/pi2 ) * (T**3.)
+
+        return max(nee_1, nee_2)
+
+    # H ~ sig_v * _nee
+    def _tempkd_ee_root(logT):
+        T = exp( logT )
+
+        return log( _sigma_v_xe_xe(T) * _nee(T) / ii.hubble_rate(T) )
+    
+    # -->
+    tempkd = exp( root(_tempkd_ee_root, 0.).x )
+
+    if tempkd >= mchi:
+        print_error(
+            "The kinetik decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
+            "acropolis.models.estimate_tempkd_ee"
+        )
+    
+    return tempkd
 
 # This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
 # When using this model, please cite arXiv:2310:XXXX
@@ -32,22 +72,23 @@ class ResonanceModel(AnnihilationModel):
     
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, omegah2=0.12):
 
-        # CALCULATE TKD FROM THE GIVEN FUNCTION IF REQUESTED ##################
-        #######################################################################
-        if callable(tempkd):
-            tempkd = tempkd(
-                mchi=mchi, delta=delta, gammad=gammad, gammav=gammav, nd=nd, S=S
-            )
-
-
         # CALL THE SUPER CONSTRUCTOR (OF ANNIHILATION_MODEL) ##################
         #######################################################################
 
         super(ResonanceModel, self).__init__(
         #   mchi, a   , b   , tempkd, bree, braa, omegah2
-            mchi, None, None, tempkd, 1   , 0   , omegah2
+            mchi, None, None, None  , 1   , 0   , omegah2
+        #                     | tempkd will be set below
         )
 
+        # CALCULATE TKD FROM THE GIVEN FUNCTION IF REQUESTED ##################
+        #######################################################################
+        if callable(tempkd):
+            self._sTkd = tempkd(
+                mchi=mchi, delta=delta, gammad=gammad, gammav=gammav, nd=nd, S=S, ii=self._sII
+            )
+        else:
+            self._sTkd = tempkd
 
         # SPECIFY THE NEW PARAMETERS ##########################################
         #######################################################################
