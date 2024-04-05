@@ -13,7 +13,7 @@ from acropolis.params import me
 from acropolis.params import pi, pi2, zeta3
 from acropolis.params import eps
 # pprint
-from acropolis.pprint import print_error
+from acropolis.pprint import print_warning, print_error
 
 
 # https://stackoverflow.com/questions/1167617/in-python-how-do-i-indicate-im-overriding-a-method
@@ -24,11 +24,12 @@ def overrides(interface_class):
     return overrider
 
 
-def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
+# Required keyword arguments:
+# mchi, delta, gammad, gammav, nd, S, ii
+def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
     # The cross-section for \chi e^\pm -> \chi e^\pm scattering
     def _sigma_v_xe_xe(T):
-        # TODO
-        pass
+        return 12.*C*gammad*gammav*(T**2.)/(mchi**4.)
 
     # The number density of e^\pm
     def _nee(T):
@@ -59,17 +60,23 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
     tempkd = exp( root(_tempkd_ee_root, 0.).x )
 
     if tempkd >= mchi:
-        print_error(
-            "The kinetik decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
+        print_warning(
+            "The kinetic decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
+            "acropolis.models.estimate_tempkd_ee"
+        )
+    
+    if tempkd <= me:
+        print_warning(
+            "The kinetic decoupling temperature is smaller than the electron mass. The calculation cannot be trusted.",
             "acropolis.models.estimate_tempkd_ee"
         )
     
     return tempkd
 
+
 # This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
-# When using this model, please cite arXiv:2310:XXXX
+# When using this model, please cite arXiv:2405:XXXX
 class ResonanceModel(AnnihilationModel):
-    
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, omegah2=0.12):
 
         # CALL THE SUPER CONSTRUCTOR (OF ANNIHILATION_MODEL) ##################
@@ -227,22 +234,36 @@ class ResonanceModel(AnnihilationModel):
         # Calculate the upper integration limit
         umax = exp_cutoff * m2 / x
 
-        ubrk = uR/100
-        # Perform the integration (in two parts)
-        # PART 1: 0 < u < ubrk
-        I1 = quad(
-            _sigma_v_full_kernel, -np.inf  , log(ubrk), epsrel=eps, epsabs=0
-        )[0]
-        # PART 2: ubrk < u < umax
-        I2 = quad(
-            _sigma_v_full_kernel, log(ubrk), log(umax), epsrel=eps, epsabs=0, points=(log(uR),)
-        )[0]
+        uR_l, uR_h = uR*(1-eps), uR*(1+eps) 
 
-        return pref*(I1+I2)
+        # uR_h/uR_lt ~ 1.002
+        # This is still good with exp_cutoff
+        uR_l = min(uR_l, umax)
+
+        # Perform the integration in three steps
+        # BELOW RESONANCE
+        I1 = quad(
+            _sigma_v_full_kernel, -np.inf  , log(uR_l), epsrel=eps, epsabs=0
+        )[0]
+        # AROUND RESONANCE
+        I2 = quad(
+            _sigma_v_full_kernel, log(uR_l), log(uR_h), epsrel=eps, epsabs=0, limit=100, points=(log(uR),)
+        )[0] if uR_l < umax else 0
+        # ABOVE RESONANCE
+        I3 = quad(
+            _sigma_v_full_kernel, log(uR_h), log(umax), epsrel=eps, epsabs=0
+        )[0] if uR_l < umax else 0
+
+        return pref*(I1+I2+I3)
 
 
     @overrides(AnnihilationModel)
     def _sigma_v(self, T):
+        return self._sigma_v_full(
+            self._dm_temperature(T)
+        )
+        
+        """
         # Calculate the resonance peak
         x_res_peak = 1.5/self._sDelta
 
@@ -251,10 +272,10 @@ class ResonanceModel(AnnihilationModel):
         cutoff = 100
 
         # Calculate the dark-matter temperature
-        Tdm  = T # TODO self._dm_temperature(T)
+        Tdm  = self._dm_temperature(T)
         # -->
         x = self._sMchi/Tdm
-
+        
         # RESONANT APPROXIMATION
         if self._check_nwa() and x < x_res_peak/cutoff:
             return self._sigma_v_res(Tdm)
@@ -262,5 +283,7 @@ class ResonanceModel(AnnihilationModel):
         # NON-RESONANT APPROXIMATION
         if x > (cutoff**2.) * x_res_peak:
             return self._sigma_v_non_res(Tdm)
+        
 
         return self._sigma_v_full(Tdm)
+        """

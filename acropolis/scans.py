@@ -60,7 +60,7 @@ class BufferedScanner(object):
         #######################################################################
 
         # Initialize the various sets
-        self._sFixed = {}      # Fixed parameter
+        self._sFixed = {}      # Fixed parameters
         self._sScanp = {}      # Scan parameters...
         self._sFastf = {}      # ...w/o fast scanning
 
