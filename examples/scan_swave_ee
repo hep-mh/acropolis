@@ -23,7 +23,7 @@ scan_result = BufferedScanner(  AnnihilationModel,
                                 mchi    = ScanParameter(  0,   3, N),
                                 a       = ScanParameter(-27, -16, N, fast=True),
                                 b       = 0.,
-                                tempkd  = 0.,
+                                tempkd  = 0., # irrelevant for s-wave annihilations
                                 bree    = 1.,
                                 braa    = 0.
                              ).perform_scan(cores=-1)

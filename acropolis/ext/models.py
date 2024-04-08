@@ -59,11 +59,11 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
     # -->
     tempkd = exp( root(_tempkd_ee_root, 0.).x )
 
-    if tempkd >= mchi:
-        print_warning(
-            "The kinetic decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
-            "acropolis.models.estimate_tempkd_ee"
-        )
+    # if tempkd >= mchi:
+    #     print_warning(
+    #         "The kinetic decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
+    #         "acropolis.models.estimate_tempkd_ee"
+    #     )
     
     if tempkd <= me:
         print_warning(
@@ -71,7 +71,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
             "acropolis.models.estimate_tempkd_ee"
         )
     
-    return tempkd
+    return min(tempkd, mchi/20)
 
 
 # This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
@@ -248,11 +248,11 @@ class ResonanceModel(AnnihilationModel):
         # AROUND RESONANCE
         I2 = quad(
             _sigma_v_full_kernel, log(uR_l), log(uR_h), epsrel=eps, epsabs=0, limit=100, points=(log(uR),)
-        )[0] if uR_l < umax else 0
+        )[0] if uR_l < umax else 0.
         # ABOVE RESONANCE
         I3 = quad(
             _sigma_v_full_kernel, log(uR_h), log(umax), epsrel=eps, epsabs=0
-        )[0] if uR_l < umax else 0
+        )[0] if uR_l < umax else 0.
 
         return pref*(I1+I2+I3)
 
