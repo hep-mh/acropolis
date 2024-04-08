@@ -1,6 +1,6 @@
 # Files from personal projects
-acropolis/prj/*
-acropolis/data/cn.dat
+*prj*
+*cn.dat
 
 # Reference paper
 paper*
@@ -8,17 +8,10 @@ paper*
 # AlterBBN files
 alterbbn*
 
-# Files for external projects
-prj/*
-*prj.tar.gz
-
 # Temporary files
 CHANGES
 TODO
-manual/v*
-plots/v*
-*~
-~*
+*_TEST_*
 
 # Files for later versions
 acropolis/v*
@@ -26,7 +19,7 @@ acropolis/v*
 # Testing scripts
 test.py
 
-# Plots
+# Plot data
 plots/data/*
 
 # Build files
@@ -44,7 +37,6 @@ __pycache__
 *.sty
 *.bst
 *.bib
-manual/plots/*
 
 *.bbl
 *.log
