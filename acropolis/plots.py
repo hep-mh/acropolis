@@ -11,7 +11,7 @@ import warnings
 # obs
 from acropolis.obs import pdg2022
 # pprint
-from acropolis.pprint import print_info
+from acropolis.pprint import print_info, print_warning
 # params
 from acropolis.params import NY
 
@@ -258,7 +258,7 @@ def save_figure(output_file=None, show_fig=False):
     )
 
 
-def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pdf=True, fix_helium=False, show_fig=False, obs=pdg2022):
+def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022):
     # If data is a filename, load the data first
     if isinstance(data, str):
         data = np.loadtxt(data)
@@ -345,7 +345,7 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
         levels=[_95cl], colors='mediumseagreen', linestyles='-'
     )
     # Overall high/low (line)
-    ax.contour(np.log10(x), np.log10(y), max,
+    cs = ax.contour(np.log10(x), np.log10(y), max,
         levels=[_95cl], colors='black', linestyles='-'
     )
 
@@ -358,7 +358,33 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     # Set tight layout
     plt.tight_layout()
 
-    if save_pdf:
+    if contour_file is not None:
+        extraction_failed = False
+
+        if len(cs.collections) == 1:
+            paths = cs.collections[0].get_paths()
+
+            if len(paths) == 1:
+                xy_cs = paths[0].vertices
+
+                np.savetxt(contour_file, xy_cs)
+
+                print_info(
+                    "Overall exclusion line has been saved as '{}'".format(contour_file),
+                    "acropolis.plot.plot_scan_results"
+                )
+            else:
+                extraction_failed = True
+        else:
+            extraction_failed = True
+        
+        if extraction_failed:
+            print_info(
+                "Could not extract unique contour. No data has been saved.",
+                "acropolis.plot.plot_scan_results"
+            )
+
+    if output_file is not None:
         save_figure(output_file)
 
     if show_fig:
