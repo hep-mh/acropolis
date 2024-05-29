@@ -1,7 +1,3 @@
-# Files from personal projects
-*prj*
-*cn.dat
-
 # Reference paper
 paper*
 
@@ -11,7 +7,14 @@ alterbbn*
 # Temporary files
 CHANGES
 TODO
-*_TEST_*
+
+# Project files
+prj_*
+
+acropolis/prj
+
+Backup files
+*_backup*
 
 # Files for later versions
 acropolis/v*

@@ -2,7 +2,7 @@ exclude = [
     "~*",
     "data",
     "future",
-    "prj",
+    "*_backup*",
     "v1.3"
 ]
 
