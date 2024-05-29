@@ -11,7 +11,7 @@ import warnings
 # obs
 from acropolis.obs import pdg2022
 # pprint
-from acropolis.pprint import print_info, print_warning
+from acropolis.pprint import print_info
 # params
 from acropolis.params import NY
 

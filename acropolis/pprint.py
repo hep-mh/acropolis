@@ -51,15 +51,15 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     print("----------------------------------------------")
 
     # Print the different abundances
-    for j, l in enumerate(labels):
+    for j, label in enumerate(labels):
         line = "\x1B[34m{:>4}\x1B[0m"
         for i in range(NYf):
             line += " | {:11.5e}"
 
-        if l in ['n', 'H3', 'Be7']:
+        if label in ['n', 'H3', 'Be7']:
             line += "  [\x1B[36m{:7}\x1B[0m]"
 
-        print( line.format(l, *Yf[j], 'decayed') )
+        print( line.format(label, *Yf[j], 'decayed') )
 
 
 def print_error(error, loc="", eol="\n"):
