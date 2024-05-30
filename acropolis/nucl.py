@@ -615,8 +615,8 @@ class MatrixGenerator(object):
                 Ik_dcy = lambda y: self._dcy_kernel_ij( nr, nc, exp(y) ) * exp(y)
 
                 # Perform the integration (in log-log space)
-                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
-                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
+                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
 
         end_time = time()
         print_info(
