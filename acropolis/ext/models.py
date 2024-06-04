@@ -5,15 +5,16 @@ import numpy as np
 # scipy
 from scipy.integrate import quad
 from scipy.optimize import root
+from scipy.special import kn
 
 # models
 from acropolis.models import AnnihilationModel
 # params
-from acropolis.params import me
+from acropolis.params import me, me2
 from acropolis.params import pi, pi2, zeta3
 from acropolis.params import eps
 # pprint
-from acropolis.pprint import print_warning, print_error
+from acropolis.pprint import print_error
 
 
 # https://stackoverflow.com/questions/1167617/in-python-how-do-i-indicate-im-overriding-a-method
@@ -26,10 +27,60 @@ def overrides(interface_class):
 
 # Required keyword arguments:
 # mchi, delta, gammad, gammav, nd, S, ii
-def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
-    # The cross-section for \chi e^\pm -> \chi e^\pm scattering
+def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
+    fac = 200
+
+    # The integration kernel for calculating the
+    # thermally averaged cross-section
+    def _kernel(logz, T):
+        mx = mchi
+
+        z = exp(logz)
+        # -->
+        s = (z + me + mx)**2. # sqrt_s = z + me + mx
+        # -->
+        sqrt_s = sqrt(s)
+
+        sigma = ( 48.*pi*gammad*gammav / (mx**4.) / (s**2.) ) \
+            * ( mx**4. * (me2 + 3.*s) + (me2-s)**2. * (me2+3.*s) - 2.*mx**2 * (me2**2.-4.*me2*s+3.*s*s) )
+
+        bessel_term = 0
+
+        def _k1_apx_wo_exp(y):
+            return sqrt(pi/2) * ( y**0.5 +  (3./8.) * y**1.5 -  (15./128.) * y**2.5 + (105./1024.) * y**3.5)
+        
+        def _k2_apx_wo_exp(y):
+            return sqrt(pi/2) * ( y**0.5 + (15./8.) * y**1.5 + (105./128.) * y**2.5 - (315./1024.) * y**3.5)
+
+        xmax = 400
+
+        ye, yx, ys = T/me, T/mx, T/sqrt_s
+        # Note for mx/T > xmax, we have sqrt_s/T > (me+mx)/T > xmax
+        if me/T < xmax < mx/T:
+            # Only expand K1(sqrt_s/T) and K2(mx/T)
+            # z + me = sqrt_s - mx
+            bessel_term = exp( -(z + me)/T ) * _k1_apx_wo_exp(ys) / _k2_apx_wo_exp(yx) / kn(2, me/T)
+        elif me/T > xmax:
+            # Expand K1(sqrt_s/T), K2(mx/T), and K2(me/T)
+            # z = sqrt_s - me - mx
+            bessel_term = exp( -z/T ) * _k1_apx_wo_exp(ys) / ( _k2_apx_wo_exp(yx) * _k2_apx_wo_exp(ye) )
+        else:
+            bessel_term = kn(1, sqrt_s/T) / ( kn(2, me/T) * kn(2, mx/T) )
+
+        # s = (z + me + mx)^2 => ds/dz = 2(z + me + mx) = 2 sqrt_s 
+        return z * (2.*sqrt_s) * sigma * ( s - (me + mx)**2. ) * ( s - (me - mx)**2. ) * bessel_term / sqrt_s
+
+
+    # The thermally averaged cross-section for
+    # \chi e^\pm -> \chi e^\pm scattering
     def _sigma_v_xe_xe(T):
-        return 12.*C*gammad*gammav*(T**2.)/(mchi**4.)
+        zmin = T/fac
+        zmax = fac*T
+
+        integral = quad(_kernel, log(zmin), log(zmax), epsrel=eps, epsabs=0, args=(T,))
+
+        return integral[0]/( 8. * me**2. * mchi**2. * T)
+
 
     # The number density of e^\pm
     def _nee(T):
@@ -38,7 +89,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
         # 1. EQUILIBRIUM WITH VANISHING CHEM. POTENTIAL
         f_kernel = lambda y, x: y * sqrt(y**2. - x**2.) / ( exp(y) + 1 ) if x <= y else 0. # x = me/T, y = Ee/T
         # -->
-        f = quad(f_kernel, xe, 200, epsabs=0, epsrel=eps, args=(xe,))[0]
+        f = quad(f_kernel, xe, fac, epsabs=0, epsrel=eps, args=(xe,))[0]
         # -->
         nee_1 = 4. * f * (T**3.) / ( 2. * pi2 )
         # ne = ge * T^3 * quad(f) / 2 pi^2
@@ -46,9 +97,10 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
         # 1. EQUILIBRIUM WITH NON-VANISHING CHEM. POTENTIAL
         Y = ii.bbn_abundances_0()
         # -->
-        nee_2 = ( Y[0] + 2.*Y[5] ) * ii.parameter('eta') * ( 2.*zeta3/pi2 ) * (T**3.)
+        nee_2 = ( Y[1] + 2.*Y[5] ) * ii.parameter('eta') * ( 2.*zeta3/pi2 ) * (T**3.)
 
         return max(nee_1, nee_2)
+
 
     # H ~ sig_v * _nee
     def _tempkd_ee_root(logT):
@@ -58,24 +110,14 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, C=2*pi):
     
     # -->
     tempkd = exp( root(_tempkd_ee_root, 0.).x )
-
-    # if tempkd >= mchi:
-    #     print_warning(
-    #         "The kinetic decoupling temperature is larger than the DM mass. The calculation cannot be trusted.",
-    #         "acropolis.models.estimate_tempkd_ee"
-    #     )
     
-    if tempkd <= me:
-        print_warning(
-            "The kinetic decoupling temperature is smaller than the electron mass. The calculation cannot be trusted.",
-            "acropolis.models.estimate_tempkd_ee"
-        )
-    
+    # Assume that kinetic decoupling happens at least
+    # together with chemical decoupling at T ~ mchi/20
     return min(tempkd, mchi/20)
 
 
-# This model has been contributed by Pieter Braat (pbraat@nikhef.nl)
-# When using this model, please cite arXiv:2405:XXXX
+# This model has been created in collaboration with Pieter Braat (pbraat@nikhef.nl)
+# When using this model, please cite arXiv:2406:XXXX
 class ResonanceModel(AnnihilationModel):
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, omegah2=0.12):
 
