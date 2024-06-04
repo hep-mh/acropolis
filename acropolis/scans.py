@@ -105,8 +105,8 @@ class BufferedScanner(object):
             param = kwargs[key]
 
             # Extract the fixed values
-            if   type(param) in [int, float]:
-                self._sFixed[key] = float(param)
+            if   type(param) in [int, float] or callable(param):
+                self._sFixed[key] = param
             # Extract the scan parameters
             elif isinstance(param, ScanParameter):
                 self._sNP += 1
