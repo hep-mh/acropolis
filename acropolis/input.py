@@ -18,11 +18,15 @@ from acropolis.params import hbar
 from acropolis.params import NY, NC
 
 
-def locate_sm_file():
+def locate_data_file(filename):
     pkg_dir, _  = path.split(__file__)
-    sm_file     = path.join(pkg_dir, "data", "sm.tar.gz")
+    data_file   = path.join(pkg_dir, "data", filename)
 
-    return sm_file
+    return data_file
+
+
+def locate_sm_file():
+    return locate_data_file("sm.tar.gz")
 
 
 def data_from_file(filename):
