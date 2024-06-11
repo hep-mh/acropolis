@@ -10,7 +10,7 @@ from scipy.special import kn
 # models
 from acropolis.models import AnnihilationModel
 # params
-from acropolis.params import me, me2
+from acropolis.params import me
 from acropolis.params import pi, pi2, zeta3
 from acropolis.params import eps
 # pprint
@@ -27,24 +27,20 @@ def overrides(interface_class):
     return overrider
 
 
-# Required keyword arguments:
-# mchi, delta, gammad, gammav, nd, S, ii
-def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
+def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
     fac = 200
 
     # The integration kernel for calculating the
-    # thermally averaged cross-section
-    def _kernel(logz, T):
-        mx = mchi
-
+    # thermally averaged cross-section for
+    # \chi e^\pm -> \chi e^\pm scattering
+    def _sigma_v_ee_kernel(logz, T):
         z = exp(logz)
         # -->
-        s = (z + me + mx)**2. # sqrt_s = z + me + mx
+        s = (z + me + mchi)**2. # sqrt_s = z + me + mchi
         # -->
         sqrt_s = sqrt(s)
 
-        sigma = ( 48.*pi*gammad*gammav / (mx**4.) / (s**2.) ) \
-            * ( mx**4. * (me2 + 3.*s) + (me2-s)**2. * (me2+3.*s) - 2.*mx**2 * (me2**2.-4.*me2*s+3.*s*s) )
+        sigma = sigma_ee(s, mchi, delta, gammad, gammav) # TODO
 
         bessel_term = 0
 
@@ -54,32 +50,34 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
         def _k2_apx_wo_exp(y):
             return sqrt(pi/2) * ( y**0.5 + (15./8.) * y**1.5 + (105./128.) * y**2.5 - (315./1024.) * y**3.5)
 
+        # Define the cutoff for when to Taylor expand the Bessel functions
         xmax = 400
 
-        ye, yx, ys = T/me, T/mx, T/sqrt_s
-        # Note for mx/T > xmax, we have sqrt_s/T > (me+mx)/T > xmax
-        if me/T < xmax < mx/T:
-            # Only expand K1(sqrt_s/T) and K2(mx/T)
-            # z + me = sqrt_s - mx
-            bessel_term = exp( -(z + me)/T ) * _k1_apx_wo_exp(ys) / _k2_apx_wo_exp(yx) / kn(2, me/T)
+        ye, ychi, ys = T/me, T/mchi, T/sqrt_s
+        # For mchi/T > xmax, we have sqrt_s/T > (me+mchi)/T > xmax
+        if me/T < xmax < mchi/T:
+            # Expand K1(sqrt_s/T) and K2(mchi/T)
+            # z + me = sqrt_s - mchi
+            bessel_term = exp( -(z + me)/T ) * _k1_apx_wo_exp(ys) / _k2_apx_wo_exp(ychi) / kn(2, me/T)
         elif me/T > xmax:
-            # Expand K1(sqrt_s/T), K2(mx/T), and K2(me/T)
-            # z = sqrt_s - me - mx
-            bessel_term = exp( -z/T ) * _k1_apx_wo_exp(ys) / ( _k2_apx_wo_exp(yx) * _k2_apx_wo_exp(ye) )
+            # Expand K1(sqrt_s/T), K2(mchi/T) and K2(me/T)
+            # z = sqrt_s - me - mchi
+            bessel_term = exp( -z/T ) * _k1_apx_wo_exp(ys) / ( _k2_apx_wo_exp(ychi) * _k2_apx_wo_exp(ye) )
         else:
-            bessel_term = kn(1, sqrt_s/T) / ( kn(2, me/T) * kn(2, mx/T) )
+            # Expand nothing
+            bessel_term = kn(1, sqrt_s/T) / ( kn(2, me/T) * kn(2, mchi/T) )
 
-        # s = (z + me + mx)^2 => ds/dz = 2(z + me + mx) = 2 sqrt_s 
-        return z * (2.*sqrt_s) * sigma * ( s - (me + mx)**2. ) * ( s - (me - mx)**2. ) * bessel_term / sqrt_s
+        # s = (z + me + mchi)^2 => ds/dz = 2(z + me + mchi) = 2 sqrt_s 
+        return z * (2.*sqrt_s) * sigma * ( s - (me + mchi)**2. ) * ( s - (me - mchi)**2. ) * bessel_term / sqrt_s
 
 
     # The thermally averaged cross-section for
     # \chi e^\pm -> \chi e^\pm scattering
-    def _sigma_v_xe_xe(T):
+    def _sigma_v_ee(T):
         zmin = T/fac
         zmax = fac*T
 
-        integral = quad(_kernel, log(zmin), log(zmax), epsrel=eps, epsabs=0, args=(T,))
+        integral = quad(_sigma_v_ee_kernel, log(zmin), log(zmax), epsrel=eps, epsabs=0, args=(T,))
 
         return integral[0]/( 8. * me**2. * mchi**2. * T)
 
@@ -108,7 +106,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii):
     def _tempkd_ee_root(logT):
         T = exp( logT )
 
-        return log( _sigma_v_xe_xe(T) * _nee(T) / ii.hubble_rate(T) )
+        return log( _sigma_v_ee(T) * _nee(T) / ii.hubble_rate(T) )
     
     # -->
     tempkd = exp( root(_tempkd_ee_root, 0.).x )
@@ -306,28 +304,3 @@ class ResonanceModel(AnnihilationModel):
         return self._sigma_v_full(
             self._dm_temperature(T)
         )
-        
-        """
-        # Calculate the resonance peak
-        x_res_peak = 1.5/self._sDelta
-
-        # Define a cutoff factor for discriminating
-        # between the resonant and non-resonant region
-        cutoff = 100
-
-        # Calculate the dark-matter temperature
-        Tdm  = self._dm_temperature(T)
-        # -->
-        x = self._sMchi/Tdm
-        
-        # RESONANT APPROXIMATION
-        if self._check_nwa() and x < x_res_peak/cutoff:
-            return self._sigma_v_res(Tdm)
-        
-        # NON-RESONANT APPROXIMATION
-        if x > (cutoff**2.) * x_res_peak:
-            return self._sigma_v_non_res(Tdm)
-        
-
-        return self._sigma_v_full(Tdm)
-        """
