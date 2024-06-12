@@ -1,3 +1,5 @@
+# functools
+from functools import partial
 # numpy
 import numpy as np
 # time
@@ -46,17 +48,19 @@ class ScanParameter(object):
 class BufferedScanner(object):
 
     def __init__(self, model, **kwargs):
+        self._sModelClass = model.func if type(model) == partial else model
+        
         # Store the requested model
         # self._sModel(...) afterwards creates
         # a new instance of the requested model
-        if not issubclass(model, AbstractModel):
+        if not issubclass(self._sModelClass, AbstractModel):
             print_error(
-                model.__name__ + " is not a subclass of AbstractModel",
+                self._sModelClass.__name__ + " is not a subclass of AbstractModel",
                 "acropolis.scans.BufferedScanner.__init__"
             )
 
         self._sModel = model
-
+        
         #######################################################################
 
         # Initialize the various sets
@@ -229,7 +233,7 @@ class BufferedScanner(object):
 
         start_time = time()
         print_info(
-            "Running scan for {} on {} cores.".format(self._sModel.__name__, num_cpus),
+            "Running scan for {} on {} cores.".format(self._sModelClass.__name__, num_cpus),
             "acropolis.scans.BufferedScanner.perform_scan",
             verbose_level=3
         )
