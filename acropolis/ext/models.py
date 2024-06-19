@@ -40,7 +40,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
         # -->
         sqrt_s = sqrt(s)
 
-        sigma = sigma_ee(s, mchi, delta, gammad, gammav)
+        sigma = sigma_ee(s=s, mchi=mchi, delta=delta, gammad=gammad, gammav=gammav)
 
         bessel_term = 0
 
@@ -133,7 +133,9 @@ class ResonanceModel(AnnihilationModel):
         # CALCULATE TKD FROM THE GIVEN FUNCTION IF REQUESTED ##################
         #######################################################################
         if callable(tempkd):
-            self._sTkd = tempkd(mchi, delta, gammad, gammav, nd, S, self._sII)
+            self._sTkd = tempkd(
+                mchi=mchi, delta=delta, gammad=gammad, gammav=gammav, nd=nd, S=S, ii=self._sII
+            )
         else:
             self._sTkd = tempkd
 
