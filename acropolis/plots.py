@@ -258,7 +258,7 @@ def save_figure(output_file=None, show_fig=False):
     )
 
 
-def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022):
+def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022, flip=False):
     # If data is a filename, load the data first
     if isinstance(data, str):
         data = np.loadtxt(data)
@@ -284,6 +284,9 @@ def plot_scan_results(data, output_file=None, contour_file=None, title='', label
     DH  =  DH.reshape(shape)
     HeD = HeD.reshape(shape)
     LiH = LiH.reshape(shape)
+
+    if flip:
+        x, y = y, x
 
     # Fix potential 'holes' in the
     # exclusion region of HeD
