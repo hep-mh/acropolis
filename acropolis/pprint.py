@@ -1,5 +1,5 @@
 # sys
-from sys import stdout, stderr
+from sys import stdout, stderr, exit
 
 # params
 from acropolis.params import verbose, debug
