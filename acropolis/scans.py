@@ -69,7 +69,7 @@ class BufferedScanner(object):
 
         #######################################################################
 
-        # Generate the keys for the scan parameters
+        # Extract the keys of the scan parameters
         self._sScanp_id = list( self._sScanp.keys() )
 
 
@@ -91,7 +91,7 @@ class BufferedScanner(object):
 
                     # Save the corresponding id
                     self._sFast_id = key
-            # Extract the fixed values
+            # Extract the fixed parameters
             else:
                 self._sFixed[key] = param
 
@@ -127,6 +127,7 @@ class BufferedScanner(object):
     def _run_batch(self, pp_set):
         assert self._sFast_id is not None and self._sNP_fast == 1 and self._sNP == 2
 
+        # Extract the range of 'fast' parameters to loop over
         fast_params = self._sScanp[self._sFast_id]
 
         # Initialize the results array
@@ -176,6 +177,8 @@ class BufferedScanner(object):
 
 
     def perform_scan(self, cores=1):
+        assert self._sNP_fast <= 1 and self._sNP == 2
+
         num_cpus = cpu_count() if cores == -1 else cores
 
         start_time = time()
@@ -209,6 +212,7 @@ class BufferedScanner(object):
             async_results = pool.map_async(map_func, map_params, 1)
 
             progress = 0
+            # Track and print the progress
             while ( progress < 100 ) or ( not async_results.ready() ):
                 progress = 100*( len(map_params) - async_results._number_left )/len(map_params)
                 print_info(
@@ -222,14 +226,14 @@ class BufferedScanner(object):
             parallel_results = async_results.get()
             pool.terminate()
 
-        parallel_results = np.array(parallel_results)
-
         end_time = time()
         print_info(
             "Finished after {:.1f}min.".format( (end_time - start_time)/60 ),
             "acropolis.scans.BufferedScanner.perform_scan",
             verbose_level=3
         )
+
+        parallel_results = np.array(parallel_results)
 
         # Reshape the array and return
         old_shape = parallel_results.shape
