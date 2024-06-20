@@ -9,8 +9,6 @@ from multiprocessing import Pool, cpu_count
 
 # pprint
 from acropolis.pprint import print_info, print_error
-# params
-from acropolis.params import NY
 # models
 from acropolis.models import AbstractModel
 
