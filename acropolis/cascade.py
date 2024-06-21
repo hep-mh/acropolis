@@ -231,12 +231,12 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
     F_grid = F_grid.reshape( (NX, NE) )
 
     # Define the output array...
-    out = np.zeros( (NX+1, NE) )
+    sol = np.zeros( (NX+1, NE) )
     # ...and fill it
-    out[0     , :] = E_grid
-    out[1:NX+1, :] = F_grid
+    sol[0     , :] = E_grid
+    sol[1:NX+1, :] = F_grid
 
-    return out
+    return sol
 
 
 ###############################################################################
@@ -739,15 +739,21 @@ class SpectrumGenerator(object):
         # points
         NE = max(NE, NE_min)
 
+        # Save the dimension of the species grid
+        NX = self._sNX
+
         # Generate the grid for the energy
         E_grid = np.logspace(log(Emin), log(E0), NE, base=np.e)
 
+        # Generate the grid for the different species
+        X_grid = np.arange(NX)
+
         # Generate the grid for the rates
-        G = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in range(self._sNX)])
+        G = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in X_grid])
             # first index: X, second index according to energy E
 
         # Generate the grid for the kernels
-        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in range(self._sNX)] for X in range(self._sNX)])
+        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in X_grid] for X in X_grid])
             # first index: X, second index: Xp
             # third index according to energy E
             # fourth index according to energy Ep;
@@ -760,10 +766,10 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        out = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T)
+        sol = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T)
 
-        # 'out' always has at least two columns
-        return out[0:2,:] if not allX else out
+        # 'sol' always has at least two columns
+        return sol[0:2,:] if not allX else sol
 
 
     def get_universal_spectrum(self, E0, S0f, SCf, T, offset=0.):
@@ -799,9 +805,9 @@ class SpectrumGenerator(object):
         F_grid[F_grid < approx_zero] = approx_zero
 
         # Define the output array...
-        out = np.zeros( (2, NE) )
+        sol = np.zeros( (2, NE) )
         # ...and fill it
-        out[0, :] = E_grid
-        out[1, :] = F_grid
+        sol[0, :] = E_grid
+        sol[1, :] = F_grid
 
-        return out
+        return sol
