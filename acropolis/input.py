@@ -175,23 +175,31 @@ class InputInterface(object):
     # 1. COSMO_DATA ###########################################################
 
     def _find_index(self, x, x0):
-        # Returns an index ix such that x0
-        # lies between x[ix] and x[ix+1]
-        ix = np.argmin( np.abs( x - x0 ) )
+        # Check if the array is in ascending
+        # or decending order
+        ascending = x[0] < x[1]
+        # -->
+        decending = not ascending
 
-        # Check the edge of the array
-        if ix == self._sCosmoDataShp[0] - 1:
-            # In this case, the condition
-            # below is always False
-            # --> No additional -1
-            ix -= 1
+        # Calculate the size of the array
+        size = self._sCosmoDataShp[0]
 
-        # If x0 is not between ix and ix+1,...
-        if not (x[ix] <= x0 <= x[ix+1] or x[ix] >= x0 >= x[ix+1]):
-            # ...it must be between ix-1 and ix
-            ix -= 1
+        # Perform a binary search
+        left  = 0
+        right = size - 1
 
-        return ix
+        while left <= right:
+            mid = int(left + (right - left) / 2)
+
+            if ((ascending and x[mid] <= x0 and (mid == size - 1 or x[mid + 1] > x0)) or (decending and x[mid] >= x0 and (mid == size - 1 or x[mid + 1] < x0))):
+                return mid
+            
+            if ((ascending and x[mid] < x0) or (decending and x[mid] > x0)):
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        return -1
 
 
     def _interp_cosmo_data(self, val, xc, yc):
@@ -203,8 +211,14 @@ class InputInterface(object):
 
         val_log = log10(val)
 
-        # Extract the index closest to 'val_log'
+        # Extract the ix index for which val_log
+        # is between x[ix] and x[ix+1]
         ix = self._find_index(x, val_log)
+
+        if ix == -1 or not (x[ix] <= val_log <= x[ix+1] or x[ix] >= val_log >= x[ix+1]):
+            raise ValueError(
+                "Interpolation error: Index out of range"
+            )
 
         m = (y[ix+1] - y[ix])/(x[ix+1] - x[ix])
         b = y[ix] - m*x[ix]
