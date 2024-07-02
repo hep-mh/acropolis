@@ -127,6 +127,9 @@ class InputInterface(object):
         # Calculate the scale factor and add it
         sf = np.exp( cumsimp(self._sCosmoData[:,0]/hbar, self._sCosmoData[:,4]) )
         self._sCosmoData = np.column_stack( [self._sCosmoData, sf] )
+        # The corresponding index will be -1,
+        # irregardless of the number of additional
+        # columns in the cosmo-file
 
         # Log the cosmo data for the interpolation
         # ATTENTION: At this point we have to take the

@@ -2,6 +2,8 @@
 from math import log, pow
 # numpy
 import numpy as np
+# scipy
+from scipy.integrate import cumulative_simpson
 
 
 class LogInterp(object):
@@ -68,21 +70,4 @@ class LogInterp(object):
 
 # Cummulative numerical Simpson integration
 def cumsimp(x_grid, y_grid):
-    n = len(x_grid)
-
-    delta_z = log( x_grid[-1]/x_grid[0] )/( n-1 )
-    g_grid  = x_grid*y_grid
-
-    i_grid = np.zeros( n )
-
-    last_even_int = 0.
-    for i in range(1, n//2 + 1):
-        ie = 2 * i
-        io = 2 * i - 1
-
-        i_grid[io] = last_even_int + 0.5 * delta_z * (g_grid[io-1] + g_grid[io])
-        if ie < n:
-            i_grid[ie] = last_even_int + delta_z * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
-            last_even_int = i_grid[ie]
-
-    return i_grid
+    return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)
