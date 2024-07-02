@@ -17,14 +17,13 @@ class LogInterp(object):
 
         self._sXminLog = self._sXLog[ 0]
         self._sXmaxLog = self._sXLog[-1]
-        
-        if not np.all( np.diff(self._sXLog) >= 0 ):
+
+        xdiff = np.diff(self._sXLog)
+        if not np.all( xdiff >= 0 ):
             raise ValueError(
                 "The values in x_grid need to be in ascending order."
             )
-        
-        xdiff = np.diff(self._sXLog)
-        if not np.allclose(xdiff, xdiff[0]):
+        if not np.allclose( xdiff, xdiff[0] ):
             raise ValueError(
                 "The values in x_grid need to be equidistant in log space."
             )

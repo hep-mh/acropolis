@@ -29,7 +29,15 @@ def locate_sm_file():
     return locate_data_file("sm.tar.gz")
 
 
-def data_from_file(filename):
+def input_data_from_dir(dirname):
+    cosmo_data = np.genfromtxt(dirname + "/cosmo_file.dat")
+    abund_data = np.genfromtxt(dirname + "/abundance_file.dat")
+    param_data = np.genfromtxt(dirname + "/param_file.dat", delimiter="=", dtype=None, encoding=None)
+
+    return InputData(cosmo_data, abund_data, param_data)
+
+
+def input_data_from_file(filename):
     # Read the input file
     tf, tc = tarfile.open(filename, "r:gz"), {}
 
@@ -44,8 +52,7 @@ def data_from_file(filename):
     param_data = np.genfromtxt(tc["param_file.dat"],
                                         delimiter="=",
                                         dtype=None,
-                                        encoding=None
-                                     )
+                                        encoding=None)
 
     return InputData(cosmo_data, abund_data, param_data)
 
@@ -87,10 +94,30 @@ class InputData(AbstractData):
 
 class InputInterface(object):
 
-    def __init__(self, input_data):
-        # If input_data is a filename, extract the data first
-        if isinstance(input_data, str):
-            input_data = data_from_file(input_data)
+    def __init__(self, input_data, type="file"):
+        if   type == "file":
+            if not isinstance(input_data, str):
+                raise ValueError(
+                    "If 'type == file', 'input_data' must be a string"
+                )
+
+            input_data = input_data_from_file(input_data)      
+        elif type == "dir" :
+            if not isinstance(input_data, str):
+                raise ValueError(
+                        "If 'type == dir', 'input_data' must be be a string"
+                    )
+            
+            input_data = input_data_from_dir(input_data)
+        elif type == "raw" :
+            if not isinstance(input_data, InputData):
+                raise ValueError(
+                        "If 'type == raw', 'input_data' must be an instance of InputData"
+                    )
+        else:
+            raise ValueError(
+                "Unknown type for input data: Only 'file', 'dir' and 'raw' are supported"
+            )
 
         # Extract the provided input data
         self._sCosmoData = input_data.get_cosmo_data()
