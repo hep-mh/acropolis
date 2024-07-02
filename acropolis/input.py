@@ -211,7 +211,7 @@ class InputInterface(object):
 
         val_log = log10(val)
 
-        # Extract the ix index for which val_log
+        # Extract the index ix for which val_log
         # is between x[ix] and x[ix+1]
         ix = self._find_index(x, val_log)
 
@@ -254,7 +254,7 @@ class InputInterface(object):
         return self._interp_cosmo_data(val, xc, yc)
 
 
-    def cosmo_range(self):
+    def temperature_range(self):
         return ( min(self._sCosmoData[:,1]), max(self._sCosmoData[:,1]) )
 
 
