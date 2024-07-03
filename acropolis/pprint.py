@@ -71,7 +71,7 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     for j, label in enumerate(labels):
         line = f"{celm}{{:>4}}{cend}"
         for i in range(NYf):
-            line += " | {:11.5e}"
+            line += " | {:11.6e}"
 
         if label in ['n', 'H3', 'Be7']:
             line += f"  [{cdcy}{{:7}}{cend}]"
