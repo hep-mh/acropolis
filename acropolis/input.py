@@ -275,3 +275,7 @@ class InputInterface(object):
 
     def parameter(self, key):
         return self._sParamData[key]
+
+
+    def param_keys(self):
+        return self._sParamData.keys()
