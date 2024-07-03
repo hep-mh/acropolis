@@ -62,10 +62,10 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     # Print the header
     header_str = "\n{:^4}"
     for i in range(NYf):
-        header_str  += f" | {chdr}   {{:8}}{cend}"
+        header_str  += f" | {chdr}    {{:8}}{cend}"
 
     print( header_str.format("", *header) )
-    print("----------------------------------------------")
+    print("-------------------------------------------------")
 
     # Print the different abundances
     for j, label in enumerate(labels):
