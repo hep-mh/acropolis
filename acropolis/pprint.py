@@ -9,6 +9,8 @@ from acropolis.info import version, dev_version, url
 
 _max_verbose_level = 1
 
+_use_color = True
+
 
 def print_version():
     if verbose:
@@ -21,7 +23,13 @@ def print_version():
         else:
             version_str = "v{} [dev]".format(dev_version)
 
-        stdout.write( "\x1B[38;5;209mACROPOLIS {} ({})\x1B[0m\n\n".format(version_str, url) )
+        if _use_color:
+            ctxt = "\x1B[38;5;209m"
+            cend = "\x1B[0m"
+        else:
+            ctxt = cend = ""
+
+        stdout.write( f"{ctxt}ACROPOLIS {version_str} ({url}){cend}\n\n" )
 
 
 def print_Yf(Yf, header=["mean", "high", "low"]):
@@ -30,6 +38,15 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     if not verbose:
         print(*Yf.transpose().reshape(1, Yf.size)[0,:])
         return
+
+    # Define the colors
+    if _use_color:
+        chdr = "\x1B[35m"
+        celm = "\x1B[34m"
+        cdcy = "\x1B[36m"
+        cend = "\x1B[0m"
+    else:
+        chdr = celm = cdcy = cend = ""
 
     # Fill potentially missing header entries
     NYf = Yf.shape[1]
@@ -45,29 +62,37 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     # Print the header
     header_str = "\n{:^4}"
     for i in range(NYf):
-        header_str  += " | \x1B[35m   {:8}\x1B[0m"
+        header_str  += f" | {chdr}   {{:8}}{cend}"
 
     print( header_str.format("", *header) )
     print("----------------------------------------------")
 
     # Print the different abundances
     for j, label in enumerate(labels):
-        line = "\x1B[34m{:>4}\x1B[0m"
+        line = f"{celm}{{:>4}}{cend}"
         for i in range(NYf):
             line += " | {:11.5e}"
 
         if label in ['n', 'H3', 'Be7']:
-            line += "  [\x1B[36m{:7}\x1B[0m]"
+            line += f"  [{cdcy}{{:7}}{cend}]"
 
         print( line.format(label, *Yf[j], 'decayed') )
 
 
 def print_error(error, loc="", eol="\n", flush=False):
+    # Define the colors
+    if _use_color:
+        cloc  = "\x1B[1;35m"
+        ctyp  = "\x1B[1;31m"
+        cend  = "\x1B[0m"
+    else:
+        cloc = ctyp = cend = ""
+
     locf = ""
     if debug and loc != "":
-        locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
+        locf = f" {cloc}({loc}){cend}"
 
-    stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + locf + eol)
+    stderr.write(f"{ctyp}ERROR  {cend}: {error}{locf}{eol}")
     
     if flush: stderr.flush()
     
@@ -75,11 +100,19 @@ def print_error(error, loc="", eol="\n", flush=False):
 
 
 def print_warning(warning, loc="", eol="\n", flush=False):
+    # Define the colors
+    if _use_color:
+        cloc  = "\x1B[1;35m"
+        ctyp = "\x1B[1;33m"
+        cend  = "\x1B[0m"
+    else:
+        cloc = ctyp = cend = ""
+    
     locf = ""
     if debug and loc != "":
-        locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
+        locf = f" {cloc}({loc}){cend}"
 
-    stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
+    stdout.write(f"{ctyp}WARNING{cend}: {warning}{locf}{eol}")
     
     if flush: stdout.flush()
 
@@ -92,12 +125,20 @@ def print_info(info, loc="", eol="\n", flush=False, verbose_level=None):
 
     _max_verbose_level = max( _max_verbose_level, verbose_level )
 
+    # Define the colors
+    if _use_color:
+        cloc  = "\x1B[1;35m"
+        ctyp = "\x1B[1;32m"
+        cend  = "\x1B[0m"
+    else:
+        cloc = ctyp = cend = ""
+
     locf = ""
     if debug and loc != "":
-        locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
+        locf = f" {cloc}({loc}){cend}"
 
     if verbose and verbose_level >= _max_verbose_level:
-        stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
+        stdout.write(f"{ctyp}INFO   {cend}: {info}{locf}{eol}")
         
         if flush: stdout.flush()
 
@@ -109,3 +150,9 @@ def set_max_verbose_level(max_verbose_level=None):
         max_verbose_level = 1
 
     _max_verbose_level = max_verbose_level
+
+
+def disable_color():
+    global _use_color
+
+    _use_color = False
