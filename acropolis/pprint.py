@@ -62,24 +62,29 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
         print( line.format(label, *Yf[j], 'decayed') )
 
 
-def print_error(error, loc="", eol="\n"):
+def print_error(error, loc="", eol="\n", flush=False):
     locf = ""
     if debug and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
     stderr.write("\x1B[1;31mERROR  \x1B[0m: " + error + locf + eol)
+    
+    if flush: stderr.flush()
+    
     exit(1)
 
 
-def print_warning(warning, loc="", eol="\n"):
+def print_warning(warning, loc="", eol="\n", flush=False):
     locf = ""
     if debug and loc != "":
         locf = " \x1B[1;35m(" + loc + ")\x1B[0m"
 
     stdout.write("\x1B[1;33mWARNING\x1B[0m: " + warning + locf + eol)
+    
+    if flush: stdout.flush()
 
 
-def print_info(info, loc="", eol="\n", verbose_level=None):
+def print_info(info, loc="", eol="\n", flush=False, verbose_level=None):
     global _max_verbose_level
 
     if verbose_level is None:
@@ -93,6 +98,8 @@ def print_info(info, loc="", eol="\n", verbose_level=None):
 
     if verbose and verbose_level >= _max_verbose_level:
         stdout.write("\x1B[1;32mINFO   \x1B[0m: " + info + locf + eol)
+        
+        if flush: stdout.flush()
 
 
 def set_max_verbose_level(max_verbose_level=None):
