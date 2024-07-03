@@ -45,7 +45,7 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
     # Print the header
     header_str = "\n{:^4}"
     for i in range(NYf):
-        header_str  += " | \x1B[35m{:^11}\x1B[0m"
+        header_str  += " | \x1B[35m   {:8}\x1B[0m"
 
     print( header_str.format("", *header) )
     print("----------------------------------------------")
