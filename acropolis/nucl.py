@@ -402,8 +402,6 @@ class NuclearReactor(object):
 
 
     def _pdi_rates(self, T):
-        print(flags.universal)
-
         EC = me2/(22.*T)
         # Set the maximal energy, serving
         # as a cutoff for the integration
