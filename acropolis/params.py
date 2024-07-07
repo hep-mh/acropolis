@@ -42,6 +42,12 @@ debug = False
 universal = False
 
 
+def set_universal(value):
+    global universal
+
+    universal = value
+
+
 # PHYSICAL CONSTANTS ################################################
 
 # The fine-structure constant
