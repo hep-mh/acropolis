@@ -20,7 +20,8 @@ from acropolis.pprint import print_error, print_warning, print_info
 from acropolis.params import me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps, E_EC_max
 from acropolis.params import NT_pd, NY
-from acropolis.params import universal
+# flags
+import acropolis.flags as flags
 # cascade
 from acropolis.cascade import SpectrumGenerator
 
@@ -401,7 +402,7 @@ class NuclearReactor(object):
 
 
     def _pdi_rates(self, T):
-        print(universal)
+        print(flags.universal)
 
         EC = me2/(22.*T)
         # Set the maximal energy, serving
@@ -416,7 +417,7 @@ class NuclearReactor(object):
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
-        if not universal:
+        if not flags.universal:
             xsp, ysp = self._sGen.get_spectrum(
                                 self._sE0, self._sS0, self._sSC, T
                             )

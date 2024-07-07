@@ -11,8 +11,9 @@ from time import time
 from acropolis.jit import jit
 # pprint
 from acropolis.pprint import print_info
+# flags
+import acropolis.flags as flags
 # params
-from acropolis.params import usedb
 from acropolis.params import Emin_log, Emax_log, Enum
 from acropolis.params import Tmin_log, Tmax_log, Tnum
 
@@ -22,7 +23,7 @@ def import_data_from_db():
     db_file    = path.join(pkg_dir, "data", "rates.db.gz")
 
     ratedb = None
-    if not usedb or not path.exists(db_file):
+    if not flags.usedb or not path.exists(db_file):
         return ratedb
 
     start_time = time()

@@ -15,7 +15,8 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin, NY
-from acropolis.params import universal
+# flags
+import acropolis.flags as flags
 # pprint
 from acropolis.pprint import print_info, print_warning
 
@@ -43,7 +44,7 @@ class AbstractModel(ABC):
         # Print a warning if the injection energy
         # is larger than 1GeV, as this might lead
         # to wrong results
-        if not universal and int( self._sE0 ) > 1e3:
+        if not flags.universal and int( self._sE0 ) > 1e3:
             print_warning(
                 "Injection energy > 1 GeV. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"

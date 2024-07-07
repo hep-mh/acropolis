@@ -1,8 +1,8 @@
 # sys
 from sys import stdout, stderr, exit
 
-# params
-from acropolis.params import verbose, debug
+# flags
+import acropolis.flags as flags
 # info
 from acropolis.info import version, dev_version, url
 
@@ -13,7 +13,7 @@ _use_color = True
 
 
 def print_version():
-    if verbose:
+    if flags.verbose:
         # Differentiate between stable and dev version
         version_str = ""
         # Stable version
@@ -35,7 +35,7 @@ def print_version():
 def print_Yf(Yf, header=["mean", "high", "low"]):
     # If not verbose, simply print one line
     # including all abundances
-    if not verbose:
+    if not flags.verbose:
         print(*Yf.transpose().reshape(1, Yf.size)[0,:])
         return
 
@@ -89,7 +89,7 @@ def print_error(error, loc="", eol="\n", flush=False):
         cloc = ctyp = cend = ""
 
     locf = ""
-    if debug and loc != "":
+    if flags.debug and loc != "":
         locf = f" {cloc}({loc}){cend}"
 
     stderr.write(f"{ctyp}ERROR  {cend}: {error}{locf}{eol}")
@@ -109,7 +109,7 @@ def print_warning(warning, loc="", eol="\n", flush=False):
         cloc = ctyp = cend = ""
     
     locf = ""
-    if debug and loc != "":
+    if flags.debug and loc != "":
         locf = f" {cloc}({loc}){cend}"
 
     stdout.write(f"{ctyp}WARNING{cend}: {warning}{locf}{eol}")
@@ -134,10 +134,10 @@ def print_info(info, loc="", eol="\n", flush=False, verbose_level=None):
         cloc = ctyp = cend = ""
 
     locf = ""
-    if debug and loc != "":
+    if flags.debug and loc != "":
         locf = f" {cloc}({loc}){cend}"
 
-    if verbose and verbose_level >= _max_verbose_level:
+    if flags.verbose and verbose_level >= _max_verbose_level:
         stdout.write(f"{ctyp}INFO   {cend}: {info}{locf}{eol}")
         
         if flush: stdout.flush()
