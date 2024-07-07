@@ -188,14 +188,8 @@ class NuclearReactor(object):
     def __init__(self, s0, sc, temp_rg, e0, ii):
         self._sII = ii
 
-        # A dictionary containing the BBN parameters
-        self._sY0 = self._sII.bbn_abundances_0()
-
         # The injection energy
         self._sE0 = e0
-
-        # The baryon-to-photon ratio at the time of the CMB
-        self._sEta = self._sII.parameter("eta")
 
         # The prefactor of the delta source term
         self._sS0 = s0
@@ -208,7 +202,7 @@ class NuclearReactor(object):
 
         # An instance of 'Spectrum_Generator' in order to calculate
         # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
-        self._sGen = SpectrumGenerator(self._sY0, self._sEta)
+        self._sGen = SpectrumGenerator(self._sII)
 
     # BEGIN REACTIONS ###############################################
 
