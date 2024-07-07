@@ -21,6 +21,7 @@ TODO
 
 # Testing scripts
 /test.py
+/test.ipynb
 
 # Plot data
 /plots/data/*
