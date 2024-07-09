@@ -38,8 +38,11 @@ _95cl = 1.95996 # 95% C.L.
 # DATA EXTRACTION ###################################################
 
 def _get_abundance(data, i):
+    cols = data.shape[1]
+
+    offset = cols - 3*NY
     # Add + 2 for the two parameters in the first two columns
-    i0 = i + 2
+    i0 = i + offset
 
     # Extract the different abundances...
     mean, high, low = data[:,i0], data[:,i0+NY], data[:,i0+2*NY]
@@ -258,13 +261,13 @@ def save_figure(output_file=None, show_fig=False):
     )
 
 
-def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022, flip_xy=False):
+def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022, xc=0, yc=1):
     # If data is a filename, load the data first
     if isinstance(data, str):
         data = np.loadtxt(data)
 
     # Get the set of input parameters...
-    x, y = data[:,0], data[:,1]
+    x, y = data[:,xc], data[:,yc]
 
     # ...and determine the shape of the data
     N  = len(x)
@@ -284,9 +287,6 @@ def plot_scan_results(data, output_file=None, contour_file=None, title='', label
     DH  =  DH.reshape(shape)
     HeD = HeD.reshape(shape)
     LiH = LiH.reshape(shape)
-
-    if flip_xy:
-        x, y = y, x
 
     # Fix potential 'holes' in the
     # exclusion region of HeD

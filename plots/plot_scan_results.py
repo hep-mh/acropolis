@@ -15,7 +15,7 @@ data_dir = 'data/'
 # PLOT 1 ######################################################################
 # s-wave, a vs mchi ###########################################################
 _, ax1 = plot_scan_results(
-    data_dir + 'annih_swave_ee.dat', output_file=None, save_pdf=False,
+    data_dir + 'annih_swave_ee.dat', output_file=None,
     title=tex_title(b=0, tempkd=0, braa=0), labels=tex_labels('mchi', 'a')
 )
 
@@ -47,7 +47,7 @@ plot_scan_results(
 # PLOT 4 ######################################################################
 # decay, n0a vs tau, mphi = 50 MeV ############################################
 _, ax4 = plot_scan_results(
-    data_dir + 'decay_mphi_5e+01MeV_aa.dat', output_file=None, save_pdf=False, fix_helium=True,
+    data_dir + 'decay_mphi_5e+01MeV_aa.dat', output_file=None, fix_helium=True,
     title=tex_title(mphi=50, temp0=10, braa=1), labels=tex_labels('tau', 'n0a')
 )
 
