@@ -47,6 +47,6 @@ def sigma_ee_b3(s, mchi, delta, gammad, gammav):
 
 
 # -->
-BenchmarkModel1 = partial(ResonanceModel, nd = 0., S = 1    , tempkd = partial(estimate_tempkd_ee, sigma_ee=sigma_ee_b1)) # (1)
+BenchmarkModel1 = partial(ResonanceModel, nd = 0., S = 1./2., tempkd = partial(estimate_tempkd_ee, sigma_ee=sigma_ee_b1)) # (1)
 BenchmarkModel2 = partial(ResonanceModel, nd = 0., S = 3./4., tempkd = partial(estimate_tempkd_ee, sigma_ee=sigma_ee_b2)) # (2)
 BenchmarkModel3 = partial(ResonanceModel, nd = 1., S = 3./2., tempkd = partial(estimate_tempkd_ee, sigma_ee=sigma_ee_b3)) # (3)
