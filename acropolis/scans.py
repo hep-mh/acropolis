@@ -37,7 +37,7 @@ class ScanParameter(object):
 class BufferedScanner(object):
 
     def __init__(self, model, **kwargs):
-        self._sModelClass = model.func if type(model) == partial else model
+        self._sModelClass = model.func if type(model) is partial else model
         
         # Store the requested model
         # self._sModel(...) afterwards creates

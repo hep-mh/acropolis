@@ -94,7 +94,8 @@ def print_error(error, loc="", eol="\n", flush=False):
 
     stderr.write(f"{ctyp}ERROR  {cend}: {error}{locf}{eol}")
     
-    if flush: stderr.flush()
+    if flush:
+        stderr.flush()
     
     exit(1)
 
@@ -114,7 +115,8 @@ def print_warning(warning, loc="", eol="\n", flush=False):
 
     stdout.write(f"{ctyp}WARNING{cend}: {warning}{locf}{eol}")
     
-    if flush: stdout.flush()
+    if flush:
+        stdout.flush()
 
 
 def print_info(info, loc="", eol="\n", flush=False, verbose_level=None):
@@ -140,7 +142,8 @@ def print_info(info, loc="", eol="\n", flush=False, verbose_level=None):
     if flags.verbose and verbose_level >= _max_verbose_level:
         stdout.write(f"{ctyp}INFO   {cend}: {info}{locf}{eol}")
         
-        if flush: stdout.flush()
+        if flush:
+            stdout.flush()
 
 
 def set_max_verbose_level(max_verbose_level=None):
