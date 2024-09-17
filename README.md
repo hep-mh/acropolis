@@ -29,11 +29,11 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 <details open>
-<summary>v1.3.0 (September X, 2024)</summary>
+<summary>v1.3.0 (September 17, 2024)</summary>
 
 - Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
 - Improved the progress indicator when running parameter scans without a ``fast`` parameter
-- Updated the initial abundances from AlterBBN (which are now calculated with updated deuterium reaction rates)
+- Updated the initial abundances, which have now be calculated by ``PArthENoPE v3.0`` and hence include the updated deuterium reaction rates
 - Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
 
 </details><br />
