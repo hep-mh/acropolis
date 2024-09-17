@@ -77,7 +77,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
         zmin = T/fac
         zmax = fac*T
 
-        integral = quad(_sigma_v_ee_kernel, log(zmin), log(zmax), epsrel=eps, epsabs=0, args=(T,))
+        integral = quad(_sigma_v_ee_kernel, log(zmin), log(zmax), epsrel=eps, epsabs=0, limit=100, args=(T,))
 
         return integral[0]/( 8. * me**2. * mchi**2. * T)
 
@@ -102,11 +102,13 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
         return max(nee_1, nee_2)
 
 
-    # H ~ sig_v * _nee
+    # Ncol * H ~ sig_v * _nee
     def _tempkd_ee_root(logT):
         T = exp( logT )
 
-        return log( _sigma_v_ee(T) * _nee(T) / ii.hubble_rate(T) )
+        Ncol = max(1., mchi/T)
+
+        return log( _sigma_v_ee(T) * _nee(T) / ii.hubble_rate(T) / Ncol )
     
     # -->
     tempkd = exp( root(_tempkd_ee_root, 0.).x )
