@@ -35,6 +35,7 @@ The remarkable agreement between observations of the primordial light element ab
 - Improved the progress indicator when running parameter scans without a ``fast`` parameter
 - Updated the initial abundances, which have now be calculated by ``PArthENoPE v3.0`` and hence include the updated deuterium reaction rates
 - Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
+- Added additional plotting functionality
 
 </details><br />
 
