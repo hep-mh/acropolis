@@ -115,7 +115,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
     
     # Assume that kinetic decoupling happens at least
     # together with chemical decoupling at T ~ mchi/20
-    return min(tempkd, mchi/20)
+    return min(tempkd, mchi/20.)
 
 
 # This model has been created in collaboration with Pieter Braat (pbraat@nikhef.nl)

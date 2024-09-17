@@ -4,8 +4,8 @@
 
 ![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
 ![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.2.3](https://img.shields.io/badge/Current_Version-1.2.3-green.svg?style=flat-square)
-![DevVersion: 1.3](https://img.shields.io/badge/Current_Dev_Version-1.3-orange.svg?style=flat-square)
+![Version: 1.3.0](https://img.shields.io/badge/Current_Version-1.3.0-green.svg?style=flat-square)
+![DevVersion: 1.3.0](https://img.shields.io/badge/Current_Dev_Version-1.3.0-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
 When using this code for your own scientific publications, please cite
@@ -29,6 +29,16 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 <details open>
+<summary>v1.3.0 (September X, 2024)</summary>
+
+- Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
+- Improved the progress indicator when running parameter scans without a ``fast`` parameter
+- Updated the initial abundances from AlterBBN (which are now calculated with updated deuterium reaction rates)
+- Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
+
+</details><br />
+
+<details open>
 <summary>v1.2.3 (September 7, 2023)</summary>
 
  - Fixed warnings caused by new versions of ``numba`` by using the new package ``acropolis.jit``
@@ -36,7 +46,7 @@ The remarkable agreement between observations of the primordial light element ab
  - Added PDG2021 and PDG2022 values to ``acropolis.obs``
 </details><br />
 
-<details open>
+<details>
 <summary>v1.2.2 (April 6, 2022)</summary>
 
  - Implemented fixes for the issues #10 and #11 on GitHub
