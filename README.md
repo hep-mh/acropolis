@@ -32,19 +32,14 @@ The remarkable agreement between observations of the primordial light element ab
 <summary>v1.3.0 (September 17, 2024)</summary>
 
 - Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
-- Improved the progress indicator when running parameter scans without a ``fast`` parameter
 - Updated the initial abundances, which have now be calculated with ``PArthENoPE v3.0`` and hence include the updated deuterium reaction rates
-- Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
-- Added additional plotting functionality
-
-</details><br />
-
-<details open>
-<summary>v1.2.3 (September 7, 2023)</summary>
-
- - Fixed warnings caused by new versions of ``numba`` by using the new package ``acropolis.jit``
- - Unified the plotting script in ``plots/plot_scan_results.py`` by using the methods defined in ``acropolis.plots``
  - Added PDG2021 and PDG2022 values to ``acropolis.obs``
+ - Implemented the new package ``acropolis.jit`` to fixed warnings caused by new versions of ``numba``
+ - Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
+ - Improved the progress indicator when running parameter scans without a ``fast`` parameter
+  - Unified the plotting script in ``plots/plot_scan_results.py`` by using the methods defined in ``acropolis.plots``
+ - Added additional plotting functionality in ``acropolis.plots`` (extracting contours,  specifying the ``x`` and ``y`` data for the plot, ...)
+
 </details><br />
 
 <details>
