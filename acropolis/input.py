@@ -49,10 +49,7 @@ def input_data_from_file(filename):
     # READ THE PREVIOUSLY GENERATED DATA
     cosmo_data = np.genfromtxt(tc["cosmo_file.dat"]    )
     abund_data = np.genfromtxt(tc["abundance_file.dat"])
-    param_data = np.genfromtxt(tc["param_file.dat"],
-                                        delimiter="=",
-                                        dtype=None,
-                                        encoding=None)
+    param_data = np.genfromtxt(tc["param_file.dat"], delimiter="=", dtype=None, encoding=None)
 
     return InputData(cosmo_data, abund_data, param_data)
 

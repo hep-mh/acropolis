@@ -126,7 +126,7 @@ def interp_rate_db(rate_db, id, E_log, T_log):
 
 @jit
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
-    pass
+    raise NotImplementedError
 
     """
     # Calculate the respective indices in the interpolation file
