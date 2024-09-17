@@ -23,7 +23,8 @@ setup(
     author=authors,
     license='GPL3',
     packages=[
-        'acropolis'
+        'acropolis',
+        'acropolis/ext'
     ],
     package_data={
         'acropolis': ['data/rates.db.gz', 'data/sm.tar.gz', 'data/pythia8.cmnd']
