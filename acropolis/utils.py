@@ -39,12 +39,19 @@ class LogInterp(object):
         x_log = log(x)/self._sLogBase
 
         if not (self._sXminLog <= x_log <= self._sXmaxLog):
-            if self._sFillValue is None:
-                raise ValueError(
+            if type(self._sFillValue) is int:
+                return self._sFillValue
+            
+            if type(self._sFillValue) is list and len(self._sFillValue) == 2:
+                if x_log < self._sXminLog:
+                    return self._sFillValue[0]
+                
+                if x_log > self._sXmaxLog:
+                    return self._sFillValue[1]
+            
+            raise ValueError(
                     "The given value does not lie within the interpolation range."
                 )
-
-            return self._sFillValue
 
         ix = int( ( x_log - self._sXminLog )*( self._sN - 1 )/( self._sXmaxLog - self._sXminLog ) )
 
