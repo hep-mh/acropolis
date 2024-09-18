@@ -5,6 +5,10 @@ class AbundanceObservation(object):
         self.err = err
 
 
+# MOST RECENT #############################################
+pdg = pdg2024
+
+
 # 2020 ####################################################
 pdg2020 = {
     "Yp" : AbundanceObservation( 2.45e-1,  0.03e-1),
@@ -17,7 +21,7 @@ pdg2020 = {
 # 2021 ####################################################
 pdg2021       = pdg2020.copy()
 pdg2021["DH"] = AbundanceObservation(2.547e-5, 0.025e-5)
-# Smaller error on DH compared to 2020
+# Smaller error on D/H compared to 2020
 
 
 # 2022 ####################################################
@@ -28,7 +32,7 @@ pdg2022 = pdg2021.copy()
 # 2023 ####################################################
 pdg2023       = pdg2022.copy()
 pdg2023["DH"] = AbundanceObservation(2.547e-5, 0.029e-5)
-# Larger error on DH compared to 2022
+# Larger error on D/H compared to 2022
 
 
 # 2024 ####################################################

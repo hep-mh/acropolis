@@ -9,7 +9,7 @@ from matplotlib.ticker import FixedLocator, FixedFormatter
 import warnings
 
 # obs
-from acropolis.obs import pdg2022
+from acropolis.obs import pdg
 # pprint
 from acropolis.pprint import print_info
 # params
@@ -261,7 +261,7 @@ def save_figure(output_file=None, show_fig=False):
     )
 
 
-def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022, xc=0, yc=1):
+def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg, xc=0, yc=1):
     # If data is a filename, load the data first
     if isinstance(data, str):
         data = np.loadtxt(data)
