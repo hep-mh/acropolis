@@ -19,7 +19,7 @@ def na(T):
     return 2. * zeta3 * (T**3.) / pi2
 
 
-def ne(T, Y, eta):
+def nee(T, Y, eta):
     xe = me/T
 
     # 1. EQUILIBRIUM WITH VANISHING CHEM. POTENTIAL
@@ -28,4 +28,4 @@ def ne(T, Y, eta):
     # 2. EQUILIBRIUM WITH NON-VANISHING CHEM. POTENTIAL
     nee_2 = ( 1. - Y/2. ) * eta * na(T)
 
-    return (nee_1, False) if nee_1 > nee_2 else (nee_2, True)
+    return max(nee_1, nee_2)
