@@ -2,7 +2,7 @@
 version     = "1.3.0"
 
 # The current dev version of ACROPOLIS
-dev_version = "2.0.0"
+dev_version = "1.3.0"
 
 # The short description of ACROPOLIS
 description = "A generiC fRamework fOr Photodisintegration Of LIght elementS"
