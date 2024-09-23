@@ -48,3 +48,6 @@ __pycache__
 *.aux
 *.blg
 *.synctex.gz
+
+# macOS stuff
+.DS_Store
