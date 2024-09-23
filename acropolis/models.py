@@ -321,7 +321,12 @@ class AnnihilationModel(AbstractModel):
 
     def _number_density(self, T):
         rho_d0 = 8.095894680377574e-35 * self._sOmgh2  # DM density today in MeV^4
-        sf0    = 119163754009223.73                    # Scale factor today
+        T0     = 2.72548*8.6173324e-11                 # CMB temperature today in MeV
+
+        # Calculate the scale factor at T0 via extrapolation
+        Tmin = self._sII.temperature_range()[0] * ( 1 + 1e-6 )
+        # -->
+        sf0 = self._sII.scale_factor(Tmin) * Tmin / T0
 
         sf_ratio = sf0 / self._sII.scale_factor(T)
 
