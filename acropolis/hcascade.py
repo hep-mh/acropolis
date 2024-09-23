@@ -5,6 +5,7 @@ import numpy as np
 # enum
 from enum import Enum
 
+# K ≘ kinetic energy, E ≘ total energy
 
 class Projectiles(Enum):
     PROTON       = 0
@@ -25,65 +26,123 @@ class Nuclei(Enum):
     HELIUM4   = -1
 
 
-class ParticleSpectra(object):
+class EnergyGrid(object):
 
-    def __init__(self, Emin, Emax, N):
-        if Emax <= Emin:
+    def __init__(self, Kmin, Kmax, N):
+        if Kmax <= Kmin:
             raise ValueError(
-                "The value of Emax must be larger than the one of Emin"
+                "The value of Kmax must be larger than the one of Kmin"
             )
-
-        self._sND   = len(Projectiles) * N + len(Nuclei)
-
-        # Save the number of bins
+        
         self._sN = N
 
-        # Save the minimal and maximal energy
-        self._sEmin      = Emin
-        self._sEmax      = Emax
+        self._sKmin      = Kmin
+        self._sKmax      = Kmax
         # -->
-        self._sEminLog10 = log10(Emin)
-        self._sEmaxLog10 = log10(Emax)
+        self._sKminLog10 = log10(Kmin)
+        self._sKmaxLog10 = log10(Kmax)
 
-        # Generate the different energy bins
-        self._sEbins = np.logspace( log10(Emin), log10(Emax), N+1 )
+        # Generate the different energy bins, i.e. the bin edges
+        self._sKbins = np.logspace(
+            self._sKminLog10, self._sKmaxLog10, N+1
+        ) # +1 in order to have N central values |
         
-        # Calculate the central value of each bin
-        fac = sqrt(self._sEbins[1]/self._sEbins[0])
-        # -->
-        self._sEcent = self._sEbins[:-1] * fac
+        # Calculate the central values of neighbouring bins
+        self._sKcent = self._sKbins[:-1] * sqrt(self._sKbins[1]/self._sKbins[0])
+        #                           | N elements
 
-        #print(self._sEbins, self._sEcent, fac, self._sEcent[496])
 
-        # Initialize the spectrum
-        self._sSpectrum = np.zeros(self._sND)
-    
-
-    def _find_index(self, energy):
-        if not self._sEmin <= energy <= self._sEmax:
+    def index_of(self, K):
+        if not self._sKmin <= K <= self._sKmax:
             raise ValueError(
-                "The given energy does not lie within the appropriate range"
+                "The given energy does not lie within the grid"
             )
         
-        if energy == self._sEmax:
+        # Handle the special case K = Kmax
+        if K == self._sKmax:
             return self._sN - 1
         
+        # log10(K) = log10(Kmin) + log10(Kmax/Kmin) * i / ( [N + 1] - 1 )
         return int(
-            self._sN * ( log10(energy) - self._sEminLog10 )  / ( self._sEmaxLog10 - self._sEminLog10 )
+            self._sN * ( log10(K) - self._sKminLog10 )  / ( self._sKmaxLog10 - self._sKminLog10 )
         )
 
 
-    def add_to_projectile(self, projectile, increment, energy):
-        j = int( self._find_index(energy) )
-
-        #print(j)
-
-        self._sSpectrum[projectile.value*self._sN + j] += increment
-
-
-    def add_to_nucleus(self, nucleus, increment):
-        self._sSpectrum[nucleus.value] += increment
+    def bin_edges(self):
+        return self._sKbins
     
 
+    def central_values(self):
+        return self._sKcent
+
+
+    def nbins(self):
+        return self._sN
+
+
+class FinalStateSpectrum(object):
+
+    def __init__(self, energy_grid):
+        self._sEnergyGrid = energy_grid
+
+        # Extract the number of bins
+        self._sN = energy_grid.nbins()
+
+        # Initialize the spectrum
+        self._sSpectrum = np.zeros(
+            len(Projectiles) * self._sN + len(Nuclei)
+        )
+
+        # Initialize a list containing all non-zero entries
+        self._sNonZero = set()
+
+
+    def addp(self, projectile, increment, K):
+        index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
+        # -->
+        self._sSpectrum[index] += increment
+
+        if increment != 0:
+            self._sNonZero.add( index )
+
+
+    def addn(self, nucleus, increment):
+        index = nucleus.value
+        # -->
+        self._sSpectrum[index] += increment
+
+        if increment != 0:
+            self._sNonZero.add( index )
+
+
+    def non_zero(self):
+        for index in self._sNonZero:
+            yield ( index, float(self._sSpectrum[index]) )
+
+
     def __repr__(self):
-        pass
+        Kcent = self._sEnergyGrid.central_values()
+
+        str_repr = ""
+        for i in range(self._sN):
+            str_repr += f"{Kcent[i]:.3e} |"
+
+            for projectile in Projectiles:
+                j = projectile.value
+
+                str_repr += f" {self._sSpectrum[j*self._sN + i]:.3e}"
+            
+            str_repr += "\n"
+        
+        str_repr += "----------x\n"
+
+        for nucleus in Nuclei:
+            str_repr += f"{self._sSpectrum[nucleus.value]:.3e} | \n"
+        
+        return str_repr
+
+
+class TransitionMatrix(object):
+
+    def __init__(self, Kmin, Kmax, N):
+        self._sEnergyGrid = EnergyGrid(Kmin, Kmax, N)
