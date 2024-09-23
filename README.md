@@ -20,7 +20,7 @@ When using this code for your own scientific publications, please cite
   Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild\
   https://arxiv.org/abs/1808.09324
 
-*The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.*
+<!--*The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.*-->
 
 # Abstract
 
