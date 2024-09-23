@@ -7,7 +7,6 @@ import numpy as np
 # scipy
 from scipy.integrate import quad
 from scipy.integrate import IntegrationWarning
-from scipy.linalg import expm
 # time
 from time import time
 # warnings
@@ -18,10 +17,11 @@ from acropolis.utils import LogInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
-from acropolis.params import me, me2, hbar, tau_n, tau_t
+from acropolis.params import me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps, E_EC_max
 from acropolis.params import NT_pd, NY
-from acropolis.params import universal
+# flags
+import acropolis.flags as flags
 # cascade
 from acropolis.cascade import SpectrumGenerator
 
@@ -90,6 +90,7 @@ _eth = {
 # the different reaction rates (taken from 2006.14803)
 # in terms of a relative deviation from the mean value
 # 8 (He4->d+d); 10, 11; (Li6->...); 12, 14 (Li7->...)
+# TODO: Perform literature search and find sensible values
 _rdev = {
     1:  0.00,
     2:  0.00,
@@ -187,27 +188,21 @@ class NuclearReactor(object):
     def __init__(self, s0, sc, temp_rg, e0, ii):
         self._sII = ii
 
-        # A dictionary containing the BBN parameters
-        self._sY0 = self._sII.bbn_abundances_0()
-
         # The injection energy
         self._sE0 = e0
 
-        # The baryon-to-photon ratio at the time of the CMB
-        self._sEta = self._sII.parameter("eta")
-
-        # The source terms without the detla function
+        # The prefactor of the delta source term
         self._sS0 = s0
 
-        # The FSR source terms
-        self._sSc = sc
+        # The continouos source terms
+        self._sSC = sc
 
         # The approximate decay temperature of the mediator
         self._sTrg  = temp_rg
 
         # An instance of 'Spectrum_Generator' in order to calculate
         # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
-        self._sGen = SpectrumGenerator(self._sY0, self._sEta)
+        self._sGen = SpectrumGenerator(self._sII)
 
     # BEGIN REACTIONS ###############################################
 
@@ -357,28 +352,45 @@ class NuclearReactor(object):
     @_convert_mb_to_iMeV2
     def get_cross_section(self, reaction_id, E):
         # There is no switch statement in python :(
-        if reaction_id ==  1: return self._da_np(E)              #  1. d + a -> n + p
-        if reaction_id ==  2: return self._ta_nd(E)              #  2. t + a -> n + d
-        if reaction_id ==  3: return self._ta_npn(E)             #  3. t + a -> 2n + p
-        if reaction_id ==  4: return self._He3a_pd(E)            #  4. He3 + a -> p + d
-        if reaction_id ==  5: return self._He3a_npp(E)           #  5. He3 + a -> n + 2p
-        if reaction_id ==  6: return self._He4a_pt(E)            #  6. He4 + a -> p + t
-        if reaction_id ==  7: return self._He4a_nHe3(E)          #  7. He4 + a -> n + He3
-        if reaction_id ==  8: return self._He4a_dd(E)            #  8. He4 + a -> 2d
-        if reaction_id ==  9: return self._He4a_npd(E)           #  9. He4 + a -> n + p + d
-        if reaction_id == 10: return self._Li6a_npHe4(E)         # 10. Li6 + a -> n + p + He4
-        if reaction_id == 11: return self._Li6a_XA3(E)           # 11. Li7 + a -> X + A3
-        if reaction_id == 12: return self._Li7a_tHe4(E)          # 12. Li7 + a -> t + He4
-        if reaction_id == 13: return self._Li7a_nLi6(E)          # 13. Li7 + a -> n + Li6
-        if reaction_id == 14: return self._Li7a_nnpHe4(E)        # 14. Li7 + a -> 2n + p + He4
-        if reaction_id == 15: return self._Be7a_He3He4(E)        # 15. Be7 + a -> He3 + He4
-        if reaction_id == 16: return self._Be7a_pLi6(E)          # 16. Be7 + a -> p + Li6
-        if reaction_id == 17: return self._Be7a_ppnHe4(E)        # 17. Be7 + a -> 2p + n + He4
+        if reaction_id ==  1:
+            return self._da_np(E)              #  1. d + a -> n + p
+        if reaction_id ==  2:
+            return self._ta_nd(E)              #  2. t + a -> n + d
+        if reaction_id ==  3:
+            return self._ta_npn(E)             #  3. t + a -> 2n + p
+        if reaction_id ==  4:
+            return self._He3a_pd(E)            #  4. He3 + a -> p + d
+        if reaction_id ==  5:
+            return self._He3a_npp(E)           #  5. He3 + a -> n + 2p
+        if reaction_id ==  6:
+            return self._He4a_pt(E)            #  6. He4 + a -> p + t
+        if reaction_id ==  7:
+            return self._He4a_nHe3(E)          #  7. He4 + a -> n + He3
+        if reaction_id ==  8:
+            return self._He4a_dd(E)            #  8. He4 + a -> 2d
+        if reaction_id ==  9:
+            return self._He4a_npd(E)           #  9. He4 + a -> n + p + d
+        if reaction_id == 10:
+            return self._Li6a_npHe4(E)         # 10. Li6 + a -> n + p + He4
+        if reaction_id == 11:
+            return self._Li6a_XA3(E)           # 11. Li7 + a -> X + A3
+        if reaction_id == 12:
+            return self._Li7a_tHe4(E)          # 12. Li7 + a -> t + He4
+        if reaction_id == 13:
+            return self._Li7a_nLi6(E)          # 13. Li7 + a -> n + Li6
+        if reaction_id == 14:
+            return self._Li7a_nnpHe4(E)        # 14. Li7 + a -> 2n + p + He4
+        if reaction_id == 15:
+            return self._Be7a_He3He4(E)        # 15. Be7 + a -> He3 + He4
+        if reaction_id == 16:
+            return self._Be7a_pLi6(E)          # 16. Be7 + a -> p + Li6
+        if reaction_id == 17:
+            return self._Be7a_ppnHe4(E)        # 17. Be7 + a -> 2p + n + He4
 
 
-        # If no match is found, return 0.
+        # If no match is found, exit with error
         print_error(
-            "Reaction with reaction_id" + str(reaction_id) + "does not exist.",
+            "Reaction with reaction_id " + str(reaction_id) + " does not exist.",
             "acropolis.nucl.NuclearReactor.get_cross_section"
         )
 
@@ -397,13 +409,13 @@ class NuclearReactor(object):
         pdi_rates = {rid:approx_zero for rid in _lrid}
 
         # Calculate the spectra for the given temperature
-        if not universal:
+        if not flags.universal:
             xsp, ysp = self._sGen.get_spectrum(
-                                self._sE0, self._sS0, self._sSc, T
+                                self._sE0, self._sS0, self._sSC, T
                             )
         else:
             xsp, ysp = self._sGen.get_universal_spectrum(
-                                self._sE0, self._sS0, self._sSc, T, offset=5e-2
+                                self._sE0, self._sS0, self._sSC, T, offset=5e-2
                             )
             # For performance reasons, also
             # cut the energy at threshold
@@ -415,7 +427,9 @@ class NuclearReactor(object):
         Fph = LogInterp(xsp, ysp) # Interpolation on: Emin -> E0
         # Calculate the kernel for the integration in log-space
         def Fph_s(log_E, rid):
-            E = exp( log_E ); return Fph( E ) * E * self.get_cross_section(rid, E)
+            E = exp( log_E )
+            
+            return Fph( E ) * E * self.get_cross_section(rid, E)
 
         # Define the total rate of interactions altering the photon spectrum,
         # evaluated at the relevant injection energy E0
@@ -596,8 +610,8 @@ class MatrixGenerator(object):
                 Ik_dcy = lambda y: self._dcy_kernel_ij( nr, nc, exp(y) ) * exp(y)
 
                 # Perform the integration (in log-log space)
-                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
-                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0)[0]
+                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
+                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
 
         end_time = time()
         print_info(

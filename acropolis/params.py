@@ -4,44 +4,6 @@ from math import pi
 from scipy.special import zeta
 
 
-# ATTENTION !!!!!111elf
-# Only parameters that specify a default value are
-# meant to be changed by the user, i.e. everything
-# under FLAGS and ALGORITHM-SPECIFIC PARAMETERS
-
-
-# FLAGS #############################################################
-
-# If this flag is set to 'True',
-# the pregenerated databases
-# will be used to interpolate
-# the different reaction rates
-# Default: True
-usedb = True
-
-# If this flag is set to 'True',
-# additional output is printed
-# to the screen
-# Default: True
-verbose = True
-
-# If this flag is set to 'True',
-# additional debug information
-# is printed to the screen
-# Default: False
-debug = False
-
-# If this flag is set to 'True',
-# the universal spectrum is used
-# for all points in parameter space
-# ATTENTION:
-# Change with caution and only if
-# you know what you are doing.
-# World destruction possible!
-# Default: False
-universal = False
-
-
 # PHYSICAL CONSTANTS ################################################
 
 # The fine-structure constant
@@ -49,15 +11,8 @@ alpha = 1./137.036
 
 # The electron mass (in MeV)
 me = 0.511
-
-# The electron mass squared (in MeV^2)
+# -->
 me2 = me**2.
-
-# The muon mass (in MeV)
-mm = 105.658
-
-# The muon mass squared (in MeV^2)
-mm2 = mm**2.
 
 # The classical electron radius (in 1/MeV)
 re = alpha/me
@@ -70,9 +25,6 @@ hbar = 6.582119514e-22
 
 # The speed of light (in cm/s)
 c_si = 2.99792458e10
-
-# The muon lifetime (in s)
-tau_m = 2.1969811e-6
 
 # The neutron lifetime (in s)
 tau_n = 8.794e2 # pre PDG2020: 8.802e2
@@ -103,17 +55,6 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
-
-# A specifier to descide which particles
-# are considered in the Boltzmann equation
-# for the electromagnetic cascade
-# ATTENTION: Do not use a value that does
-# not include all injected particle types
-# 0: Photons
-# 1: Photons, Electrons/Positrons
-# 2: Photons, Electrons/Positrons, Anti-/Muons (not yet implemented)
-# Default: 1
-FX = 1
 
 # The number of nuclei that are
 # considered in the Boltzmann equation

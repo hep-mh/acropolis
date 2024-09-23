@@ -18,7 +18,7 @@ void ratioH_to_Y0(double ratioH[], double Y0[]) {
     // Extract the baryon-to-photon ratio
     Y0[0] = ratioH[0];
 
-    // Handle the special case 'p'
+    // Handle the special case 'p'/'H'
     Y0[2] = ratioH[2];
     // Handle the secial case 'He4'
     Y0[6] = ratioH[6]/4;
@@ -38,7 +38,7 @@ void ratioH_to_Y0(double ratioH[], double Y0[]) {
     Y0[2] = Y0[2] + Y0[1];           // p
     Y0[1] = 0.;                      // n
 
-    /* The result of this function are:
+    /* The results of this function are:
         Y0[0]       eta_final
         Y0[1]       0
         Y0[2]       (n_n + n_p) / n_b
@@ -65,7 +65,7 @@ int main( int argc, char** argv ) {
           "                      10...12 = RK4 method with adaptative stepsize (10=5%%, 11=1%%,    12=0.1%%)\n"
           "                      20...22 = Fehlberg RK4-5 method               (20=5%%, 21=1%%,    22=0.1%%)\n"
           "                      30...32 = Cash-Karp RK4-5 method              (30=1%%, 31=1e-4,  32=1e-5).\n"
-          "         2. eta10     The baryon-to-photon ratio times 1e10.");
+          "         2. eta10     The baryon-to-photon ratio times 1e10.\n");
 
         return 1;
     } else {

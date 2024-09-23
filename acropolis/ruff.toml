@@ -1,0 +1,14 @@
+exclude = [
+    "~*",
+    "future",
+    "v1.3",
+    "prj/_backup",
+    
+]
+
+indent-width = 4
+
+lint.ignore = [
+    "E731",
+    "E741"
+]

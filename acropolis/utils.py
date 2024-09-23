@@ -2,6 +2,8 @@
 from math import log, pow
 # numpy
 import numpy as np
+# scipy
+from scipy.integrate import cumulative_simpson
 
 
 class LogInterp(object):
@@ -17,9 +19,15 @@ class LogInterp(object):
 
         self._sXminLog = self._sXLog[ 0]
         self._sXmaxLog = self._sXLog[-1]
-        if self._sXmaxLog <= self._sXminLog:
+
+        xdiff = np.diff(self._sXLog)
+        if not np.all( xdiff >= 0 ):
             raise ValueError(
                 "The values in x_grid need to be in ascending order."
+            )
+        if not np.allclose( xdiff, xdiff[0] ):
+            raise ValueError(
+                "The values in x_grid need to be equidistant in log space."
             )
 
         self._sN = len(self._sXLog)
@@ -41,7 +49,8 @@ class LogInterp(object):
         ix = int( ( x_log - self._sXminLog )*( self._sN - 1 )/( self._sXmaxLog - self._sXminLog ) )
 
         # Handle the case for which ix+1 is out-of-bounds
-        if ix == self._sN - 1: ix -= 1
+        if ix == self._sN - 1:
+            ix -= 1
 
         x1_log, x2_log = self._sXLog[ix], self._sXLog[ix+1]
         y1_log, y2_log = self._sYLog[ix], self._sYLog[ix+1]
@@ -61,21 +70,4 @@ class LogInterp(object):
 
 # Cummulative numerical Simpson integration
 def cumsimp(x_grid, y_grid):
-    n = len(x_grid)
-
-    delta_z = log( x_grid[-1]/x_grid[0] )/( n-1 )
-    g_grid  = x_grid*y_grid
-
-    i_grid = np.zeros( n )
-
-    last_even_int = 0.
-    for i in range(1, n//2 + 1):
-        ie = 2 * i
-        io = 2 * i - 1
-
-        i_grid[io] = last_even_int + 0.5 * delta_z * (g_grid[io-1] + g_grid[io])
-        if ie < n:
-            i_grid[ie] = last_even_int + delta_z * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
-            last_even_int = i_grid[ie]
-
-    return i_grid
+    return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)

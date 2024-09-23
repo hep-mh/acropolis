@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 
-python3 setup.py sdist bdist_wheel
+echo "Select what package formats to build:"
+# Ask the user to specify the build type
+build_types=$(gum choose --no-limit --selected=sdist,bdist_wheel 'sdist' 'bdist_wheel' 'bdist_egg')
+
+python3 setup.py $build_types
 rm -rf build/ ACROPOLIS.egg-info/
 
 twine check dist/*

@@ -4,15 +4,16 @@ import gzip
 import pickle
 # os
 from os import path
-# numba
-import numba as nb
 # time
 from time import time
 
+# jit
+from acropolis.jit import jit
 # pprint
 from acropolis.pprint import print_info
+# flags
+import acropolis.flags as flags
 # params
-from acropolis.params import usedb
 from acropolis.params import Emin_log, Emax_log, Enum
 from acropolis.params import Tmin_log, Tmax_log, Tnum
 
@@ -22,7 +23,7 @@ def import_data_from_db():
     db_file    = path.join(pkg_dir, "data", "rates.db.gz")
 
     ratedb = None
-    if not usedb or not path.exists(db_file):
+    if not flags.usedb or not path.exists(db_file):
         return ratedb
 
     start_time = time()
@@ -62,17 +63,17 @@ def in_kernel_db(E_log, Ep_log, T_log):
     return False
 
 
-@nb.jit(cache=True)
+@jit
 def _get_E_log(i):
     return Emin_log + (Emax_log - Emin_log)*i/(Enum - 1)
 
 
-@nb.jit(cache=True)
+@jit
 def _get_T_log(i):
     return Tmin_log + (Tmax_log - Tmin_log)*i/(Tnum - 1)
 
 
-@nb.jit(cache=True)
+@jit
 def _get_E_index(E_log):
     index = int( ( Enum - 1 ) * ( E_log - Emin_log ) / ( Emax_log - Emin_log ) )
 
@@ -80,7 +81,7 @@ def _get_E_index(E_log):
     return index if index != Enum - 1 else index - 1
 
 
-@nb.jit(cache=True)
+@jit
 def _get_T_index(T_log):
     index = int( ( Tnum - 1 ) * ( T_log - Tmin_log ) / ( Tmax_log - Tmin_log ) )
 
@@ -88,12 +89,12 @@ def _get_T_index(T_log):
     return index if index != Tnum - 1 else index - 1
 
 
-@nb.jit(cache=True)
+@jit
 def interp_rate_db(rate_db, id, E_log, T_log):
     # Extract the correct index for the datafile
     c = {
-        'ph:rate_pair_creation'  : 0,
-        'el:rate_inverse_compton': 1
+        'ph:rate_pair_creation_ae': 0,
+        'el:rate_inverse_compton' : 1
     }[id]
 
     # Calculate the respective indices in the interpolation file
@@ -104,7 +105,6 @@ def interp_rate_db(rate_db, id, E_log, T_log):
     x , y = T_log, E_log
     x0, y0 = _get_T_log(iT  ), _get_E_log(iE  )
     x1, y1 = _get_T_log(iT+1), _get_E_log(iE+1)
-    xd, yd = (x-x0)/(x1-x0), (y-y0)/(y1-y0)
 
     # Define the index function
     k = lambda jT, jE: jT*Enum + jE
@@ -124,14 +124,11 @@ def interp_rate_db(rate_db, id, E_log, T_log):
     return 10.**( a0 + a1*x + a2*y + a3*x*y )
 
 
-@nb.jit(cache=True)
+@jit
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
-    c = {
-        'ph:kernel_inverse_compton': 0,
-        'el:kernel_pair_creation'  : 1,
-        'el:kernel_inverse_compton': 2
-    }[id]
+    raise NotImplementedError
 
+    """
     # Calculate the respective indices in the interpolation file
     iE, iEp, iT  = _get_E_index(E_log), _get_E_index(Ep_log), _get_T_index(T_log)
 
@@ -180,3 +177,4 @@ def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
     a7 = ( c000 - c001 - c010 + c011 - c100 + c101 + c110 - c111 )/d
 
     return 10.**( a0 + a1*x + a2*y + a3*z + a4*x*y + a5*x*z + a6*y*z + a7*x*y*z )
+    """

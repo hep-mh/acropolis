@@ -9,7 +9,7 @@ from matplotlib.ticker import FixedLocator, FixedFormatter
 import warnings
 
 # obs
-from acropolis.obs import pdg2020
+from acropolis.obs import pdg2022
 # pprint
 from acropolis.pprint import print_info
 # params
@@ -30,7 +30,7 @@ plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{mathpazo
 _plot_number = 0
 
 
-# The number of sigmas at which a
+# The number of sigmas beyond which a
 # point is considered excluded
 _95cl = 1.95996 # 95% C.L.
 
@@ -38,8 +38,11 @@ _95cl = 1.95996 # 95% C.L.
 # DATA EXTRACTION ###################################################
 
 def _get_abundance(data, i):
+    cols = data.shape[1]
+
+    offset = cols - 3*NY
     # Add + 2 for the two parameters in the first two columns
-    i0 = i + 2
+    i0 = i + offset
 
     # Extract the different abundances...
     mean, high, low = data[:,i0], data[:,i0+NY], data[:,i0+2*NY]
@@ -90,8 +93,9 @@ def _get_deviations(data, obs):
             pass
 
     # Take care of potential NaNs
-    HeD[ mDH < obs['DH'].err ] =  10
-    DH [     np.isnan(DH)    ] = -10
+    HeD[ mDH  < obs['DH' ].err ] =  10
+    HeD[ mHeD < obs['HeD'].err ] =  10
+    DH [     np.isnan(DH)      ] = -10
 
     # Return (without reshaping)
     return Yp, DH, HeD, LiH
@@ -133,10 +137,10 @@ def tex_title(**kwargs):
     # that need to be printed in scientific
     # notation
     def _val_to_string(val):
-        if type(val) == float:
+        if isinstance(val, float):
             power = log10( val )
             if power != int(power):
-                # TODO
+                # TODO: Implement this special case
                 pass
 
             return r'10^' + str( int(power) )
@@ -180,7 +184,7 @@ def tex_labels(key_x, key_y):
 
 # FIGURE HANDLING ###################################################
 
-def _init_figure():
+def init_figure():
     fig = plt.figure(figsize=(4.8, 4.4), dpi=150, edgecolor='white')
     ax  = fig.add_subplot(1, 1, 1)
 
@@ -237,7 +241,7 @@ def _set_tick_labels(ax, x, y):
     ax.set_ylim(ymin_log, ymax_log)
 
 
-def save_figure(output_file=None):
+def save_figure(output_file=None, show_fig=False):
     global _plot_number
 
     # If no name for the output file is given
@@ -247,6 +251,9 @@ def save_figure(output_file=None):
         _plot_number += 1
 
     plt.savefig(output_file)
+    # Show the figure on request
+    if show_fig:
+        plt.show()
 
     print_info(
         "Figure has been saved as '{}'".format(output_file),
@@ -254,13 +261,13 @@ def save_figure(output_file=None):
     )
 
 
-def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pdf=True, show_fig=False, obs=pdg2020):
+def plot_scan_results(data, output_file=None, contour_file=None, title='', labels=('', ''), fix_helium=False, show_fig=False, obs=pdg2022, xc=0, yc=1):
     # If data is a filename, load the data first
-    if type(data) == str:
+    if isinstance(data, str):
         data = np.loadtxt(data)
 
     # Get the set of input parameters...
-    x, y = data[:,0], data[:,1]
+    x, y = data[:,xc], data[:,yc]
 
     # ...and determine the shape of the data
     N  = len(x)
@@ -281,12 +288,25 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     HeD = HeD.reshape(shape)
     LiH = LiH.reshape(shape)
 
+    # Fix potential 'holes' in the
+    # exclusion region of HeD
+    if fix_helium:
+        for j, column in enumerate(HeD.T):
+
+            excl = False
+            for i, el in enumerate(column):
+                if el < _95cl and excl:
+                    HeD[i, j] = 10
+
+                if el > _95cl and not excl:
+                    excl = True
+
     # Extract the overall exclusion limit
     max = np.maximum( np.abs(DH), np.abs(Yp) )
     max = np.maximum( max, HeD )
 
     # Init the figure and...
-    fig, ax = _init_figure()
+    fig, ax = init_figure()
     # ...set the tick labels
     _set_tick_labels(ax, x, y)
 
@@ -328,7 +348,7 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
         levels=[_95cl], colors='mediumseagreen', linestyles='-'
     )
     # Overall high/low (line)
-    ax.contour(np.log10(x), np.log10(y), max,
+    cs = ax.contour(np.log10(x), np.log10(y), max,
         levels=[_95cl], colors='black', linestyles='-'
     )
 
@@ -341,10 +361,36 @@ def plot_scan_results(data, output_file=None, title='', labels=('', ''), save_pd
     # Set tight layout
     plt.tight_layout()
 
-    if save_pdf == True:
+    if contour_file is not None:
+        extraction_failed = False
+
+        if len(cs.collections) == 1:
+            paths = cs.collections[0].get_paths()
+
+            if len(paths) == 1:
+                xy_cs = paths[0].vertices
+
+                np.savetxt(contour_file, xy_cs)
+
+                print_info(
+                    "Overall exclusion line has been saved as '{}'".format(contour_file),
+                    "acropolis.plot.plot_scan_results"
+                )
+            else:
+                extraction_failed = True
+        else:
+            extraction_failed = True
+        
+        if extraction_failed:
+            print_info(
+                "Could not extract unique contour. No data has been saved.",
+                "acropolis.plot.plot_scan_results"
+            )
+
+    if output_file is not None:
         save_figure(output_file)
 
-    if show_fig == True:
+    if show_fig:
         plt.show()
 
     # Return figure and axis in case
