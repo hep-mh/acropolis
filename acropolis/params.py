@@ -43,22 +43,28 @@ mp = 938.27208943
 mn = 939.56542052
 
 # The deuteron mass (in MeV)
-mD = 2.01410177812*dalton - me
+mD   = 2.0141017781*dalton - me
 
 # The triton mass (in MeV)
-mT = 3.0160492779*dalton - me
+mT   = 3.0160492779*dalton - me
 
 # The helium-3 nucleus mass (in MeV)
 mHe3 = 3.0160293201*dalton - 2.*me
 
 # The helium-4 nucleus mass (in MeV)
-mHe4 = 4.00260325413*dalton - 2.*me
+mHe4 = 4.0026032541*dalton - 2.*me
 
 # The mass of the neutral pion (in MeV)
 mpi0 = 134.9768
 
 # The mass of the charged pion (in MeV)
 mpic = 139.57039
+
+# The magnetic moment of the neutron
+gn = -1.913
+
+# The magnetic moment of the proton
+gp = 5.586/2
 
 
 # MATHEMATICAL CONSTANTS ############################################
