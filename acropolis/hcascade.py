@@ -5,7 +5,21 @@ import numpy as np
 # enum
 from enum import Enum
 
+# params
+from acropolis.params import zeta3, pi2
+
+
 # K ≘ kinetic energy, E ≘ total energy
+
+
+def nH(T, Y, eta):
+    return 2.*zeta3 * (T**3.) * eta * (1. - Y) / pi2
+
+
+
+def nHe4(T, Y, eta):
+    return 2.*zeta3 * (T**3.) * eta * (Y/4.) / pi2
+
 
 class Projectiles(Enum):
     PROTON       = 0
@@ -24,6 +38,23 @@ class Nuclei(Enum):
     TRITIUM   = -3
     HELIUM3   = -2
     HELIUM4   = -1
+
+
+# All in MeV
+mass_dict = {
+    Projectiles.PROTON      : 0.,
+    Projectiles.NEUTRON     : 0.,
+    Projectiles.ANTI_PROTON : 0.,
+    Projectiles.ANTI_NEUTRON: 0.,
+
+    Targets.PROTON: 0.,
+    Targets.ALPHA : 0.,
+
+    Nuclei.DEUTERIUM: 0.,
+    Nuclei.TRITIUM  : 0.,
+    Nuclei.HELIUM3  : 0.,
+    Nuclei.HELIUM4  : 0.
+}
 
 
 class EnergyGrid(object):
