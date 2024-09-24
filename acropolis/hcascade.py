@@ -7,18 +7,19 @@ from enum import Enum
 
 # params
 from acropolis.params import zeta3, pi2
+from acropolis.params import mp, mn, mD, mT, mHe3, mHe4
 
 
 # K ≘ kinetic energy, E ≘ total energy
 
 
 def nH(T, Y, eta):
-    return 2.*zeta3 * (T**3.) * eta * (1. - Y) / pi2
+    return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
 
 
 def nHe4(T, Y, eta):
-    return 2.*zeta3 * (T**3.) * eta * (Y/4.) / pi2
+    return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 
 class Projectiles(Enum):
@@ -42,18 +43,18 @@ class Nuclei(Enum):
 
 # All in MeV
 mass_dict = {
-    Projectiles.PROTON      : 0.,
-    Projectiles.NEUTRON     : 0.,
-    Projectiles.ANTI_PROTON : 0.,
-    Projectiles.ANTI_NEUTRON: 0.,
+    Projectiles.PROTON      : mp,
+    Projectiles.NEUTRON     : mn,
+    Projectiles.ANTI_PROTON : mp,
+    Projectiles.ANTI_NEUTRON: mn,
 
-    Targets.PROTON: 0.,
-    Targets.ALPHA : 0.,
+    Targets.PROTON: mp,
+    Targets.ALPHA : mHe4,
 
-    Nuclei.DEUTERIUM: 0.,
-    Nuclei.TRITIUM  : 0.,
-    Nuclei.HELIUM3  : 0.,
-    Nuclei.HELIUM4  : 0.
+    Nuclei.DEUTERIUM: mD,
+    Nuclei.TRITIUM  : mT,
+    Nuclei.HELIUM3  : mHe3,
+    Nuclei.HELIUM4  : mHe4
 }
 
 
