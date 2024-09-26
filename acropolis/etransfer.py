@@ -6,7 +6,7 @@ from cmath import exp as cexp
 import numpy as np
 
 # hcascade
-from acropolis.hcascade import mass_dict, Projectiles, Targets, ParticleSpectrum
+from acropolis.hcascade import mass, Projectiles, Targets, ParticleSpectrum
 # params
 from acropolis.params import pi
 from acropolis.params import mpi0, mpic, Kt, mp, mn
@@ -16,24 +16,16 @@ mb_to_iMeV2 = 2.5681899885e-06
 
 
 def _K_to_s(projectile, target, K):
-    m_proj = mass_dict[projectile]
-    m_targ = mass_dict[target]
+    mN, mA = mass[projectile], mass[target]
 
-    return m_proj**2. + m_targ**2. + 2.*(K + m_proj)*m_targ # MeV
+    return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
 
 
 def _K_to_E(particle, K):
-    return K + mass_dict[particle]
+    return K + mass[particle]
 
 
-#####################################################################
-
-
-def enforce_energy_conservation():
-    pass
-
-
-#####################################################################
+# HELPER FUNCTIONS ##################################################
 
 
 # s in MeV²
@@ -71,7 +63,10 @@ def _Mm(s):
 
 
 # s in MeV²
-def _Bsl(projectile, target, s):
+def _Bsl(projectile, target, Ki):
+    # Calculate the com-energy squared
+    s = _K_to_s(projectile, target, Ki)
+
     if target == Targets.ALPHA:
         # The same expression is used for any type of projectile
         
@@ -112,17 +107,17 @@ def _Bsl(projectile, target, s):
     return np.nan
 
 
-#####################################################################
-
-
 def _gcm(projectile, target, Ki):
-    mN, mA = mass_dict[projectile], mass_dict[target]
+    mN, mA = mass[projectile], mass[target]
 
     return ( (mN + mA) + Ki ) / sqrt( (mN + mA)**2. + 2.*mA*Ki )
 
 
+#####################################################################
+
+
 # TODO
-def _any_elastic(projectile, target, Ki, energy_grid):
+def _any_elastic(egrid, projectile, target, Ki):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
         raise ValueError(
@@ -130,22 +125,33 @@ def _any_elastic(projectile, target, Ki, energy_grid):
         )
     
     # Initialize the spectrum
-    spectrum = ParticleSpectrum( energy_grid )
+    spectrum = ParticleSpectrum( egrid )
     
-    # Calculate the maximal values of Kj' and t
-    mN, mA = mass_dict[projectile], mass_dict[target]
-    # -->
-    Kj_p_max = 2.*mA*Ki / ( (mN + mA)**2. + 2.*mA*Ki )
-    # -->
-    t_max = 2.*mA*Kj_p_max
+    mN, mA = mass[projectile], mass[target]
+    # Calculate the maximal value of Kj'
+    Kj_p_max = 2.*mA*Ki*(Ki + 2.*mN) / ( (mN + mA)**2. + 2.*mA*Ki )
 
-    # Calculate Bsl
-    s = _K_to_s(projectile, target, Ki)
-    # -->
-    Bsl = _Bsl(projectile, target, s)
+    # Calculate the slope parameter Bsl
+    Bsl = _Bsl(projectile, target, Ki)
 
     # Calculate the prefactor of the distribution
-    pref = 1./( 1. - exp(-Bsl*t_max) )
+    pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
+
+    def _integrate_fj_over_bin(i):
+        Kj_p_l, Kj_p_h = np.minimum( egrid.bin_range(i), Kj_p_max )
+
+        return pref * ( exp( -2.*mA*Bsl*Kj_p_l ) - exp( -2.*mA*Bsl*Kj_p_h ) )
+
+    def _integrate_fi_over_bin(i):
+        return 0. # TODO
+
+    # Loop over all bins
+    for i in range( egrid.nbins() ):
+        # Handle the scattered projectile particle
+        spectrum.addp(projectile, _integrate_fj_over_bin(i), egrid[i])
+
+        # Handle the scattered target particle
+        spectrum.addp(target    , _integrate_fi_over_bin(i), egrid[i])
 
     return spectrum
 
@@ -159,7 +165,7 @@ def _any_elastic(projectile, target, Ki, energy_grid):
 # convert_target = True:
 # p + p_bg -> p + n + pi+
 # n + p_bg -> n + n + pi+
-def _proton_inelastic(energy_grid, projectile, Ki, convert_target):
+def _proton_inelastic(egrid, projectile, Ki, convert_target):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
         raise ValueError(
@@ -167,7 +173,7 @@ def _proton_inelastic(energy_grid, projectile, Ki, convert_target):
         )
     
     # Initialize the spectrum
-    spectrum = ParticleSpectrum( energy_grid )
+    spectrum = ParticleSpectrum( egrid )
 
     # Specify the target particle
     target = Targets.PROTON
@@ -205,23 +211,31 @@ def _proton_inelastic(energy_grid, projectile, Ki, convert_target):
     return spectrum
 
 
+# Reaction (i,p,1)
+# p + p_bg -> p + p
+# n + p_bg -> n + p
+def proton_r1(egrid, projectile, Ki):
+    return _any_elastic(egrid, projectile, Targets.PROTON, Ki)
+
+
+
 # Reaction (i,p,2)
 # p + p_bg -> p + p + pi0
 # n + p_bg -> n + p + pi0
-def proton_2(projectile, Ki, energy_grid):
-    return _proton_inelastic(energy_grid, projectile, Ki, convert_target=False)
+def proton_r2(egrid, projectile, Ki):
+    return _proton_inelastic(egrid, projectile, Ki, convert_target=False)
 
 
 # Reaction (i,p,3)
 # p + p_bg -> p + n + pi+
 # n + p_bg -> n + n + pi+
-def proton_3(projectile, Ki, energy_grid):
-    return _proton_inelastic(energy_grid, projectile, Ki, convert_target=True)
+def proton_r3(egrid, projectile, Ki):
+    return _proton_inelastic(egrid, projectile, Ki, convert_target=True)
 
 
 # Any reaction of the form
 # p + he4_bg -> p + X
 # n + he4_bg -> p + X
 # with X not including T/He3
-def _alpha_inel(projectile, Ki, daughter_nuclei, energy_grid):
-    pass
+# TODO
+#def _alpha_inelastic(energy_grid, projectile, Ki, daughter_nuclei):
