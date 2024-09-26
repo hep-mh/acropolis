@@ -66,6 +66,10 @@ gn = -1.913
 # The magnetic moment of the proton
 gp = 5.586/2
 
+# The inverse slope parameter for
+# nuclear scattering (in MeV)
+Kt = 140.
+
 
 # MATHEMATICAL CONSTANTS ############################################
 
