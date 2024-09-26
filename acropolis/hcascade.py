@@ -41,7 +41,7 @@ class Nuclei(Enum):
     HELIUM4   = -1
 
 
-# All in MeV
+# All masses in MeV
 mass_dict = {
     Projectiles.PROTON      : mp,
     Projectiles.NEUTRON     : mn,
@@ -120,36 +120,50 @@ class FinalStateSpectrum(object):
         # Extract the number of bins
         self._sN = energy_grid.nbins()
 
-        # Initialize the spectrum
-        self._sSpectrum = np.zeros(
-            len(Projectiles) * self._sN + len(Nuclei)
-        )
-
         # Initialize a list containing all non-zero entries
-        self._sNonZero = set()
+        self._sEntries = {}
 
 
     def addp(self, projectile, increment, K):
-        index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
-        # -->
-        self._sSpectrum[index] += increment
+        if increment < 0:
+            raise ValueError(
+                "Any increment must be positive"
+            )
 
         if increment != 0:
-            self._sNonZero.add( index )
+            index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
+            # -->
+            if index in self._sEntries:
+                self._sEntries[index] += increment
+            else:
+                self._sEntries[index] = increment
 
 
     def addn(self, nucleus, increment):
-        index = nucleus.value
-        # -->
-        self._sSpectrum[index] += increment
-
+        if increment < 0:
+            raise ValueError(
+                "Any increment must be positive"
+            )
+        
         if increment != 0:
-            self._sNonZero.add( index )
+            index = nucleus.value
+            # -->
+            if index in self._sEntries:
+                self._sEntries[index] += increment
+            else:
+                self._sEntries[index] = increment
 
 
-    def non_zero(self):
-        for index in self._sNonZero:
-            yield ( index, float(self._sSpectrum[index]) )
+    def entries(self):
+        for index in self._sEntries:
+            yield ( index, self._sEntries[index] )
+
+
+    def at(self, index):
+        if index in self._sEntries:
+            return self._sEntries[index]
+        
+        return 0.
 
 
     def __repr__(self):
@@ -162,14 +176,14 @@ class FinalStateSpectrum(object):
             for projectile in Projectiles:
                 j = projectile.value
 
-                str_repr += f" {self._sSpectrum[j*self._sN + i]:.3e}"
+                str_repr += f" {self.at(j*self._sN + i):.3e}"
             
             str_repr += "\n"
         
         str_repr += "----------x\n"
 
         for nucleus in Nuclei:
-            str_repr += f"{self._sSpectrum[nucleus.value]:.3e} | \n"
+            str_repr += f"{self.at(nucleus.value):.3e} | \n"
         
         return str_repr
 
