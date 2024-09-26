@@ -112,7 +112,11 @@ class EnergyGrid(object):
         return self._sN
 
 
-class FinalStateSpectrum(object):
+    def min_energy(self):
+        return self._sKmin
+
+
+class ParticleSpectrum(object):
 
     def __init__(self, energy_grid):
         self._sEnergyGrid = energy_grid
@@ -130,7 +134,7 @@ class FinalStateSpectrum(object):
                 "Any increment must be positive"
             )
 
-        if increment != 0:
+        if increment != 0 and K > self._sEnergyGrid.min_energy():
             index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
             # -->
             if index in self._sEntries:
@@ -157,6 +161,10 @@ class FinalStateSpectrum(object):
     def entries(self):
         for index in self._sEntries:
             yield ( index, self._sEntries[index] )
+
+
+    def energy_grid(self):
+        return self._sEnergyGrid
 
 
     def at(self, index):
