@@ -42,7 +42,7 @@ class Nuclei(Enum):
 
 
 # All masses in MeV
-mass_dict = {
+mass = {
     Projectiles.PROTON      : mp,
     Projectiles.NEUTRON     : mn,
     Projectiles.ANTI_PROTON : mp,
@@ -100,20 +100,20 @@ class EnergyGrid(object):
         )
 
 
-    def bin_edges(self):
-        return self._sKbins
-    
-
-    def central_values(self):
-        return self._sKcent
+    def lower_edge(self):
+        return self._sKmin
 
 
     def nbins(self):
         return self._sN
 
 
-    def min_energy(self):
-        return self._sKmin
+    def bin_range(self, i):
+        return (self._sKbins[i], self._sKbins[i+1])
+
+
+    def __getitem__(self, i):
+        return self._sKcent[i]
 
 
 class ParticleSpectrum(object):
@@ -128,43 +128,34 @@ class ParticleSpectrum(object):
         self._sEntries = {}
 
 
-    def addp(self, projectile, increment, K):
-        if increment < 0:
-            raise ValueError(
-                "Any increment must be positive"
-            )
+    def _add(self, increment, index):
+        if increment == 0:
+            return
 
-        if increment != 0 and K > self._sEnergyGrid.min_energy():
-            index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
-            # -->
-            if index in self._sEntries:
-                self._sEntries[index] += increment
-            else:
-                self._sEntries[index] = increment
+        if index in self._sEntries:
+            self._sEntries[index] += increment
+        else:
+            self._sEntries[index] = increment
+
+
+    def addp(self, projectile, increment, K):
+        if K < self._sEnergyGrid.lower_edge():
+            return
+
+        index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
+        # -->
+        self._add(increment, index)
 
 
     def addn(self, nucleus, increment):
-        if increment < 0:
-            raise ValueError(
-                "Any increment must be positive"
-            )
-        
-        if increment != 0:
-            index = nucleus.value
-            # -->
-            if index in self._sEntries:
-                self._sEntries[index] += increment
-            else:
-                self._sEntries[index] = increment
+        index = nucleus.value
+        # -->
+        self._add(increment, index)
 
 
-    def entries(self):
+    def non_zero(self):
         for index in self._sEntries:
             yield ( index, self._sEntries[index] )
-
-
-    def energy_grid(self):
-        return self._sEnergyGrid
 
 
     def at(self, index):
@@ -180,11 +171,10 @@ class ParticleSpectrum(object):
 
 
     def __repr__(self):
-        Kcent = self._sEnergyGrid.central_values()
-
         str_repr = ""
+
         for i in range(self._sN):
-            str_repr += f"{Kcent[i]:.3e} |"
+            str_repr += f"{self._sEnergyGrid[i]:.3e} |"
 
             for projectile in Projectiles:
                 j = projectile.value
