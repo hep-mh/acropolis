@@ -174,6 +174,11 @@ class ParticleSpectrum(object):
         return 0.
 
 
+    def rescale(self, factor):
+        for index in self._sEntries:
+            self._sEntries[index] *= factor
+
+
     def __repr__(self):
         Kcent = self._sEnergyGrid.central_values()
 

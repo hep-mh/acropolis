@@ -145,9 +145,9 @@ def _any_elastic(projectile, target, Ki, energy_grid):
     Bsl = _Bsl(projectile, target, s)
 
     # Calculate the prefactor of the distribution
-    pref = 1./( 1. - exp(-Bsl*tmax) )
+    pref = 1./( 1. - exp(-Bsl*t_max) )
 
-    return 0.
+    return spectrum
 
 
 # Reactions (i,p,2) and (i,p,3)
@@ -195,7 +195,8 @@ def _proton_inelastic(energy_grid, projectile, Ki, convert_target):
 
     # Ensure energy conservation
     # TODO
-    #assert Ki + mp >= Ki_p + Kj_p + md + Kpi_p + mpi
+    if Ki + mp < Ki_p + Kj_p + md + Kpi_p + mpi:
+        pass
 
     spectrum.addp(projectile, 1, Ki_p)
     spectrum.addp(daughter  , 1, Kj_p)
