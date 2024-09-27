@@ -13,12 +13,12 @@ from acropolis.params import mp, mn, mD, mT, mHe3, mHe4
 # K ≘ kinetic energy, E ≘ total energy
 
 
-def nH(T, Y, eta):
+def _nH(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
 
 
-def nHe4(T, Y, eta):
+def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 

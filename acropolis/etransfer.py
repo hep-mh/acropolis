@@ -116,7 +116,11 @@ def _gcm(projectile, target, Ki):
 #####################################################################
 
 
-# TODO
+# Reactions of the form
+# p + p_bg   -> p + b
+# n + p_bg   -> n + p
+# p + he4_bg -> p + he4
+# n + he4_bg -> n + he4
 def _elastic_any(egrid, projectile, target, Ki):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
@@ -133,6 +137,8 @@ def _elastic_any(egrid, projectile, target, Ki):
 
     # Calculate the slope parameter Bsl
     Bsl = _Bsl(projectile, target, Ki)
+    # DEBUG
+    print(Bsl)
 
     # Calculate the prefactor of the distribution
     pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
@@ -140,32 +146,33 @@ def _elastic_any(egrid, projectile, target, Ki):
     def _integrate_fj_over_bin(i):
         Kj_p_l, Kj_p_h = np.minimum( egrid.bin_range(i), Kj_p_max )
 
-        assert Kj_p_l <= Kj_p_h
         if Kj_p_l == Kj_p_h:
             return 0.
 
         return pref * ( exp( -2.*mA*Bsl*Kj_p_l ) - exp( -2.*mA*Bsl*Kj_p_h ) )
 
     def _integrate_fi_over_bin(i):
-        Kj_p_l, Kj_p_h = np.maximum(
+        Ki_p_l, Ki_p_h = np.maximum(
             np.minimum( egrid.bin_range(i), Ki ), Ki - Kj_p_max
         )
+        # DEBUG
+        assert Ki_p_l <= Ki_p_h
 
-        assert Kj_p_l <= Kj_p_h
-        if Kj_p_l == Kj_p_h:
+        if Ki_p_l == Ki_p_h:
             return 0.
 
-        return 0. # TODO
+        return pref * ( exp( -2.*mA*Bsl*(Ki-Ki_p_h) ) - exp( -2.*mA*Bsl*(Ki-Ki_p_l) ) )
 
-    # Loop over all bins
+    # Loop over all bins and fill the spectrum
     for i in range( egrid.nbins() ):
         # Handle the scattered projectile particle
-        spectrum.addp(projectile, _integrate_fi_over_bin(i), egrid[i])
+        spectrum.add(projectile, _integrate_fi_over_bin(i), egrid[i])
 
         # Handle the scattered target particle
-        spectrum.addp(target    , _integrate_fj_over_bin(i), egrid[i])
+        spectrum.add(target    , _integrate_fj_over_bin(i), egrid[i])
 
     return spectrum
+
 
 # Reaction of the forms
 # p + p_bg -> p + p/n + pi0/pi+
@@ -213,8 +220,8 @@ def _inelastic_proton(egrid, projectile, Ki, convert_target):
     if Ki + mp < Ki_p + Kj_p + md + Kpi_p + mpi:
         pass
 
-    spectrum.addp(projectile, 1, Ki_p)
-    spectrum.addp(daughter  , 1, Kj_p)
+    spectrum.add(projectile, 1, Ki_p)
+    spectrum.add(daughter  , 1, Kj_p)
     # pions can be ignored
 
     return spectrum
@@ -225,7 +232,6 @@ def _inelastic_proton(egrid, projectile, Ki, convert_target):
 # n + p_bg -> n + p
 def _r1_proton(egrid, projectile, Ki):
     return _elastic_any(egrid, projectile, Targets.PROTON, Ki)
-
 
 
 # Reaction (i,p,2)
@@ -240,6 +246,13 @@ def _r2_proton(egrid, projectile, Ki):
 # n + p_bg -> n + n + pi+
 def _r3_proton(egrid, projectile, Ki):
     return _inelastic_proton(egrid, projectile, Ki, convert_target=True)
+
+
+# Reaction (i,he4,1)
+# p + he4_bg -> p + he4_bg
+# n + he4_bg -> n + he4_bg
+def _r1_alpha(egrid, projectile, Ki):
+    return _elastic_any(egrid, projectile, Targets.ALPHA, Ki)
 
 
 # Any reaction of the form
