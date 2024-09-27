@@ -41,6 +41,10 @@ class Nuclei(Enum):
     HELIUM4   = -1
 
 
+def is_particle(particle):
+    return (particle in Projectiles) or (particle in Targets) or (particle in Nuclei)
+
+
 # All masses in MeV
 mass = {
     Projectiles.PROTON      : mp,

@@ -15,17 +15,18 @@ from acropolis.params import mpi0, mpic, Kt, mp, mn
 mb_to_iMeV2 = 2.5681899885e-06
 
 
+# HELPER FUNCTIONS ##################################################
+
+# K in MeV
 def _K_to_s(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
     return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
 
 
+# K in MeV
 def _K_to_E(particle, K):
     return K + mass[particle]
-
-
-# HELPER FUNCTIONS ##################################################
 
 
 # s in MeV²
@@ -113,8 +114,7 @@ def _gcm(projectile, target, Ki):
     return ( (mN + mA) + Ki ) / sqrt( (mN + mA)**2. + 2.*mA*Ki )
 
 
-#####################################################################
-
+# MAIN FUNCTIONS ####################################################
 
 # Reactions of the form
 # p + p_bg   -> p + b
