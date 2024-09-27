@@ -62,10 +62,10 @@ def _Mm(s):
     return D * (s/1e6)**al * cexp(1j*pi*(1.-al)/2.) # unitless
 
 
-# s in MeV²
+# Ki in MeV
 def _Bsl(projectile, target, Ki):
     # Calculate the com-energy squared
-    s = _K_to_s(projectile, target, Ki)
+    s = _K_to_s(projectile, target, Ki) # MeV²
 
     if target == Targets.ALPHA:
         # The same expression is used for any type of projectile
@@ -117,7 +117,7 @@ def _gcm(projectile, target, Ki):
 
 
 # TODO
-def _any_elastic(egrid, projectile, target, Ki):
+def _elastic_any(egrid, projectile, target, Ki):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
         raise ValueError(
@@ -140,32 +140,41 @@ def _any_elastic(egrid, projectile, target, Ki):
     def _integrate_fj_over_bin(i):
         Kj_p_l, Kj_p_h = np.minimum( egrid.bin_range(i), Kj_p_max )
 
+        assert Kj_p_l <= Kj_p_h
+        if Kj_p_l == Kj_p_h:
+            return 0.
+
         return pref * ( exp( -2.*mA*Bsl*Kj_p_l ) - exp( -2.*mA*Bsl*Kj_p_h ) )
 
     def _integrate_fi_over_bin(i):
+        Kj_p_l, Kj_p_h = np.maximum(
+            np.minimum( egrid.bin_range(i), Ki ), Ki - Kj_p_max
+        )
+
+        assert Kj_p_l <= Kj_p_h
+        if Kj_p_l == Kj_p_h:
+            return 0.
+
         return 0. # TODO
 
     # Loop over all bins
     for i in range( egrid.nbins() ):
         # Handle the scattered projectile particle
-        spectrum.addp(projectile, _integrate_fj_over_bin(i), egrid[i])
+        spectrum.addp(projectile, _integrate_fi_over_bin(i), egrid[i])
 
         # Handle the scattered target particle
-        spectrum.addp(target    , _integrate_fi_over_bin(i), egrid[i])
+        spectrum.addp(target    , _integrate_fj_over_bin(i), egrid[i])
 
     return spectrum
 
-
-# Reactions (i,p,2) and (i,p,3)
+# Reaction of the forms
+# p + p_bg -> p + p/n + pi0/pi+
+# n + p_bg -> n + p/n + pi0/pi+
 #
-# convert_target = False:
-# p + p_bg -> p + p + pi0
-# n + p_bg -> n + p + pi0
-#
-# convert_target = True:
-# p + p_bg -> p + n + pi+
-# n + p_bg -> n + n + pi+
-def _proton_inelastic(egrid, projectile, Ki, convert_target):
+# convert_target determines wether
+# the target proton gets converted
+# into a neutron or not
+def _inelastic_proton(egrid, projectile, Ki, convert_target):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
         raise ValueError(
@@ -214,23 +223,23 @@ def _proton_inelastic(egrid, projectile, Ki, convert_target):
 # Reaction (i,p,1)
 # p + p_bg -> p + p
 # n + p_bg -> n + p
-def proton_r1(egrid, projectile, Ki):
-    return _any_elastic(egrid, projectile, Targets.PROTON, Ki)
+def _r1_proton(egrid, projectile, Ki):
+    return _elastic_any(egrid, projectile, Targets.PROTON, Ki)
 
 
 
 # Reaction (i,p,2)
 # p + p_bg -> p + p + pi0
 # n + p_bg -> n + p + pi0
-def proton_r2(egrid, projectile, Ki):
-    return _proton_inelastic(egrid, projectile, Ki, convert_target=False)
+def _r2_proton(egrid, projectile, Ki):
+    return _inelastic_proton(egrid, projectile, Ki, convert_target=False)
 
 
 # Reaction (i,p,3)
 # p + p_bg -> p + n + pi+
 # n + p_bg -> n + n + pi+
-def proton_r3(egrid, projectile, Ki):
-    return _proton_inelastic(egrid, projectile, Ki, convert_target=True)
+def _r3_proton(egrid, projectile, Ki):
+    return _inelastic_proton(egrid, projectile, Ki, convert_target=True)
 
 
 # Any reaction of the form
