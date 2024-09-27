@@ -128,7 +128,7 @@ class ParticleSpectrum(object):
         self._sEntries = {}
 
 
-    def _add(self, increment, index):
+    def _increment(self, index, increment):
         if increment == 0:
             return
 
@@ -138,19 +138,46 @@ class ParticleSpectrum(object):
             self._sEntries[index] = increment
 
 
-    def addp(self, projectile, increment, K):
+    def _add_projectile(self, projectile, increment, K):
+        if projectile not in Projectiles:
+            raise ValueError(
+                "The given projectile must be an existing member of Projectiles"
+            )
+
         if K < self._sEnergyGrid.lower_edge():
             return
 
         index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
         # -->
-        self._add(increment, index)
+        self._increment(index, increment)
 
 
-    def addn(self, nucleus, increment):
+    def _add_nucleus(self, nucleus, increment):
+        if nucleus not in Nuclei:
+            raise ValueError(
+                "The given nucleus must be an existing member of Nuclei"
+            )
+
         index = nucleus.value
         # -->
-        self._add(increment, index)
+        self._increment(index, increment)
+
+
+    def add(self, particle, increment, Ki):
+        # Projectiles
+        if   particle in Projectiles:
+            self._add_projectile(particle, increment, Ki)
+        
+        # Nuclei
+        elif particle in Nuclei:
+            self._add_nucleus(particle, increment)
+        
+        # Targets
+        elif particle == Targets.PROTON:
+            self._add_projectile(Projectiles.PROTON, increment, Ki)
+
+        elif particle == Targets.ALPHA:
+            self._add_nucleus(Nuclei.HELIUM4, increment)
 
 
     def non_zero(self):
