@@ -35,14 +35,23 @@ class Particles(Enum):
 
 
 def is_nucleon(particle):
+    if particle not in Particles:
+        return False
+
     return (0 <= particle.value <= 1)
 
 
 def is_nucleus(particle):
+    if particle not in Particles:
+        return False
+    
     return (-4 <= particle.value <= -1)
 
 
 def is_pion(particle):
+    if particle not in Particles:
+        return False
+    
     return (-6 <= particle.value <= -5)
 
 
@@ -51,7 +60,20 @@ def is_valid_projectile(particle):
 
 
 def is_valid_target(particle):
+    if particle not in Particles:
+        return False
+
     return (particle.value in [0, -1] )
+
+
+def convert_nucleon(nucleon):
+    if nucleon == Particles.PROTON:
+        return Particles.NEUTRON
+    
+    if nucleon == Particles.NEUTRON:
+        return Particles.PROTON
+    
+    return None
 
 
 # All masses in MeV

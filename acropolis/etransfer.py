@@ -7,7 +7,7 @@ import numpy as np
 
 # hcascade
 from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion
+from acropolis.hcascade import Particles, is_pion, convert_nucleon
 from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
@@ -64,7 +64,7 @@ def _Mm(s):
 
 
 # s in MeV²
-def _Bsl(projectile, target, s):
+def _Bsl(target, s):
     if target == Particles.HELIUM4:
         # The same expression is used for any type of projectile
         
@@ -109,10 +109,10 @@ def _gcm(projectile, target, K):
 # GENERIC FUNCTIONS #################################################
 
 # Reactions of the form
-# p + X_bg  -> p + X
-# n + X_bg  -> n + X
+# p + X(bg) -> p + X
+# n + X(bg) -> n + X
 # with X = p, He4
-def _elastic(egrid, projectile, target, Ki):
+def _elastic(egrid, projectile, Ki, target):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
     
@@ -121,7 +121,7 @@ def _elastic(egrid, projectile, target, Ki):
     Kj_p_max = 2.*mA*Ki*(Ki + 2.*mN) / ( (mN + mA)**2. + 2.*mA*Ki )
 
     # Calculate the slope parameter
-    Bsl = _Bsl(projectile, target, s=_K_to_s(projectile, target, Ki))
+    Bsl = _Bsl(target, s=_K_to_s(projectile, target, Ki))
 
     # Calculate the prefactor of the distribution
     pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
@@ -158,16 +158,22 @@ def _elastic(egrid, projectile, target, Ki):
 
 
 # Reactions of the form
-# p + X_bg -> p + [...]
-# n + X_bg -> p + [...]
-# with T, He3 ∉ [...]
-# TODO: convert_projectile???
-def _inelastic(egrid, projectile, target, Ki, daughters):
+# p + X(bg) -> p + Y
+# n + X(bg) -> p + Y
+# with X = p, He4 and arbitrary Y
+def _inelastic(egrid, projectile, Ki, target, daughters, convert_projectile):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Calculate the gamma factor for transforming
-    # from the com frame to the target rest frame
+    # Determine the type of the projectile after
+    # the inelastic scattering process
+    if convert_projectile:
+        projectile_remnant = convert_nucleon(projectile)
+    else:
+        projectile_remnant = projectile
+
+    # Calculate the gamma factor between the
+    # com frame and the target rest frame
     gcm = _gcm(projectile, target, Ki)
 
     # Estimate the kinetic energy of the
@@ -176,28 +182,30 @@ def _inelastic(egrid, projectile, target, Ki, daughters):
 
     # Initialize a variable to store
     # the mass difference of the reaction
-    dM = mass[target]
+    dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
     
-    Kj_p = []
-    # Estimate the kinetic energies of
-    # the various daughter particles
+    Kj_p_L = []
+    # Loop over the various daughter particles
     for daughter in daughters:
         md = mass[daughter]
         
-        # Estimate the energy and append it
-        Kj_p.append( gcm*Kt + (gcm - 1.)*md )
+        # Estimate the kinetic energy of the daughter particle
+        if daughter not in [Particles.TRITIUM, Particles.HELIUM3]:
+            Kj_p_L.append( gcm*Kt + (gcm - 1.)*md ) 
+        else: # T and He3 act as spectator particles
+            Kj_p_L.append( 5.789 ) # MeV
 
         # Update the mass difference
         dM -= md
     
     # Ensure energy conservation
-    # TODO: Implement + handle pions
+    # TODO: Implement (careful with pions)
 
     # Fill the spectrum
-    spectrum.add(projectile, 1., Ki_p)
+    spectrum.add(projectile_remnant, 1., Ki_p)
     for i, daughter in enumerate(daughters):
         if not is_pion(daughter): # ignore pions
-            spectrum.add(daughter, 1., Kj_p[i])
+            spectrum.add(daughter, 1., Kj_p_L[i])
     
     return spectrum
 
@@ -205,58 +213,65 @@ def _inelastic(egrid, projectile, target, Ki, daughters):
 # INDIVIDUAL FUNCTIONS ##############################################
 
 # Reaction (i,p,1)
-# p + p_bg -> p + p
-# n + p_bg -> n + p
+# p + p(bg) -> p + p
+# n + p(bg) -> n + p
 def _r1_proton(egrid, projectile, Ki):
-    return _elastic(egrid, projectile, Particles.PROTON, Ki)
+    return _elastic(
+        egrid, projectile, Ki,
+        target=Particles.PROTON
+    )
 
 
 # Reaction (i,p,2)
-# p + p_bg -> p + p + pi0
-# n + p_bg -> n + p + pi0
+# p + p(bg) -> p + p + pi0
+# n + p(bg) -> n + p + pi0
 def _r2_proton(egrid, projectile, Ki):
-    daughters = [Particles.PROTON, Particles.NEUTRAL_PION]
-    # -->
     return _inelastic(
-        egrid, projectile, Particles.PROTON, Ki, daughters
+        egrid, projectile, Ki,
+        target=Particles.PROTON,
+        convert_projectile=False,
+        daughters=[
+            Particles.PROTON,
+            Particles.NEUTRAL_PION
+        ]
     )
 
 
 # Reaction (i,p,3)
-# p + p_bg -> p + n + pi+
-# n + p_bg -> n + n + pi+
+# p + p(bg) -> p + n + pi+
+# n + p(bg) -> n + n + pi+
 def _r3_proton(egrid, projectile, Ki):
-    daughters = [Particles.NEUTRON, Particles.CHARGED_PION]
-    # -->
     return _inelastic(
-        egrid, projectile, Particles.PROTON, Ki, daughters
+        egrid, projectile, Ki,
+        target=Particles.PROTON,
+        convert_projectile=False,
+        daughters=[
+            Particles.NEUTRON,
+            Particles.CHARGED_PION
+        ]
     )
 
 
 # Reaction (i,al,1)
-# p + he4_bg -> p + he4_bg
-# n + he4_bg -> n + he4_bg
+# p + He4(bg) -> p + He4
+# n + He4(bg) -> n + He4
 def _r1_alpha(egrid, projectile, Ki):
-    return _elastic(egrid, projectile, Particles.HELIUM4, Ki)
-
-
-# TODO 2 - 4
-
-
-# Reaction (i,al,5)
-# p + he4_bg -> p + 2D
-# n + he4_bg -> n + 2D
-def _r5_alpha(egrid, projectile, Ki):
-    daughters = [Particles.DEUTERIUM, Particles.DEUTERIUM]
-    # -->
-    return _inelastic(
-        egrid, projectile, Particles.HELIUM4, Ki, daughters
+    return _elastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4
     )
 
 
-# TODO: Add to public function
-# if projectile == Projectiles.ANTI_PROTON \
-# or projectile == Projectiles.ANTI_NEUTRON:
-#     raise NotImplementedError(
-#         "Scattering of anti-nucleons is currently not implemented"
-#     )
+# Reaction (i,al,5)
+# p + He4(bg) -> p + 2D
+# n + He4(bg) -> n + 2D
+def _r5_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        convert_projectile=False,
+        daughters=[
+            Particles.DEUTERIUM,
+            Particles.DEUTERIUM
+        ]
+    )
