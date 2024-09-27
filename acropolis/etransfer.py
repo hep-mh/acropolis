@@ -6,11 +6,13 @@ from cmath import exp as cexp
 import numpy as np
 
 # hcascade
-from acropolis.hcascade import mass, Projectiles, Targets, ParticleSpectrum
+from acropolis.hcascade import mass
+from acropolis.hcascade import Particles, is_pion
+from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import mpi0, mpic, Kt, mp, mn
+from acropolis.params import Kt
 
 
 # HELPER FUNCTIONS ##################################################
@@ -63,13 +65,13 @@ def _Mm(s):
 
 # s in MeV²
 def _Bsl(projectile, target, s):
-    if target == Targets.ALPHA:
+    if target == Particles.HELIUM4:
         # The same expression is used for any type of projectile
         
         return 28 * 1e-6 # 1/MeV²
         #         | 1/GeV² --> 1/MeV²
     
-    if target == Targets.PROTON:
+    if target == Particles.PROTON:
         bp, bm = _bp(s), _bm(s)
         Mp, Mm = _Mp(s), _Mm(s)
         # -->
@@ -80,7 +82,7 @@ def _Bsl(projectile, target, s):
         ReMm2, ImMm2 = ReMm**2., ImMm**2.
 
         # Bsl = d ln(dsig / dt) /dt = (d²sig / dt²) / (dsig / dt) @ t = tref
-        def _Bsl(k):
+        def _Bsl_pm(k):
             tref = -0.02e6 # MeV²
 
             num = bm*exp(bm*tref)*ImMm2 + exp(bp*tref)*ImMp2*bp + bm*exp(bm*tref)*ReMm2 \
@@ -91,38 +93,26 @@ def _Bsl(projectile, target, s):
 
             return num/den # 1/MeV²
         
-        if projectile == Projectiles.PROTON \
-        or projectile == Projectiles.NEUTRON:
-            return _Bsl(-1) # 1/MeV²
+        return _Bsl_pm(-1) # 1/MeV²
 
-        if projectile == Projectiles.ANTI_PROTON \
-        or projectile == Projectiles.ANTI_NEUTRON:
-            return _Bsl(+1) # 1/MeV²
-
-    # Invalid projectile or target
+    # Invalid target
     return np.nan
 
 
-def _gcm(projectile, target, Ki):
+# K in MeV
+def _gcm(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
-    return ( (mN + mA) + Ki ) / sqrt( (mN + mA)**2. + 2.*mA*Ki )
+    return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
 
-# MAIN FUNCTIONS ####################################################
+# GENERIC FUNCTIONS #################################################
 
 # Reactions of the form
-# p + p_bg   -> p + b
-# n + p_bg   -> n + p
-# p + he4_bg -> p + he4
-# n + he4_bg -> n + he4
-def _elastic_any(egrid, projectile, target, Ki):
-    if projectile == Projectiles.ANTI_PROTON \
-    or projectile == Projectiles.ANTI_NEUTRON:
-        raise NotImplementedError(
-            "Scattering of anti-nucleons is currently not implemented"
-        )
-    
+# p + X_bg  -> p + X
+# n + X_bg  -> n + X
+# with X = p, He4
+def _elastic(egrid, projectile, target, Ki):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
     
@@ -156,7 +146,7 @@ def _elastic_any(egrid, projectile, target, Ki):
 
         return pref * ( exp( -2.*mA*Bsl*(Ki-Ki_p_h) ) - exp( -2.*mA*Bsl*(Ki-Ki_p_l) ) )
 
-    # Loop over all bins and fill the spectrum
+    # Fill the spectrum by looping over all bins
     for i in range( egrid.nbins() ):
         # Handle the scattered projectile particle
         spectrum.add(projectile, _integrate_fi_over_bin(i), egrid[i])
@@ -167,30 +157,14 @@ def _elastic_any(egrid, projectile, target, Ki):
     return spectrum
 
 
-# Reactions of the forms
-# p + p_bg -> p + p/n + pi0/pi+
-# n + p_bg -> n + p/n + pi0/pi+
-#
-# The flag 'convert_target' determines
-# wether the target proton gets converted
-# into a neutron or not
-def _inelastic_proton(egrid, projectile, Ki, convert_target):
-    if projectile == Projectiles.ANTI_PROTON \
-    or projectile == Projectiles.ANTI_NEUTRON:
-        raise NotImplementedError(
-            "Scattering of anti-nucleons is currently not implemented"
-        )
-    
+# Reactions of the form
+# p + X_bg -> p + [...]
+# n + X_bg -> p + [...]
+# with T, He3 ∉ [...]
+# TODO: convert_projectile???
+def _inelastic(egrid, projectile, target, Ki, daughters):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
-
-    # Specify the target particle
-    target = Targets.PROTON
-
-    # Specify the daughter particle
-    daughter = Projectiles.PROTON if not convert_target else Projectiles.NEUTRON
-    # -->
-    (md, mpi) = (mp, mpi0) if not convert_target else (mn, mpic)
 
     # Calculate the gamma factor for transforming
     # from the com frame to the target rest frame
@@ -200,57 +174,89 @@ def _inelastic_proton(egrid, projectile, Ki, convert_target):
     # scattered projectile particle
     Ki_p = .5*Ki
 
-    # Estimate the kinetic energy of the
-    # scattered target particle
-    Kj_p = gcm*Kt + (gcm - 1.)*md
+    # Initialize a variable to store
+    # the mass difference of the reaction
+    dM = mass[target]
+    
+    Kj_p = []
+    # Estimate the kinetic energies of
+    # the various daughter particles
+    for daughter in daughters:
+        md = mass[daughter]
+        
+        # Estimate the energy and append it
+        Kj_p.append( gcm*Kt + (gcm - 1.)*md )
 
-    # Estimate the kinetic energy of the
-    # produced neutral/charged pion
-    Kpi_p = gcm*Kt + (gcm - 1.)*mpi
-
+        # Update the mass difference
+        dM -= md
+    
     # Ensure energy conservation
-    # TODO
-    if Ki + mp < Ki_p + Kj_p + md + Kpi_p + mpi:
-        pass
+    # TODO: Implement + handle pions
 
-    spectrum.add(projectile, 1, Ki_p)
-    spectrum.add(daughter  , 1, Kj_p)
-    # pions can be ignored
-
+    # Fill the spectrum
+    spectrum.add(projectile, 1., Ki_p)
+    for i, daughter in enumerate(daughters):
+        if not is_pion(daughter): # ignore pions
+            spectrum.add(daughter, 1., Kj_p[i])
+    
     return spectrum
 
+
+# INDIVIDUAL FUNCTIONS ##############################################
 
 # Reaction (i,p,1)
 # p + p_bg -> p + p
 # n + p_bg -> n + p
 def _r1_proton(egrid, projectile, Ki):
-    return _elastic_any(egrid, projectile, Targets.PROTON, Ki)
+    return _elastic(egrid, projectile, Particles.PROTON, Ki)
 
 
 # Reaction (i,p,2)
 # p + p_bg -> p + p + pi0
 # n + p_bg -> n + p + pi0
 def _r2_proton(egrid, projectile, Ki):
-    return _inelastic_proton(egrid, projectile, Ki, convert_target=False)
+    daughters = [Particles.PROTON, Particles.NEUTRAL_PION]
+    # -->
+    return _inelastic(
+        egrid, projectile, Particles.PROTON, Ki, daughters
+    )
 
 
 # Reaction (i,p,3)
 # p + p_bg -> p + n + pi+
 # n + p_bg -> n + n + pi+
 def _r3_proton(egrid, projectile, Ki):
-    return _inelastic_proton(egrid, projectile, Ki, convert_target=True)
+    daughters = [Particles.NEUTRON, Particles.CHARGED_PION]
+    # -->
+    return _inelastic(
+        egrid, projectile, Particles.PROTON, Ki, daughters
+    )
 
 
-# Reaction (i,he4,1)
+# Reaction (i,al,1)
 # p + he4_bg -> p + he4_bg
 # n + he4_bg -> n + he4_bg
 def _r1_alpha(egrid, projectile, Ki):
-    return _elastic_any(egrid, projectile, Targets.ALPHA, Ki)
+    return _elastic(egrid, projectile, Particles.HELIUM4, Ki)
 
 
-# Any reaction of the form
-# p + he4_bg -> p + X
-# n + he4_bg -> p + X
-# with X not including T/He3
-# TODO
-#def _alpha_inelastic(energy_grid, projectile, Ki, daughter_nuclei):
+# TODO 2 - 4
+
+
+# Reaction (i,al,5)
+# p + he4_bg -> p + 2D
+# n + he4_bg -> n + 2D
+def _r5_alpha(egrid, projectile, Ki):
+    daughters = [Particles.DEUTERIUM, Particles.DEUTERIUM]
+    # -->
+    return _inelastic(
+        egrid, projectile, Particles.HELIUM4, Ki, daughters
+    )
+
+
+# TODO: Add to public function
+# if projectile == Projectiles.ANTI_PROTON \
+# or projectile == Projectiles.ANTI_NEUTRON:
+#     raise NotImplementedError(
+#         "Scattering of anti-nucleons is currently not implemented"
+#     )

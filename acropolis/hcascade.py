@@ -7,7 +7,7 @@ from enum import Enum
 
 # params
 from acropolis.params import zeta3, pi2
-from acropolis.params import mp, mn, mD, mT, mHe3, mHe4
+from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 
 
 # K ≘ kinetic energy, E ≘ total energy
@@ -17,48 +17,55 @@ def _nH(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
 
-
 def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 
-class Projectiles(Enum):
-    PROTON       = 0
-    NEUTRON      = 1
-    ANTI_PROTON  = 2
-    ANTI_NEUTRON = 3
+class Particles(Enum):
+    PROTON  =  0
+    NEUTRON =  1
 
-
-class Targets(Enum):
-    PROTON = 0
-    ALPHA  = 1
-
-
-class Nuclei(Enum):
     DEUTERIUM = -4
     TRITIUM   = -3
     HELIUM3   = -2
     HELIUM4   = -1
 
+    CHARGED_PION = -6
+    NEUTRAL_PION = -5
 
-def is_particle(particle):
-    return (particle in Projectiles) or (particle in Targets) or (particle in Nuclei)
+
+def is_nucleon(particle):
+    return (0 <= particle.value <= 1)
+
+
+def is_nucleus(particle):
+    return (-4 <= particle.value <= -1)
+
+
+def is_pion(particle):
+    return (-6 <= particle.value <= -5)
+
+
+def is_valid_projectile(particle):
+    return is_nucleon(particle)
+
+
+def is_valid_target(particle):
+    return (particle.value in [0, -1] )
 
 
 # All masses in MeV
 mass = {
-    Projectiles.PROTON      : mp,
-    Projectiles.NEUTRON     : mn,
-    Projectiles.ANTI_PROTON : mp,
-    Projectiles.ANTI_NEUTRON: mn,
+    Particles.PROTON : mp,
+    Particles.NEUTRON: mn,
 
-    Targets.PROTON: mp,
-    Targets.ALPHA : mHe4,
+    Particles.DEUTERIUM: mD,
+    Particles.TRITIUM  : mT,
+    Particles.HELIUM3  : mHe3,
+    Particles.HELIUM4  : mHe4,
 
-    Nuclei.DEUTERIUM: mD,
-    Nuclei.TRITIUM  : mT,
-    Nuclei.HELIUM3  : mHe3,
-    Nuclei.HELIUM4  : mHe4
+    Particles.NEUTRAL_PION: mpi0,
+    Particles.CHARGED_PION: mpic
 }
 
 
@@ -108,6 +115,10 @@ class EnergyGrid(object):
         return self._sKmin
 
 
+    def upper_edge(self):
+        return self._sKmax
+
+
     def nbins(self):
         return self._sN
 
@@ -142,48 +153,41 @@ class ParticleSpectrum(object):
             self._sEntries[index] = increment
 
 
-    def _add_projectile(self, projectile, increment, K):
-        if projectile not in Projectiles:
-            raise ValueError(
-                "Invalid projectile"
-            )
-
+    def _add_nucleon(self, nucleon, increment, K):
         if K < self._sEnergyGrid.lower_edge():
             return
 
-        index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
+        index = nucleon.value*self._sN + self._sEnergyGrid.index_of(K)
         # -->
         self._increment(index, increment)
 
 
-    def _add_nucleus(self, nucleus, increment):
-        if nucleus not in Nuclei:
-            raise ValueError(
-                "Invalid nucleus"
-            )
-        
-        # TODO Check survival
+    def _add_nucleus(self, nucleus, increment, K):
+        # TODO: Check if the nucleus survives
 
         index = nucleus.value
         # -->
         self._increment(index, increment)
 
 
-    def add(self, particle, increment, Ki):
-        # Projectiles
-        if   particle in Projectiles:
-            self._add_projectile(particle, increment, Ki)
+    def add(self, particle, increment, K):
+        if K > self._sEnergyGrid.upper_edge():
+            raise ValueError(
+                "The given value of K lies ouside the energy grid"
+            )
+
+        # Protons & Neutrons
+        if is_nucleon(particle):
+            self._add_nucleon(particle, increment, K)
         
         # Nuclei
-        elif particle in Nuclei:
-            self._add_nucleus(particle, increment)
+        elif is_nucleus(particle):
+            self._add_nucleus(particle, increment, K)
         
-        # Targets
-        elif particle == Targets.PROTON:
-            self._add_projectile(Projectiles.PROTON, increment, Ki)
-
-        elif particle == Targets.ALPHA:
-            self._add_nucleus(Nuclei.HELIUM4, increment)
+        else:
+            raise ValueError(
+                "The given particles cannot be included in the spectrum"
+            )
 
 
     def non_zero(self):
@@ -209,17 +213,15 @@ class ParticleSpectrum(object):
         for i in range(self._sN):
             str_repr += f"{self._sEnergyGrid[i]:.3e} |"
 
-            for projectile in Projectiles:
-                j = projectile.value
-
+            for j in range(0, 2): # nucleons
                 str_repr += f" {self.at(j*self._sN + i):.3e}"
             
             str_repr += "\n"
         
         str_repr += "----------x\n"
 
-        for nucleus in Nuclei:
-            str_repr += f"{self.at(nucleus.value):.3e} | \n"
+        for k in range(-4, 0): # nuclei
+            str_repr += f"{self.at(k):.3e} | \n"
         
         return str_repr
 
