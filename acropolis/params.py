@@ -71,6 +71,12 @@ gp = 5.586/2
 Kt = 140.
 
 
+# UNIT CONVERSION FACTORS ###########################################
+
+# mb --> 1/MeV^2
+mb_to_iMeV2 = 2.5681899885e-06
+
+
 # MATHEMATICAL CONSTANTS ############################################
 
 # The Riemann-Zeta function at point 3

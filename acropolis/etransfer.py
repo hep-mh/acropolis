@@ -9,10 +9,8 @@ import numpy as np
 from acropolis.hcascade import mass, Projectiles, Targets, ParticleSpectrum
 # params
 from acropolis.params import pi
+from acropolis.params import mb_to_iMeV2
 from acropolis.params import mpi0, mpic, Kt, mp, mn
-
-
-mb_to_iMeV2 = 2.5681899885e-06
 
 
 # HELPER FUNCTIONS ##################################################
@@ -63,11 +61,8 @@ def _Mm(s):
     return D * (s/1e6)**al * cexp(1j*pi*(1.-al)/2.) # unitless
 
 
-# Ki in MeV
-def _Bsl(projectile, target, Ki):
-    # Calculate the com-energy squared
-    s = _K_to_s(projectile, target, Ki) # MeV²
-
+# s in MeV²
+def _Bsl(projectile, target, s):
     if target == Targets.ALPHA:
         # The same expression is used for any type of projectile
         
@@ -124,21 +119,19 @@ def _gcm(projectile, target, Ki):
 def _elastic_any(egrid, projectile, target, Ki):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
-        raise ValueError(
-            "Scattering of anti-protons(neutrons) is currently not supported"
+        raise NotImplementedError(
+            "Scattering of anti-nucleons is currently not implemented"
         )
     
     # Initialize the spectrum
-    spectrum = ParticleSpectrum( egrid )
+    spectrum = ParticleSpectrum(egrid)
     
     mN, mA = mass[projectile], mass[target]
     # Calculate the maximal value of Kj'
     Kj_p_max = 2.*mA*Ki*(Ki + 2.*mN) / ( (mN + mA)**2. + 2.*mA*Ki )
 
-    # Calculate the slope parameter Bsl
-    Bsl = _Bsl(projectile, target, Ki)
-    # DEBUG
-    print(Bsl)
+    # Calculate the slope parameter
+    Bsl = _Bsl(projectile, target, s=_K_to_s(projectile, target, Ki))
 
     # Calculate the prefactor of the distribution
     pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
@@ -174,22 +167,22 @@ def _elastic_any(egrid, projectile, target, Ki):
     return spectrum
 
 
-# Reaction of the forms
+# Reactions of the forms
 # p + p_bg -> p + p/n + pi0/pi+
 # n + p_bg -> n + p/n + pi0/pi+
 #
-# convert_target determines wether
-# the target proton gets converted
+# The flag 'convert_target' determines
+# wether the target proton gets converted
 # into a neutron or not
 def _inelastic_proton(egrid, projectile, Ki, convert_target):
     if projectile == Projectiles.ANTI_PROTON \
     or projectile == Projectiles.ANTI_NEUTRON:
-        raise ValueError(
-            "Scattering of anti-protons(neutrons) is currently not supported"
+        raise NotImplementedError(
+            "Scattering of anti-nucleons is currently not implemented"
         )
     
     # Initialize the spectrum
-    spectrum = ParticleSpectrum( egrid )
+    spectrum = ParticleSpectrum(egrid)
 
     # Specify the target particle
     target = Targets.PROTON

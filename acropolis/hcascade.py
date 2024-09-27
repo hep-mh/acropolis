@@ -145,7 +145,7 @@ class ParticleSpectrum(object):
     def _add_projectile(self, projectile, increment, K):
         if projectile not in Projectiles:
             raise ValueError(
-                "The given projectile must be an existing member of Projectiles"
+                "Invalid projectile"
             )
 
         if K < self._sEnergyGrid.lower_edge():
@@ -159,8 +159,10 @@ class ParticleSpectrum(object):
     def _add_nucleus(self, nucleus, increment):
         if nucleus not in Nuclei:
             raise ValueError(
-                "The given nucleus must be an existing member of Nuclei"
+                "Invalid nucleus"
             )
+        
+        # TODO Check survival
 
         index = nucleus.value
         # -->
