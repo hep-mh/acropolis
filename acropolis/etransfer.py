@@ -7,7 +7,7 @@ import numpy as np
 
 # hcascade
 from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion, convert_nucleon
+from acropolis.hcascade import Particles, is_pion
 from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
@@ -161,16 +161,9 @@ def _elastic(egrid, projectile, Ki, target):
 # p + X(bg) -> p + Y
 # n + X(bg) -> p + Y
 # with X = p, He4 and arbitrary Y
-def _inelastic(egrid, projectile, Ki, target, daughters, convert_projectile):
+def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
-
-    # Determine the type of the projectile after
-    # the inelastic scattering process
-    if convert_projectile:
-        projectile_remnant = convert_nucleon(projectile)
-    else:
-        projectile_remnant = projectile
 
     # Calculate the gamma factor between the
     # com frame and the target rest frame
@@ -182,7 +175,9 @@ def _inelastic(egrid, projectile, Ki, target, daughters, convert_projectile):
 
     # Initialize a variable to store
     # the mass difference of the reaction
-    dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
+    dM = mass[target]
+    if not keep_projectile:
+        dM += mass[projectile]
     
     Kj_p_L = []
     # Loop over the various daughter particles
@@ -202,7 +197,9 @@ def _inelastic(egrid, projectile, Ki, target, daughters, convert_projectile):
     # TODO: Implement (careful with pions)
 
     # Fill the spectrum
-    spectrum.add(projectile_remnant, 1., Ki_p)
+    if keep_projectile:
+        spectrum.add(projectile, 1., Ki_p)
+    
     for i, daughter in enumerate(daughters):
         if not is_pion(daughter): # ignore pions
             spectrum.add(daughter, 1., Kj_p_L[i])
@@ -229,7 +226,7 @@ def _r2_proton(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.PROTON,
-        convert_projectile=False,
+        keep_projectile=True,
         daughters=[
             Particles.PROTON,
             Particles.NEUTRAL_PION
@@ -244,7 +241,7 @@ def _r3_proton(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.PROTON,
-        convert_projectile=False,
+        keep_projectile=True,
         daughters=[
             Particles.NEUTRON,
             Particles.CHARGED_PION
@@ -269,7 +266,7 @@ def _r5_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        convert_projectile=False,
+        keep_projectile=True,
         daughters=[
             Particles.DEUTERIUM,
             Particles.DEUTERIUM

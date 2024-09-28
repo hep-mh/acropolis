@@ -33,6 +33,8 @@ class Particles(Enum):
     CHARGED_PION = -6
     NEUTRAL_PION = -5
 
+    NULL = None
+
 
 def is_nucleon(particle):
     if particle not in Particles:
@@ -66,16 +68,6 @@ def is_valid_target(particle):
     return (particle.value in [0, -1] )
 
 
-def convert_nucleon(nucleon):
-    if nucleon == Particles.PROTON:
-        return Particles.NEUTRON
-    
-    if nucleon == Particles.NEUTRON:
-        return Particles.PROTON
-    
-    return None
-
-
 # All masses in MeV
 mass = {
     Particles.PROTON : mp,
@@ -87,7 +79,9 @@ mass = {
     Particles.HELIUM4  : mHe4,
 
     Particles.NEUTRAL_PION: mpi0,
-    Particles.CHARGED_PION: mpic
+    Particles.CHARGED_PION: mpic,
+
+    Particles.NULL: 0.
 }
 
 
