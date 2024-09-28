@@ -171,7 +171,7 @@ def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
 
     # Estimate the kinetic energy of the
     # scattered projectile particle
-    Ki_p = .5*Ki
+    Ki_p = .5*Ki if keep_projectile else 0.
 
     # Initialize a variable to store
     # the mass difference of the reaction
@@ -259,6 +259,51 @@ def _r1_alpha(egrid, projectile, Ki):
     )
 
 
+# Reaction (i,al,2)
+# p + He4(bg) -> D + He3
+# n + He4(bg) -> D + T
+def _r2_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=False,
+        daughters=[
+            Particles.DEUTERIUM,
+            Particles.HELIUM3 if projectile == Particles.PROTON else Particles.TRITIUM
+        ]
+    )
+
+
+# Reaction (i,al,3)
+# p + He4(bg) -> p + n + He3
+# n + He4(bg) -> n + n + He3
+def _r3_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=True,
+        daughters=[
+            Particles.NEUTRON,
+            Particles.HELIUM3
+        ]
+    )
+
+
+# Reaction (i,al,4)
+# p + He4(bg) -> p + p + T
+# n + He4(bg) -> n + p + T
+def _r4_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=True,
+        daughters=[
+            Particles.PROTON,
+            Particles.TRITIUM
+        ]
+    )
+
+
 # Reaction (i,al,5)
 # p + He4(bg) -> p + 2D
 # n + He4(bg) -> n + 2D
@@ -270,5 +315,53 @@ def _r5_alpha(egrid, projectile, Ki):
         daughters=[
             Particles.DEUTERIUM,
             Particles.DEUTERIUM
+        ]
+    )
+
+
+# Reaction (i,al,6)
+# p + He4(bg) -> p + p + n + D
+# n + He4(bg) -> n + p + n + D
+def _r6_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=True,
+        daughters=[
+            Particles.PROTON,
+            Particles.NEUTRON,
+            Particles.DEUTERIUM
+        ]
+    )
+
+
+# Reaction (i,al,7)
+# p + He4(bg) -> p + 2p + 2n
+# n + He4(bg) -> n + 2p + 2n
+def _r7_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=True,
+        daughters=[
+            Particles.PROTON,
+            Particles.PROTON,
+            Particles.NEUTRON,
+            Particles.NEUTRON
+        ]
+    )
+
+
+# Reaction (i,al,8)
+# p + He4(bg) -> p + He4 + pi0
+# n + He4(bg) -> n + He4 + pi0
+def _r8_alpha(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.HELIUM4,
+        keep_projectile=True,
+        daughters=[
+            Particles.HELIUM4,
+            Particles.NEUTRAL_PION
         ]
     )
