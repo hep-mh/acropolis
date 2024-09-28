@@ -12,7 +12,7 @@ from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import Kt
+from acropolis.params import Kt, mp, mn
 
 
 # HELPER FUNCTIONS ##################################################
@@ -110,10 +110,29 @@ def _gcm(projectile, target, K):
 def _vcm(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
-    return sqrt( Ki**2. + 2*mN*Ki )/( Ki + mN + mA )
+    return sqrt( K**2. + 2*mN*K )/( K + mN + mA )
 
 
 # GENERIC FUNCTIONS #################################################
+
+# Reactions of the form
+# p -> p
+# n -> p + [...]
+def _decay(egrid, projectile, Ki):
+    # Initialize the spectrum
+    spectrum = ParticleSpectrum(egrid)
+
+    # Filly the spectrum
+    if   projectile == Particles.PROTON:
+        Ki_p = Ki
+    elif projectile == Particles.NEUTRON:
+        Ki_p = Ki + mn - mp
+
+    # Fill the spectrum
+    spectrum.add(Particles.PROTON, 1., Ki_p)
+
+    return spectrum
+
 
 # Reactions of the form
 # p + X(bg) -> p + X
@@ -223,6 +242,12 @@ def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
 
 
 # INDIVIDUAL FUNCTIONS ##############################################
+
+# Reaction
+# n -> p + [...]
+def _r0_null(egrid, projectile, Ki):
+    return _decay(egrid, projectile, Ki)
+
 
 # Reaction (i,p,1)
 # p + p(bg) -> p + p
@@ -386,6 +411,9 @@ def _r8_alpha(egrid, projectile, Ki):
 
 def get_fs_spectrum(egrid, projectile, Ki, rid):
     params = (egrid, projectile, Ki)
+
+    if rid == 0:
+        return _r0_null(*params)
 
     if rid == 1:
         return _r1_proton(*params)
