@@ -84,6 +84,21 @@ mass = {
     Particles.NULL: 0.
 }
 
+charge = {
+    Particles.PROTON : 1,
+    Particles.NEUTRON: 0,
+
+    Particles.DEUTERIUM: 1,
+    Particles.TRITIUM  : 1,
+    Particles.HELIUM3  : 2,
+    Particles.HELIUM4  : 2,
+
+    Particles.NEUTRAL_PION: 0,
+    Particles.CHARGED_PION: 1,
+
+    Particles.NULL: 0
+}
+
 
 class EnergyGrid(object):
 
