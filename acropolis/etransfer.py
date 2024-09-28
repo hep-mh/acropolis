@@ -7,7 +7,7 @@ import numpy as np
 
 # hcascade
 from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion
+from acropolis.hcascade import Particles, is_pion, is_spectator
 from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
@@ -106,6 +106,13 @@ def _gcm(projectile, target, K):
     return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
 
+# K in MeV
+def _vcm(projectile, target, K):
+    mN, mA = mass[projectile], mass[target]
+
+    return sqrt( Ki**2. + 2*mN*Ki )/( Ki + mN + mA )
+
+
 # GENERIC FUNCTIONS #################################################
 
 # Reactions of the form
@@ -179,22 +186,30 @@ def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
     if not keep_projectile:
         dM += mass[projectile]
     
-    Kj_p_L = []
+    Kj_p_L, fixed = [], []
     # Loop over the various daughter particles
     for daughter in daughters:
         md = mass[daughter]
         
         # Estimate the kinetic energy of the daughter particle
-        if daughter not in [Particles.TRITIUM, Particles.HELIUM3]:
-            Kj_p_L.append( gcm*Kt + (gcm - 1.)*md ) 
-        else: # T and He3 act as spectator particles
+        if not is_spectator(daughter):
+            Kj_p_L.append( gcm*Kt + (gcm - 1.)*md )
+
+            # -->
+            fixed.append( False ) # estimate
+        else:
             Kj_p_L.append( 5.789 ) # MeV
+
+            # -->
+            fixed.append( True ) # from distribution
 
         # Update the mass difference
         dM -= md
     
     # Ensure energy conservation
     # TODO: Implement (careful with pions)
+    if Ki + dM > Ki_p + sum(Kj_p_L):
+        pass
 
     # Fill the spectrum
     if keep_projectile:

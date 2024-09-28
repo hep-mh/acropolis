@@ -57,6 +57,14 @@ def is_pion(particle):
     return (-6 <= particle.value <= -5)
 
 
+def is_spectator(particle):
+    if particle not in Particles:
+        return False
+    
+    # T and He3 act as spectator particles
+    return (-3 <= particle.value <= -2)
+
+
 def is_valid_projectile(particle):
     return is_nucleon(particle)
 
