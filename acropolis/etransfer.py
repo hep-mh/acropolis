@@ -380,3 +380,45 @@ def _r8_alpha(egrid, projectile, Ki):
             Particles.NEUTRAL_PION
         ]
     )
+
+
+# MAIN FUNCTIONS ####################################################
+
+def get_fs_spectrum(egrid, projectile, Ki, rid):
+    params = (egrid, projectile, Ki)
+
+    if rid == 1:
+        return _r1_proton(*params)
+
+    if rid == 2:
+        return _r2_proton(*params)
+    
+    if rid == 3:
+        return _r3_proton(*params)
+    
+    if rid == 4:
+        return _r1_alpha(*params)
+    
+    if rid == 5:
+        return _r2_alpha(*params)
+    
+    if rid == 6:
+        return _r3_alpha(*params)
+    
+    if rid == 7:
+        return _r4_alpha(*params)
+    
+    if rid == 8:
+        return _r5_alpha(*params)
+    
+    if rid == 9:
+        return _r6_alpha(*params)
+    
+    if rid == 10:
+        return _r7_alpha(*params)
+    
+    if rid == 11:
+        return _r8_alpha(*params)
+    
+    # Invalid reaction id
+    return None
