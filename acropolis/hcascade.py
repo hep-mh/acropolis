@@ -11,6 +11,7 @@ from acropolis.input import locate_data_file
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
+from acropolis.params import approx_zero
 
 
 # K ≘ kinetic energy, E ≘ total energy
@@ -36,6 +37,7 @@ _reaction_ids = [
     "pHe3_tot",
     "pD_tot"
 ]
+#     "pHe4_tot",
 #     "pHe4_DHe3",
 #     "pHe4_pnHe3",
 #     "pHe4_2pT",
@@ -43,13 +45,9 @@ _reaction_ids = [
 #     "pHe4_2pnD",
 #     "pHe4_3p2n",
 #     "pHe4_pHe4pi",
-#     "pHe4_tot",
-#     "pHe3_tot",
-#     "pD_tot"
-# ]
 
 
-def _load_reaction_data(id_str):
+def _load_log_reaction_data(id_str):
     filename = f"cross_sections/{id_str}.dat"
 
     reaction_data = np.loadtxt(f"{locate_data_file(filename)}")
@@ -60,7 +58,7 @@ def _load_reaction_data(id_str):
 
 
 _log_reaction_data = {
-    id_str: _load_reaction_data(id_str) for id_str in _reaction_ids
+    id_str: _load_log_reaction_data(id_str) for id_str in _reaction_ids
 }
 
 
@@ -70,10 +68,7 @@ def _interp_reaction_data(id_str, K):
     log_reaction_data = _log_reaction_data[id_str]
 
     if logK < log_reaction_data[0,0]:
-        return 0.
-    
-    # if logK > log_reaction_data[-1,0]:
-    #     return exp(log_reaction_data[-1,0])
+        return approx_zero
 
     return exp(
         np.interp( logK, log_reaction_data[:,0], log_reaction_data[:,1] )
