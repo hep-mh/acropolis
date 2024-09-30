@@ -76,6 +76,17 @@ def is_valid_target(particle):
     return (particle.value in [0, -1] )
 
 
+def convert_nucleon(particles):
+    if not is_nucleon(particle):
+        return particles
+    
+    if particle == Particles.PROTON:
+        return Particles.NEUTRON
+    
+    if particle == Particles.NEUTRON:
+        return Particles.PROTON
+
+
 # All masses in MeV
 mass = {
     Particles.PROTON : mp,

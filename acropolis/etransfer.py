@@ -4,6 +4,8 @@ from math import log, exp, sqrt
 from cmath import exp as cexp
 # numpy
 import numpy as np
+#enum
+from enum import Enum
 
 # hcascade
 from acropolis.hcascade import mass
@@ -13,6 +15,12 @@ from acropolis.hcascade import ParticleSpectrum
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
 from acropolis.params import Kt, mp, mn
+
+
+class _Actions(Enum):
+    KEEP    = 0
+    DESTROY = 1
+    CONVERT = 2
 
 
 # HELPER FUNCTIONS ##################################################
