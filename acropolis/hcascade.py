@@ -1,12 +1,15 @@
 # math
-from math import log10, sqrt
+from math import log10, sqrt, log, exp
 # numpy
 import numpy as np
 # enum
 from enum import Enum
 
+# input
+from acropolis.input import locate_data_file
 # params
 from acropolis.params import zeta3, pi2
+from acropolis.params import mb_to_iMeV2
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 
 
@@ -19,6 +22,63 @@ def _nH(T, Y, eta):
 
 def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
+
+
+#####################################################################
+
+_reaction_ids = [
+    "pp_pp",
+    "np_np",
+    "pp_inelastic",
+    "np_inelastic",
+    "pp_tot",
+    "np_tot"
+]
+#     "pHe4_DHe3",
+#     "pHe4_pnHe3",
+#     "pHe4_2pT",
+#     "pHe4_p2D",
+#     "pHe4_2pnD",
+#     "pHe4_3p2n",
+#     "pHe4_pHe4pi",
+#     "pHe4_tot",
+#     "pHe3_tot",
+#     "pD_tot"
+# ]
+
+
+def _load_reaction_data(id_str):
+    filename = f"cross_sections/{id_str}.dat"
+
+    reaction_data = np.loadtxt(f"{locate_data_file(filename)}")
+    # -->
+    reaction_data[:,1] *= mb_to_iMeV2
+
+    return np.log(reaction_data)
+
+
+_log_reaction_data = {
+    id_str: _load_reaction_data(id_str) for id_str in _reaction_ids
+}
+
+
+def _interp_reaction_data(id_str, K):
+    logK = log(K)
+
+    log_reaction_data = _log_reaction_data[id_str]
+
+    if logK < log_reaction_data[0,0]:
+        return 0.
+    
+    # if logK > log_reaction_data[-1,0]:
+    #     return exp(log_reaction_data[-1,0])
+
+    return exp(
+        np.interp( logK, log_reaction_data[:,0], log_reaction_data[:,1] )
+    )
+ 
+
+#####################################################################
 
 
 class Particles(Enum):
@@ -117,6 +177,9 @@ charge = {
 
     Particles.NULL: 0
 }
+
+
+#####################################################################
 
 
 class EnergyGrid(object):
