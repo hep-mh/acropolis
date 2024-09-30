@@ -7,9 +7,11 @@ import numpy as np
 #enum
 from enum import Enum
 
+# pprint
+from acropolis.pprint import print_error
 # hcascade
 from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion, is_spectator
+from acropolis.hcascade import Particles, is_pion, is_spectator, convert_nucleon
 from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
@@ -195,7 +197,7 @@ def _elastic(egrid, projectile, Ki, target):
 # p + X(bg) -> p + Y
 # n + X(bg) -> p + Y
 # with X = p, He4 and arbitrary Y
-def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
+def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
@@ -205,13 +207,19 @@ def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
 
     # Estimate the kinetic energy of the
     # scattered projectile particle
-    Ki_p = .5*Ki if keep_projectile else 0.
+    Ki_p = .5*Ki if projectile_action != _Actions.DESTROY else 0.
+
+    # Extract the type of the projectile
+    # after the scattering, i.e. its remnant
+    projectile_remnant = {
+        _Actions.KEEP   : projectile,
+        _Actions.DESTROY: Particles.NULL,
+        _Actions.CONVERT: convert_nucleon(projectile)
+    }[projectile_action]
 
     # Initialize a variable to store
     # the mass difference of the reaction
-    dM = mass[target]
-    if not keep_projectile:
-        dM += mass[projectile]
+    dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
     
     Kj_p_L, fixed = [], []
     # Loop over the various daughter particles
@@ -239,8 +247,8 @@ def _inelastic(egrid, projectile, Ki, target, daughters, keep_projectile):
         pass
 
     # Fill the spectrum
-    if keep_projectile:
-        spectrum.add(projectile, 1., Ki_p)
+    if projectile_action != _Actions.DESTROY:
+        spectrum.add(projectile_remnant, 1., Ki_p)
     
     for i, daughter in enumerate(daughters):
         if not is_pion(daughter): # ignore pions
@@ -258,8 +266,8 @@ def _r0_null(egrid, projectile, Ki):
 
 
 # Reaction (i,p,1)
-# p + p(bg) -> p + p
-# n + p(bg) -> n + p
+# p + p(bg) -> p + [p]
+# n + p(bg) -> n + [p]
 def _r1_proton(egrid, projectile, Ki):
     return _elastic(
         egrid, projectile, Ki,
@@ -268,13 +276,13 @@ def _r1_proton(egrid, projectile, Ki):
 
 
 # Reaction (i,p,2)
-# p + p(bg) -> p + p + pi0
-# n + p(bg) -> n + p + pi0
+# p + p(bg) -> p + [p + pi0]
+# n + p(bg) -> n + [p + pi0]
 def _r2_proton(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.PROTON,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.PROTON,
             Particles.NEUTRAL_PION
@@ -283,13 +291,13 @@ def _r2_proton(egrid, projectile, Ki):
 
 
 # Reaction (i,p,3)
-# p + p(bg) -> p + n + pi+
-# n + p(bg) -> n + n + pi+
+# p + p(bg) -> p + [n + pi+]
+# n + p(bg) -> n + [n + pi+]
 def _r3_proton(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.PROTON,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.NEUTRON,
             Particles.CHARGED_PION
@@ -297,9 +305,42 @@ def _r3_proton(egrid, projectile, Ki):
     )
 
 
+# Reaction (i,p,4)
+# p + p(bg) -> n* + [n + 2pi+]
+# n + p(bg) -> p* + [n + 2pi0]
+def _r4_proton(egrid, projectile, Ki):
+    Particles_PION = Particles.CHARGED_PION if projectile == Particles.PROTON else Particles.NEUTRAL_PION
+
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.PROTON,
+        projectile_action=_Actions.CONVERT,
+        daughters=[
+            Particles.NEUTRON,
+            Particles_PION,
+            Particles_PION
+        ]
+    )
+
+
+# Reaction (i,p,5)
+# p + p(bg) -> n* + [p + pi+]
+# n + p(bg) -> p* + [p + pi-]
+def _r5_proton(egrid, projectile, Ki):
+    return _inelastic(
+        egrid, projectile, Ki,
+        target=Particles.PROTON,
+        projectile_action=_Actions.CONVERT,
+        daughters=[
+            Particles.PROTON,
+            Particles.CHARGED_PION
+        ]
+    )
+
+
 # Reaction (i,al,1)
-# p + He4(bg) -> p + He4
-# n + He4(bg) -> n + He4
+# p + He4(bg) -> p + [He4]
+# n + He4(bg) -> n + [He4]
 def _r1_alpha(egrid, projectile, Ki):
     return _elastic(
         egrid, projectile, Ki,
@@ -308,28 +349,30 @@ def _r1_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,2)
-# p + He4(bg) -> D + He3
-# n + He4(bg) -> D + T
+# p + He4(bg) -> _ + [D + He3]
+# n + He4(bg) -> _ + [D + T]
 def _r2_alpha(egrid, projectile, Ki):
+    Particles_A3 = Particles.HELIUM3 if projectile == Particles.PROTON else Particles.TRITIUM
+
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=False,
+        projectile_action=_Actions.DESTROY,
         daughters=[
             Particles.DEUTERIUM,
-            Particles.HELIUM3 if projectile == Particles.PROTON else Particles.TRITIUM
+            Particles_A3
         ]
     )
 
 
 # Reaction (i,al,3)
-# p + He4(bg) -> p + n + He3
-# n + He4(bg) -> n + n + He3
+# p + He4(bg) -> p + [n + He3]
+# n + He4(bg) -> n + [n + He3]
 def _r3_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.NEUTRON,
             Particles.HELIUM3
@@ -338,13 +381,13 @@ def _r3_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,4)
-# p + He4(bg) -> p + p + T
-# n + He4(bg) -> n + p + T
+# p + He4(bg) -> p + [p + T]
+# n + He4(bg) -> n + [p + T]
 def _r4_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.PROTON,
             Particles.TRITIUM
@@ -353,13 +396,13 @@ def _r4_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,5)
-# p + He4(bg) -> p + 2D
-# n + He4(bg) -> n + 2D
+# p + He4(bg) -> p + [2D]
+# n + He4(bg) -> n + [2D]
 def _r5_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.DEUTERIUM,
             Particles.DEUTERIUM
@@ -368,13 +411,13 @@ def _r5_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,6)
-# p + He4(bg) -> p + p + n + D
-# n + He4(bg) -> n + p + n + D
+# p + He4(bg) -> p + [p + n + D]
+# n + He4(bg) -> n + [p + n + D]
 def _r6_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.PROTON,
             Particles.NEUTRON,
@@ -384,13 +427,13 @@ def _r6_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,7)
-# p + He4(bg) -> p + 2p + 2n
-# n + He4(bg) -> n + 2p + 2n
+# p + He4(bg) -> p + [2p + 2n]
+# n + He4(bg) -> n + [2p + 2n]
 def _r7_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.PROTON,
             Particles.PROTON,
@@ -401,13 +444,13 @@ def _r7_alpha(egrid, projectile, Ki):
 
 
 # Reaction (i,al,8)
-# p + He4(bg) -> p + He4 + pi0
-# n + He4(bg) -> n + He4 + pi0
+# p + He4(bg) -> p + [He4 + pi0]
+# n + He4(bg) -> n + [He4 + pi0]
 def _r8_alpha(egrid, projectile, Ki):
     return _inelastic(
         egrid, projectile, Ki,
         target=Particles.HELIUM4,
-        keep_projectile=True,
+        projectile_action=_Actions.KEEP,
         daughters=[
             Particles.HELIUM4,
             Particles.NEUTRAL_PION
@@ -420,7 +463,7 @@ def _r8_alpha(egrid, projectile, Ki):
 def get_fs_spectrum(egrid, projectile, Ki, rid):
     params = (egrid, projectile, Ki)
 
-    if rid == 0:
+    if rid == 0 or rid == 14:
         return _r0_null(*params)
 
     if rid == 1:
@@ -433,28 +476,37 @@ def get_fs_spectrum(egrid, projectile, Ki, rid):
         return _r3_proton(*params)
     
     if rid == 4:
-        return _r1_alpha(*params)
+        return _r4_proton(*params)
     
     if rid == 5:
-        return _r2_alpha(*params)
+        return _r5_proton(*params)
     
     if rid == 6:
-        return _r3_alpha(*params)
+        return _r1_alpha(*params)
     
     if rid == 7:
-        return _r4_alpha(*params)
+        return _r2_alpha(*params)
     
     if rid == 8:
-        return _r5_alpha(*params)
+        return _r3_alpha(*params)
     
     if rid == 9:
-        return _r6_alpha(*params)
+        return _r4_alpha(*params)
     
     if rid == 10:
-        return _r7_alpha(*params)
+        return _r5_alpha(*params)
     
     if rid == 11:
+        return _r6_alpha(*params)
+    
+    if rid == 12:
+        return _r7_alpha(*params)
+    
+    if rid == 13:
         return _r8_alpha(*params)
     
     # Invalid reaction id
-    return None
+    print_error(
+        "Reaction with rid " + str(rid) + " does not exist.",
+        "acropolis.etransfer.get_fs_spectrum"
+    )

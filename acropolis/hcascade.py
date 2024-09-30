@@ -76,9 +76,9 @@ def is_valid_target(particle):
     return (particle.value in [0, -1] )
 
 
-def convert_nucleon(particles):
+def convert_nucleon(particle):
     if not is_nucleon(particle):
-        return particles
+        return particle
     
     if particle == Particles.PROTON:
         return Particles.NEUTRON
@@ -112,8 +112,8 @@ charge = {
     Particles.HELIUM3  : 2,
     Particles.HELIUM4  : 2,
 
-    Particles.NEUTRAL_PION: 0,
-    Particles.CHARGED_PION: 1,
+    #Particles.NEUTRAL_PION: 0,
+    #Particles.CHARGED_PION: 1,
 
     Particles.NULL: 0
 }
