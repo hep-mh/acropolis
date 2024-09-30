@@ -35,9 +35,10 @@ _reaction_ids = [
     "pp_tot",
     "np_tot",
     "pHe3_tot",
-    "pD_tot"
+    "pD_tot",
+    "pHe4_pHe4",
+    "pHe4_tot"
 ]
-#     "pHe4_tot",
 #     "pHe4_DHe3",
 #     "pHe4_pnHe3",
 #     "pHe4_2pT",
