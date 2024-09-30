@@ -29,10 +29,12 @@ def _nHe4(T, Y, eta):
 _reaction_ids = [
     "pp_pp",
     "np_np",
-    "pp_inelastic",
-    "np_inelastic",
+    "pp_inel",
+    "np_inel",
     "pp_tot",
-    "np_tot"
+    "np_tot",
+    "pHe3_tot",
+    "pD_tot"
 ]
 #     "pHe4_DHe3",
 #     "pHe4_pnHe3",
