@@ -76,8 +76,6 @@ def _Mm(s):
 # s in MeV²
 def _Bsl(target, s):
     if target == Particles.HELIUM4:
-        # The same expression is used for any type of projectile
-        
         return 28 * 1e-6 # 1/MeV²
         #         | 1/GeV² --> 1/MeV²
     
@@ -128,11 +126,12 @@ def _vcm(projectile, target, K):
 # Reactions of the form
 # p -> p
 # n -> p + [...]
+# TODO: Implement energy distribution
 def _decay(egrid, projectile, Ki):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Filly the spectrum
+    # Fill the spectrum
     if   projectile == Particles.PROTON:
         Ki_p = Ki
     elif projectile == Particles.NEUTRON:
