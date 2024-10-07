@@ -41,11 +41,11 @@ _reaction_ids = [
     "pHe4_2pnD",
     "pHe4_2pT",
     "pHe4_pnHe3",
-    "pHe4_p2D"
+    "pHe4_p2D",
+    "pHe4_DHe3",
+    "pHe4_3p2n",
+    "pHe4_pHe4pi"
 ]
-#     "pHe4_DHe3",
-#     "pHe4_3p2n",
-#     "pHe4_pHe4pi",
 
 
 def _load_log_reaction_data(id_str):
