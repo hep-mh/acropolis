@@ -259,7 +259,7 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
 # INDIVIDUAL FUNCTIONS ##############################################
 
 # Reaction
-# n -> p + [...]
+# n -> p* + [...]
 def _r0_null(egrid, projectile, Ki):
     return _decay(egrid, projectile, Ki)
 
@@ -462,50 +462,77 @@ def _r8_alpha(egrid, projectile, Ki):
 def get_fs_spectrum(egrid, projectile, Ki, rid):
     params = (egrid, projectile, Ki)
 
-    if rid == 0 or rid == 14:
+    if rid == 0:
+        # n -> p* + [...]
         return _r0_null(*params)
 
-    if rid == 1:
+    if rid == 1: # {pp_pp, np_np}
+        # p + p(bg) -> p + [p]
+        # n + p(bg) -> n + [p]
         return _r1_proton(*params)
 
-    if rid == 2:
+    if rid == 2: # {pp_inel, np_inel}
+        # p + p(bg) -> p + [p + pi0]
+        # n + p(bg) -> n + [p + pi0]
         return _r2_proton(*params)
     
-    if rid == 3:
+    if rid == 3: # {pp_inel, np_inel}
+        # p + p(bg) -> p + [n + pi+]
+        # n + p(bg) -> n + [n + pi+]
         return _r3_proton(*params)
     
-    if rid == 4:
+    if rid == 4: # {pp_inel, np_inel}
+        # p + p(bg) -> n* + [n + 2pi+]
+        # n + p(bg) -> p* + [n + 2pi0]
         return _r4_proton(*params)
     
-    if rid == 5:
+    if rid == 5: # {pp_inel, np_inel}
+        # p + p(bg) -> n* + [p + pi+]
+        # n + p(bg) -> p* + [p + pi-]
         return _r5_proton(*params)
     
-    if rid == 6:
+    if rid == 6: # {pHe4_pHe4}
+        # p + He4(bg) -> p + [He4]
+        # n + He4(bg) -> n + [He4]
         return _r1_alpha(*params)
     
-    if rid == 7:
+    if rid == 7: # {pHe4_DHe3}
+        # p + He4(bg) -> _ + [D + He3]
+        # n + He4(bg) -> _ + [D + T]
         return _r2_alpha(*params)
     
-    if rid == 8:
+    if rid == 8: # {pHe4_pnHe3}
+        # p + He4(bg) -> p + [n + He3]
+        # n + He4(bg) -> n + [n + He3]
         return _r3_alpha(*params)
     
-    if rid == 9:
+    if rid == 9: # {pHe4_2pT}
+        # p + He4(bg) -> p + [p + T]
+        # n + He4(bg) -> n + [p + T]
         return _r4_alpha(*params)
     
-    if rid == 10:
+    if rid == 10: # {pHe4_p2D}
+        # p + He4(bg) -> p + [2D]
+        # n + He4(bg) -> n + [2D]
         return _r5_alpha(*params)
     
-    if rid == 11:
+    if rid == 11: # {pHe4_2pnD}
+        # p + He4(bg) -> p + [p + n + D]
+        # n + He4(bg) -> n + [p + n + D]
         return _r6_alpha(*params)
     
-    if rid == 12:
+    if rid == 12: # {pHe4_3p2n}
+        # p + He4(bg) -> p + [2p + 2n]
+        # n + He4(bg) -> n + [2p + 2n]
         return _r7_alpha(*params)
     
-    if rid == 13:
+    if rid == 13: # {pHe4_pHe4pi}
+        # p + He4(bg) -> p + [He4 + pi0]
+        # n + He4(bg) -> n + [He4 + pi0]
         return _r8_alpha(*params)
     
     # Invalid reaction id
     print_error(
-        "Reaction with rid " + str(rid) + " does not exist.",
+        "Reaction with rid = " + str(rid) + " does not exist.",
         "acropolis.etransfer.get_fs_spectrum"
     )
