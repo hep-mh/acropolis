@@ -193,8 +193,8 @@ def _elastic(egrid, projectile, Ki, target):
 
 
 # Reactions of the form
-# p + X(bg) -> p + Y
-# n + X(bg) -> p + Y
+# p + X(bg) -> Y
+# n + X(bg) -> Y
 # with X = p, He4 and arbitrary Y
 def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Initialize the spectrum
