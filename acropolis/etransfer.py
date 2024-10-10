@@ -220,64 +220,51 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Calculate the gamma factor for boosting
-    # between the COM frame and the target
-    # rest frame...
+    # Calculate the COM energy
+    Ecm = _Ecm(projectile, target, Ki)
+
+    # Calculate relevant boost properties
     gcm = _gcm(projectile, target, Ki)
-    # ...as well as the corresponding velocity
     vcm = _vcm(projectile, target, Ki)
 
-    # Determine the remnant of the scattered
-    # projectile particle
+    # Determine the projectile remnant
     projectile_remnant = {
         _Actions.KEEP   : projectile,
         _Actions.DESTROY: Particles.NULL,
         _Actions.CONVERT: convert_nucleon(projectile)
     }[projectile_action]
 
-    Ecm_d, Ki_p = _Ecm(projectile, target, Ki), 0.
-    # If the projectile is not destroyed, estimate
-    # the energy of the remnant after the scattering
-    if projectile_action != _Actions.DESTROY:
+    Ecm_d, Ki_p = Ecm, 0.
+    # Estimate the energy of the remnant (if not NULL)
+    if projectile_remnant != Particles.NULL:
         # Calculate the kinetic energy of the
-        # projectile particle in the COM frame...
-        Ki_cm = _boost(projectile, Ki, gcm, -vcm)
-        # ... and estimate the remaining energy
-        # post-scattering (alpha ~ 0.5)
+        # projectile in the COM frame
+        Ki_cm = _boost(projectile, Ki, gcm, vcm)
+
+        # Estimate the kinetic energy of the
+        # remnant in the COM frame
         Ki_p_cm = .5*Ki_cm
 
-        # Substract the remaining energy from the 
-        # total COM energy to calculate the amount
-        # that is left for the daughter particles
-        Ecm_d -= _E(projectile_remnant, Ki_cm)
+        # Update the energy that is available
+        # for the daughter particles
+        Ecm_d -= _E(projectile_remnant, Ki_p_cm)
 
-        # Boost the kinetic energy of the remnant
-        # into the rest frame of the target particle
-        Ki_p = _boost(projectile_remnant, Ki_p_cm, gcm, vcm)
+        # Calculate the kinetic energy of the
+        # remnant in the target rest frame
+        Ki_p = _boost(projectile_remnant, Ki_p_cm, gcm, -vcm)
 
-        # DEBUG
-        #print(Ki_p, 0.5*Ki)
-
-    # Initialize a variable to store
-    # the mass difference of the reaction
+    # Initialize the mass difference of the reaction
     dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
     
-    Kj_p_L, fixed = [], []
+    Kj_p_L = []
     # Loop over the various daughter particles
     for daughter in daughters:
         md = mass[daughter]
         
         # Estimate the kinetic energy of the daughter particle
-        if not is_spectator(daughter):
-            Kj_p_L.append( gcm*Kt + (gcm - 1.)*md )
-
-            # -->
-            fixed.append( False ) # estimate
-        else:
-            Kj_p_L.append( 5.789 ) # MeV
-
-            # -->
-            fixed.append( True ) # from distribution
+        Kj_p_L.append(
+            gcm * ( Kt + md ) - md if not is_spectator(daughter) else 5.789
+        )
 
         # Update the mass difference
         dM -= md
@@ -288,7 +275,7 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
         pass
 
     # Fill the spectrum
-    if projectile_action != _Actions.DESTROY:
+    if projectile_remnant != Particles.NULL:
         spectrum.add(projectile_remnant, 1., Ki_p)
     
     for i, daughter in enumerate(daughters):
