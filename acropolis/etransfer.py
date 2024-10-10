@@ -39,6 +39,19 @@ def _K_to_E(particle, K):
     return K + mass[particle]
 
 
+# K in MeV
+def _K_to_p(particle, K):
+    return sqrt( K**2. + 2.*K*mass[particle] )
+
+
+# K in MeV
+def _boost(particle, K, gcm, vcm):
+    E = _K_to_E(particle, K)
+    p = _K_to_p(particle, K)
+
+    return gcm * ( E - vcm*p ) - mass[particle]
+
+
 # s in MeV²
 def _bp(s):
     C = 10.94 * 1e-6 # 1/MeV²
@@ -105,6 +118,13 @@ def _Bsl(target, s):
 
     # Invalid target
     return np.nan
+
+
+# K in MeV
+def _Ecm(projectile, target, K):
+    mN, mA = mass[projectile], mass[target]
+
+    return sqrt( (mN + mA)**2. + 2.*mA*K )
 
 
 # K in MeV
@@ -200,21 +220,43 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Calculate the gamma factor between the
-    # com frame and the target rest frame
+    # Calculate the gamma factor for boosting
+    # between the COM frame and the target
+    # rest frame...
     gcm = _gcm(projectile, target, Ki)
+    # ...as well as the corresponding velocity
+    vcm = _vcm(projectile, target, Ki)
 
-    # Estimate the kinetic energy of the
-    # scattered projectile particle
-    Ki_p = .5*Ki if projectile_action != _Actions.DESTROY else 0.
-
-    # Extract the type of the projectile
-    # after the scattering, i.e. its remnant
+    # Determine the remnant of the scattered
+    # projectile particle
     projectile_remnant = {
         _Actions.KEEP   : projectile,
         _Actions.DESTROY: Particles.NULL,
         _Actions.CONVERT: convert_nucleon(projectile)
     }[projectile_action]
+
+    Ecm_d, Ki_p = _Ecm(projectile, target, Ki), 0.
+    # If the projectile is not destroyed, estimate
+    # the energy of the remnant after the scattering
+    if projectile_action != _Actions.DESTROY:
+        # Calculate the kinetic energy of the
+        # projectile particle in the COM frame...
+        Ki_cm = _boost(projectile, Ki, gcm, -vcm)
+        # ... and estimate the remaining energy
+        # post-scattering (alpha ~ 0.5)
+        Ki_p_cm = .5*Ki_cm
+
+        # Substract the remaining energy from the 
+        # total COM energy to calculate the amount
+        # that is left for the daughter particles
+        Ecm_d -= _K_to_E(projectile_remnant, Ki_cm)
+
+        # Boost the kinetic energy of the remnant
+        # into the rest frame of the target particle
+        Ki_p = _boost(projectile_remnant, Ki_p_cm, gcm, vcm)
+
+        # DEBUG
+        #print(Ki_p, 0.5*Ki)
 
     # Initialize a variable to store
     # the mass difference of the reaction
