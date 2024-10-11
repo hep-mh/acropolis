@@ -13,7 +13,7 @@ from enum import Enum
 from acropolis.pprint import print_error
 # hcascade
 from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion, is_spectator, convert_nucleon
+from acropolis.hcascade import Particles, is_pion, is_spectator, convert
 from acropolis.hcascade import ParticleSpectrum
 # params
 from acropolis.params import pi
@@ -246,7 +246,7 @@ def _inelastic(egrid, projectile, Ki, prob, target, daughters, projectile_action
     projectile_remnant = {
         _Actions.KEEP   : projectile,
         _Actions.DESTROY: Particles.NULL,
-        _Actions.CONVERT: convert_nucleon(projectile)
+        _Actions.CONVERT: convert(projectile)
     }[projectile_action]
 
     # Initialize the amount of COM energy that

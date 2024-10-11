@@ -12,7 +12,8 @@ from acropolis.pprint import print_error
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic, tau_n
+from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
+from acropolis.params import hbar, tau_n
 from acropolis.params import approx_zero
 
 
@@ -139,7 +140,7 @@ def is_valid_target(particle):
     return (particle.value in [0, -1] )
 
 
-def convert_nucleon(particle):
+def convert(particle):
     if not is_nucleon(particle):
         return particle
     
@@ -215,7 +216,7 @@ def get_all_rates(projectile, Ki, T, Y, eta):
 
     # rid = 0
     if projectile == Particles.NEUTRON:
-        rates[0] = sqrt(1. - v**2.) * tau_n
+        rates[0] = sqrt(1. - v**2.) *hbar / tau_n
     
     # rid = 1
     rates[1]  = nH * _interp_reaction_data(f"{x}p_{x}p", Ki) * v
@@ -259,6 +260,12 @@ def get_all_rates(projectile, Ki, T, Y, eta):
     # RETURN ########################################################
 
     return rates
+
+
+def get_all_probs(projectile, Ki, T, Y, eta):
+    rates = get_all_rates(projectile, Ki, T, Y, eta)
+
+    return rates/np.sum(rates)
 
 
 #####################################################################
