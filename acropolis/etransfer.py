@@ -164,7 +164,7 @@ def _vcm(projectile, target, K):
 # p -> p
 # n -> p + [...]
 # TODO: Implement energy distribution
-def _decay(egrid, projectile, Ki):
+def _decay(egrid, projectile, Ki, prob):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
@@ -175,7 +175,7 @@ def _decay(egrid, projectile, Ki):
         Ki_p = Ki + mn - mp
 
     # Fill the spectrum
-    spectrum.add(Particles.PROTON, 1., Ki_p)
+    spectrum.add(Particles.PROTON, prob, Ki_p)
 
     return spectrum
 
@@ -184,7 +184,7 @@ def _decay(egrid, projectile, Ki):
 # p + X(bg) -> p + X
 # n + X(bg) -> n + X
 # with X = p, He4
-def _elastic(egrid, projectile, Ki, target):
+def _elastic(egrid, projectile, Ki, prob, target):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
     
@@ -221,10 +221,10 @@ def _elastic(egrid, projectile, Ki, target):
     # Fill the spectrum by looping over all bins
     for i in range( egrid.nbins() ):
         # Handle the scattered projectile particle
-        spectrum.add(projectile, _integrate_fi_over_bin(i), egrid[i])
+        spectrum.add(projectile, prob*_integrate_fi_over_bin(i), egrid[i])
 
         # Handle the scattered target particle
-        spectrum.add(target    , _integrate_fj_over_bin(i), egrid[i])
+        spectrum.add(target    , prob*_integrate_fj_over_bin(i), egrid[i])
 
     return spectrum
 
@@ -233,7 +233,7 @@ def _elastic(egrid, projectile, Ki, target):
 # p + X(bg) -> Y
 # n + X(bg) -> Y
 # with X = p, He4 and arbitrary Y
-def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
+def _inelastic(egrid, projectile, Ki, prob, target, daughters, projectile_action):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
@@ -317,11 +317,11 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
 
     # Fill the spectrum
     if projectile_remnant != Particles.NULL:
-        spectrum.add(projectile_remnant, 1., Ki_p)
+        spectrum.add(projectile_remnant, prob, Ki_p)
     
     for i, daughter in enumerate(daughters):
         if not is_pion(daughter): # ignore pions
-            spectrum.add(daughter, 1., Kj_p_L[i])
+            spectrum.add(daughter, prob, Kj_p_L[i])
     
     return spectrum
 
@@ -330,16 +330,16 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
 
 # Reaction
 # n -> p* + [...]
-def _r0_null(egrid, projectile, Ki):
-    return _decay(egrid, projectile, Ki)
+def _r0_null(egrid, projectile, Ki, prob):
+    return _decay(egrid, projectile, Ki, prob)
 
 
 # Reaction (i,p,1)
 # p + p(bg) -> p + [p]
 # n + p(bg) -> n + [p]
-def _r1_proton(egrid, projectile, Ki):
+def _r1_proton(egrid, projectile, Ki, prob):
     return _elastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.PROTON
     )
 
@@ -347,9 +347,9 @@ def _r1_proton(egrid, projectile, Ki):
 # Reaction (i,p,2)
 # p + p(bg) -> p + [p + pi0]
 # n + p(bg) -> n + [p + pi0]
-def _r2_proton(egrid, projectile, Ki):
+def _r2_proton(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.PROTON,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -362,9 +362,9 @@ def _r2_proton(egrid, projectile, Ki):
 # Reaction (i,p,3)
 # p + p(bg) -> p + [n + pi+]
 # n + p(bg) -> n + [n + pi+]
-def _r3_proton(egrid, projectile, Ki):
+def _r3_proton(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.PROTON,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -377,11 +377,11 @@ def _r3_proton(egrid, projectile, Ki):
 # Reaction (i,p,4)
 # p + p(bg) -> n* + [n + 2pi+]
 # n + p(bg) -> p* + [n + 2pi0]
-def _r4_proton(egrid, projectile, Ki):
+def _r4_proton(egrid, projectile, Ki, prob):
     Particles_PION = Particles.CHARGED_PION if projectile == Particles.PROTON else Particles.NEUTRAL_PION
 
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.PROTON,
         projectile_action=_Actions.CONVERT,
         daughters=[
@@ -395,9 +395,9 @@ def _r4_proton(egrid, projectile, Ki):
 # Reaction (i,p,5)
 # p + p(bg) -> n* + [p + pi+]
 # n + p(bg) -> p* + [p + pi-]
-def _r5_proton(egrid, projectile, Ki):
+def _r5_proton(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.PROTON,
         projectile_action=_Actions.CONVERT,
         daughters=[
@@ -410,9 +410,9 @@ def _r5_proton(egrid, projectile, Ki):
 # Reaction (i,al,1)
 # p + He4(bg) -> p + [He4]
 # n + He4(bg) -> n + [He4]
-def _r1_alpha(egrid, projectile, Ki):
+def _r1_alpha(egrid, projectile, Ki, prob):
     return _elastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4
     )
 
@@ -420,11 +420,11 @@ def _r1_alpha(egrid, projectile, Ki):
 # Reaction (i,al,2)
 # p + He4(bg) -> _ + [D + He3]
 # n + He4(bg) -> _ + [D + T]
-def _r2_alpha(egrid, projectile, Ki):
+def _r2_alpha(egrid, projectile, Ki, prob):
     Particles_A3 = Particles.HELIUM3 if projectile == Particles.PROTON else Particles.TRITIUM
 
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.DESTROY,
         daughters=[
@@ -437,9 +437,9 @@ def _r2_alpha(egrid, projectile, Ki):
 # Reaction (i,al,3)
 # p + He4(bg) -> p + [n + He3]
 # n + He4(bg) -> n + [n + He3]
-def _r3_alpha(egrid, projectile, Ki):
+def _r3_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -452,9 +452,9 @@ def _r3_alpha(egrid, projectile, Ki):
 # Reaction (i,al,4)
 # p + He4(bg) -> p + [p + T]
 # n + He4(bg) -> n + [p + T]
-def _r4_alpha(egrid, projectile, Ki):
+def _r4_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -467,9 +467,9 @@ def _r4_alpha(egrid, projectile, Ki):
 # Reaction (i,al,5)
 # p + He4(bg) -> p + [2D]
 # n + He4(bg) -> n + [2D]
-def _r5_alpha(egrid, projectile, Ki):
+def _r5_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -482,9 +482,9 @@ def _r5_alpha(egrid, projectile, Ki):
 # Reaction (i,al,6)
 # p + He4(bg) -> p + [p + n + D]
 # n + He4(bg) -> n + [p + n + D]
-def _r6_alpha(egrid, projectile, Ki):
+def _r6_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -498,9 +498,9 @@ def _r6_alpha(egrid, projectile, Ki):
 # Reaction (i,al,7)
 # p + He4(bg) -> p + [2p + 2n]
 # n + He4(bg) -> n + [2p + 2n]
-def _r7_alpha(egrid, projectile, Ki):
+def _r7_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -515,9 +515,9 @@ def _r7_alpha(egrid, projectile, Ki):
 # Reaction (i,al,8)
 # p + He4(bg) -> p + [He4 + pi0]
 # n + He4(bg) -> n + [He4 + pi0]
-def _r8_alpha(egrid, projectile, Ki):
+def _r8_alpha(egrid, projectile, Ki, prob):
     return _inelastic(
-        egrid, projectile, Ki,
+        egrid, projectile, Ki, prob,
         target=Particles.HELIUM4,
         projectile_action=_Actions.KEEP,
         daughters=[
@@ -529,8 +529,8 @@ def _r8_alpha(egrid, projectile, Ki):
 
 # MAIN FUNCTIONS ####################################################
 
-def get_fs_spectrum(egrid, projectile, Ki, rid):
-    params = (egrid, projectile, Ki)
+def get_fs_spectrum(rid, egrid, projectile, Ki, prob=1.):
+    params = (egrid, projectile, Ki, prob)
 
     if rid == 0:
         # n -> p* + [...]
