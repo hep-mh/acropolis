@@ -28,28 +28,21 @@ class _Actions(Enum):
 # HELPER FUNCTIONS ##################################################
 
 # K in MeV
-def _s(projectile, target, K):
+def _com_energy(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
     return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
 
 
 # K in MeV
-def _E(particle, K):
-    return K + mass[particle]
+def _boost_projectile(particle, K, gcm, vcm):
+    m = mass[particle]
 
+    # -->
+    E = K + m
+    p = sqrt( K**2. + 2.*K*m )
 
-# K in MeV
-def _p(particle, K):
-    return sqrt( K**2. + 2.*K*mass[particle] )
-
-
-# K in MeV
-def _boost(particle, K, gcm, vcm):
-    E = _E(particle, K)
-    p = _p(particle, K)
-
-    return gcm * ( E - vcm*p ) - mass[particle]
+    return gcm * ( E - vcm*p ) - m
 
 
 # s in MeV²
@@ -176,7 +169,7 @@ def _elastic(egrid, projectile, Ki, target):
     Kj_p_max = 2.*mA*Ki*(Ki + 2.*mN) / ( (mN + mA)**2. + 2.*mA*Ki )
 
     # Calculate the slope parameter
-    Bsl = _Bsl(target, s=_s(projectile, target, Ki))
+    Bsl = _Bsl(target, s=_com_energy(projectile, target, Ki))
 
     # Calculate the prefactor of the distribution
     pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
@@ -237,9 +230,11 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     Ecm_d, Ki_p = Ecm, 0.
     # Estimate the energy of the remnant (if not NULL)
     if projectile_remnant != Particles.NULL:
+        mr = mass[projectile_remnant]
+        
         # Calculate the kinetic energy of the
         # projectile in the COM frame
-        Ki_cm = _boost(projectile, Ki, gcm, vcm)
+        Ki_cm = _boost_projectile(projectile, Ki, gcm, vcm)
 
         # Estimate the kinetic energy of the
         # remnant in the COM frame
@@ -247,32 +242,44 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
 
         # Update the energy that is available
         # for the daughter particles
-        Ecm_d -= _E(projectile_remnant, Ki_p_cm)
+        Ecm_d -= ( Ki_p_cm + mr )
 
-        # Calculate the kinetic energy of the
-        # remnant in the target rest frame
-        Ki_p = _boost(projectile_remnant, Ki_p_cm, gcm, -vcm)
+        # Calculate the (average) kinetic energy
+        # of the remnant in the target rest frame
+        # TODO Check this expression!
+        Ki_p = gcm * ( Ki_p_cm + mr ) - mr
 
     # Initialize the mass difference of the reaction
     dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
     
-    Kj_p_L = []
+    Kj_p_L, non_spectators = [], []
     # Loop over the various daughter particles
-    for daughter in daughters:
+    for i, daughter in enumerate(daughters):
         md = mass[daughter]
         
         # Estimate the kinetic energy of the daughter particle
-        Kj_p_L.append(
-            gcm * ( Kt + md ) - md if not is_spectator(daughter) else 5.789
-        )
+        if is_spectator(daughter):
+            Kj_p_L.append( 5.789 ) # MeV
+
+            # Update the available COM energy
+            # (E ~ 5.789 MeV is fixed)
+            Ecm_d -= gcm * ( Kj_p_L[-1] + md ) # v*p ~ 0.
+        else:
+            Kj_p_L.append( gcm * ( Kt + md ) - md )
+
+            # Update the list of active daughter particles
+            non_spectators.append(daughter)
 
         # Update the mass difference
         dM -= md
     
     # Ensure energy conservation
     # TODO: Implement (careful with pions)
-    if Ki + dM > Ki_p + sum(Kj_p_L):
-        pass
+    if Ki + dM > Ki_p + sum(Kj_p_L): # Energy not conserved
+        # In the opposite case, we assume that
+        # the remaining energy is carried by
+        # additional pions
+        print("foo")
 
     # Fill the spectrum
     if projectile_remnant != Particles.NULL:
