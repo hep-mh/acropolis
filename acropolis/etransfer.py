@@ -66,7 +66,7 @@ def _equip(particles, Ecm):
     if not res.success or len(res.x) != 1:
         return np.nan
     
-    return res.x[0]
+    return res.x[0] # MeV
 
 
 # s in MeV²
@@ -163,16 +163,15 @@ def _vcm(projectile, target, K):
 # Reactions of the form
 # p -> p
 # n -> p + [...]
-# TODO: Implement energy distribution
 def _decay(egrid, projectile, Ki, prob):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Fill the spectrum
+    # Estimate the energy of the resulting proton
     if   projectile == Particles.PROTON:
         Ki_p = Ki
     elif projectile == Particles.NEUTRON:
-        Ki_p = Ki + mn - mp
+        Ki_p = (Ki + mn) - mp # Ep ~ En
 
     # Fill the spectrum
     spectrum.add(Particles.PROTON, prob, Ki_p)
@@ -378,7 +377,10 @@ def _r3_proton(egrid, projectile, Ki, prob):
 # p + p(bg) -> n* + [n + 2pi+]
 # n + p(bg) -> p* + [n + 2pi0]
 def _r4_proton(egrid, projectile, Ki, prob):
-    Particles_PION = Particles.CHARGED_PION if projectile == Particles.PROTON else Particles.NEUTRAL_PION
+    Particles_PION = {
+        Particles.PROTON : Particles.CHARGED_PION,
+        Particles.NEUTRON: Particles.NEUTRAL_PION
+    }[projectile]
 
     return _inelastic(
         egrid, projectile, Ki, prob,
@@ -421,7 +423,10 @@ def _r1_alpha(egrid, projectile, Ki, prob):
 # p + He4(bg) -> _ + [D + He3]
 # n + He4(bg) -> _ + [D + T]
 def _r2_alpha(egrid, projectile, Ki, prob):
-    Particles_A3 = Particles.HELIUM3 if projectile == Particles.PROTON else Particles.TRITIUM
+    Particles_A3 = {
+        Particles.PROTON : Particles.HELIUM3,
+        Particles.NEUTRON: Particles.TRITIUM
+    }[projectile]
 
     return _inelastic(
         egrid, projectile, Ki, prob,

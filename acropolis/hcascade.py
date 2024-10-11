@@ -7,10 +7,12 @@ from enum import Enum
 
 # input
 from acropolis.input import locate_data_file
+# pprint
+from acropolis.pprint import print_error
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
+from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic, tau_n
 from acropolis.params import approx_zero
 
 
@@ -183,32 +185,80 @@ charge = {
 #####################################################################
 
 
-# def all_rates(projectile, K, T, Y, eta):
-#     if not is_projectile(projectile):
-#         return None
+def get_all_rates(projectile, Ki, T, Y, eta):
+    # PREPARE #######################################################
 
-#     # Initialize the array to return
-#     rates = np.zeros(NR)
+    # Initialize an array for storing the rates
+    rates = np.zeros(NR)
 
-#     # Extract the mass of the projectile
-#     m = mass[projectile]
-
-#     # Calculate the velocity of the projectile
-#     v = sqrt( K * (K + 2.*m) ) / ( K + m )
-
-#     # Calculate the number densities of all
-#     # possible target particles
-#     nH   = _nH  (T, Y, eta)
-#     nHe4 = _nHe4(T, Y, eta)
-
-#     # rid = 0
-#     if projectile == Particles.NEUTRON:
-#         rates[0] = 0.
+    if not is_valid_projectile(projectile):
+        print_error(
+            "The given particles is not a valid projectile.",
+            "acropolis.hcascade.get_all_rates"
+        )
     
-#     # rid = 1
-#     # TODO rid vis id_str???
+    x = {
+        Particles.PROTON : "p",
+        Particles.NEUTRON: "n"
+    }[projectile]
 
-#     pass
+    # Extract the mass of the projectile
+    m = mass[projectile]
+
+    # Calculate the velocity of the projectile
+    v = sqrt( Ki * (Ki + 2.*m) ) / ( Ki + m ) # = p/E
+
+    # Calculate the target densities
+    nH, nHe4 = _nH(T, Y, eta), _nHe4(T, Y, eta)
+
+    # FILL ##########################################################
+
+    # rid = 0
+    if projectile == Particles.NEUTRON:
+        rates[0] = sqrt(1. - v**2.) * tau_n
+    
+    # rid = 1
+    rates[1]  = nH * _interp_reaction_data(f"{x}p_{x}p", Ki) * v
+
+    # rid = 2
+    rates[2]  = nH * _interp_reaction_data(f"{x}p_inel", Ki) * v / 4.
+
+    # rid = 3
+    rates[3]  = rates[2]
+
+    # rid = 4
+    rates[4]  = rates[2]
+
+    # rid = 5
+    rates[5]  = rates[2]
+
+    # rid = 6
+    rates[6]  = nHe4 * _interp_reaction_data("pHe4_pHe4", Ki) * v
+
+    # rid = 7
+    rates[7]  = nHe4 * _interp_reaction_data("pHe4_DHe3", Ki) * v
+
+    # rid = 8
+    rates[8]  = nHe4 * _interp_reaction_data("pHe4_pnHe3", Ki) * v
+
+    # rid = 9
+    rates[9]  = nHe4 * _interp_reaction_data("pHe4_2pT", Ki) * v
+
+    # rid = 10
+    rates[10] = nHe4 * _interp_reaction_data("pHe4_p2D", Ki) * v
+
+    # rid = 11
+    rates[11] = nHe4 * _interp_reaction_data("pHe4_2pnD", Ki) * v
+
+    # rid = 12
+    rates[12] = nHe4 * _interp_reaction_data("pHe4_3p2n", Ki) * v
+
+    # rid = 13
+    rates[13] = nHe4 * _interp_reaction_data("pHe4_pHe4pi", Ki) * v
+
+    # RETURN ########################################################
+
+    return rates
 
 
 #####################################################################
