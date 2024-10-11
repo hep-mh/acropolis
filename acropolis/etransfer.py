@@ -295,7 +295,16 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
+        
+        # Update the energy of the remnant
+        if projectile_remnant != Particles.NULL:
+            mr = mass[projectile_remnant]
+            # -->
+            Ei_p_cm = sqrt( pe**2. + mr**2. )
+            # -->
+            Ki_p = gcm * Ei_p_cm - mr
 
+        # Update the energies of the daughter particles
         for i, daughter in enumerate(daughters):
             if is_spectator(daughter):
                 continue
