@@ -216,9 +216,8 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Calculate the COM energy
     Ecm = _Ecm(projectile, target, Ki)
 
-    # Calculate relevant boost properties
+    # Calculate the gamma factor of the boost
     gcm = _gcm(projectile, target, Ki)
-    vcm = _vcm(projectile, target, Ki)
 
     # Determine the projectile remnant
     projectile_remnant = {
@@ -228,26 +227,21 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     }[projectile_action]
 
     Ecm_d, Ki_p = Ecm, 0.
-    # Estimate the energy of the remnant (if not NULL)
+    # Estimate the energy of the remnant (if any)
     if projectile_remnant != Particles.NULL:
         mr = mass[projectile_remnant]
         
-        # Calculate the kinetic energy of the
-        # projectile in the COM frame
-        Ki_cm = _boost_projectile(projectile, Ki, gcm, vcm)
-
         # Estimate the kinetic energy of the
+        # remnant in the target rest frame
+        Ki_p = .5*Ki
+
+        # Calculate the kinetic energy of the
         # remnant in the COM frame
-        Ki_p_cm = .5*Ki_cm
+        Ki_p_cm = ( Ki_p + mr ) / gcm - mr
 
-        # Update the energy that is available
-        # for the daughter particles
+        # Update the energy that is available for
+        # the daughter particles in the COM frame
         Ecm_d -= ( Ki_p_cm + mr )
-
-        # Calculate the (average) kinetic energy
-        # of the remnant in the target rest frame
-        # TODO Check this expression!
-        Ki_p = gcm * ( Ki_p_cm + mr ) - mr
 
     # Initialize the mass difference of the reaction
     dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
@@ -262,7 +256,7 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
             Kj_p_L.append( 5.789 ) # MeV
 
             # Update the available COM energy
-            # (E ~ 5.789 MeV is fixed)
+            # (E ~ 5.789 MeV is fixed by the distribution)
             Ecm_d -= gcm * ( Kj_p_L[-1] + md ) # v*p ~ 0.
         else:
             Kj_p_L.append( gcm * ( Kt + md ) - md )
