@@ -14,6 +14,9 @@ from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 from acropolis.params import approx_zero
 
 
+# TODO: Move
+NR = 14
+
 # K ≘ kinetic energy, E ≘ total energy
 
 
@@ -27,7 +30,7 @@ def _nHe4(T, Y, eta):
 
 #####################################################################
 
-_reaction_ids = [
+_reaction_labels = [
     "pp_pp",
     "np_np",
     "pp_inel",
@@ -48,8 +51,8 @@ _reaction_ids = [
 ]
 
 
-def _load_log_reaction_data(id_str):
-    filename = f"cross_sections/{id_str}.dat"
+def _load_log_reaction_data(label):
+    filename = f"cross_sections/{label}.dat"
 
     reaction_data = np.loadtxt(f"{locate_data_file(filename)}")
     # -->
@@ -59,14 +62,14 @@ def _load_log_reaction_data(id_str):
 
 
 _log_reaction_data = {
-    id_str: _load_log_reaction_data(id_str) for id_str in _reaction_ids
+    label: _load_log_reaction_data(label) for label in _reaction_labels
 }
 
 
-def _interp_reaction_data(id_str, K):
+def _interp_reaction_data(label, K):
     logK = log(K)
 
-    log_reaction_data = _log_reaction_data[id_str]
+    log_reaction_data = _log_reaction_data[label]
 
     if logK < log_reaction_data[0,0]:
         return approx_zero
@@ -175,6 +178,37 @@ charge = {
 
     Particles.NULL: 0
 }
+
+
+#####################################################################
+
+
+# def all_rates(projectile, K, T, Y, eta):
+#     if not is_projectile(projectile):
+#         return None
+
+#     # Initialize the array to return
+#     rates = np.zeros(NR)
+
+#     # Extract the mass of the projectile
+#     m = mass[projectile]
+
+#     # Calculate the velocity of the projectile
+#     v = sqrt( K * (K + 2.*m) ) / ( K + m )
+
+#     # Calculate the number densities of all
+#     # possible target particles
+#     nH   = _nH  (T, Y, eta)
+#     nHe4 = _nHe4(T, Y, eta)
+
+#     # rid = 0
+#     if projectile == Particles.NEUTRON:
+#         rates[0] = 0.
+    
+#     # rid = 1
+#     # TODO rid vis id_str???
+
+#     pass
 
 
 #####################################################################
