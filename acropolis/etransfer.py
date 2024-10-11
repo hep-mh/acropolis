@@ -30,7 +30,7 @@ class _Actions(Enum):
 # HELPER FUNCTIONS ##################################################
 
 # K in MeV
-def _com_energy(projectile, target, K):
+def _s(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
     return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
@@ -193,7 +193,7 @@ def _elastic(egrid, projectile, Ki, target):
     Kj_p_max = 2.*mA*Ki*(Ki + 2.*mN) / ( (mN + mA)**2. + 2.*mA*Ki )
 
     # Calculate the slope parameter
-    Bsl = _Bsl(target, s=_com_energy(projectile, target, Ki))
+    Bsl = _Bsl(target, s=_s(projectile, target, Ki))
 
     # Calculate the prefactor of the distribution
     pref = 1./( 1. - exp(-2.*mA*Bsl*Kj_p_max) )
