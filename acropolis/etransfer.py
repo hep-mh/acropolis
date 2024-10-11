@@ -35,7 +35,7 @@ def _com_energy(projectile, target, K):
 
     return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
 
-
+"""
 # K in MeV
 def _boost_projectile(particle, K, gcm, vcm):
     m = mass[particle]
@@ -45,7 +45,7 @@ def _boost_projectile(particle, K, gcm, vcm):
     p = sqrt( K**2. + 2.*K*m )
 
     return gcm * ( E - vcm*p ) - m
-
+"""
 
 # Ecm in MeV
 def _equip(particles, Ecm):
@@ -150,13 +150,13 @@ def _gcm(projectile, target, K):
 
     return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
-
+"""
 # K in MeV
 def _vcm(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
     return sqrt( K**2. + 2*mN*K )/( K + mN + mA )
-
+"""
 
 # GENERIC FUNCTIONS #################################################
 
@@ -240,7 +240,7 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # Calculate the COM energy
     Ecm = _Ecm(projectile, target, Ki)
 
-    # Calculate the gamma factor of the boost
+    # Calculate the Lorentz factor
     gcm = _gcm(projectile, target, Ki)
 
     # Determine the projectile remnant
@@ -250,27 +250,24 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
         _Actions.CONVERT: convert_nucleon(projectile)
     }[projectile_action]
 
-    Ecm_d, Ki_p = Ecm, 0.
-    # Estimate the energy of the remnant (if any)
-    if projectile_remnant != Particles.NULL:
-        mr = mass[projectile_remnant]
-        
-        # Estimate the kinetic energy of the
-        # remnant in the target rest frame
-        Ki_p = .5*Ki
+    # Initialize the amount of COM energy that
+    # is available when employing equipartition
+    Ecm_equip = Ecm
 
-        # Calculate the kinetic energy of the
-        # remnant in the COM frame
-        Ki_p_cm = ( Ki_p + mr ) / gcm - mr
-
-        # Update the energy that is available for
-        # the daughter particles in the COM frame
-        Ecm_d -= ( Ki_p_cm + mr )
+    # Estimate the kinetic energy of the remnant
+    Ki_p = .5*Ki if projectile_remnant != Particles.NULL else 0.
 
     # Initialize the mass difference of the reaction
     dM = mass[target] + (mass[projectile] - mass[projectile_remnant])
-    
-    Kj_p_L, non_spectators = [], []
+    #                                       = 0 for Particles.NULL
+
+    # Initialize the list of particles that are
+    # considered when employing equipartition
+    particles_equip = []
+    if projectile_remnant != Particles.NULL:
+        particles_equip.append(projectile_remnant)
+
+    Kj_p_L= []
     # Loop over the various daughter particles
     for i, daughter in enumerate(daughters):
         md = mass[daughter]
@@ -281,13 +278,13 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
 
             # Update the available COM energy
             # (K ~ 5.789 MeV is fixed by the distribution)
-            Ecm_d -= gcm * ( Kj_p_L[-1] + md ) # v*p ~ 0.
+            Ecm_equip -= gcm * ( Kj_p_L[-1] + md ) # vm*p ~ 0
         else:
             # Kj_p_cm ~ Kt
             Kj_p_L.append( gcm * ( Kt + md ) - md )
 
-            # Update the list of active daughter particles
-            non_spectators.append(daughter)
+            # -->
+            particles_equip.append(daughter)
 
         # Update the mass difference
         dM -= md
@@ -297,13 +294,13 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
     # energy is carried away by additional pions
     if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
         # Assume equipartition of momenta
-        pe = _equip(non_spectators, Ecm_d)
+        pe = _equip(particles_equip, Ecm_equip)
 
         for i, daughter in enumerate(daughters):
             if is_spectator(daughter):
                 continue
 
-            md = masses[daughter]
+            md = mass[daughter]
             # -->
             Ej_p_cm = sqrt( pe**2. + md**2. ) 
             # -->
