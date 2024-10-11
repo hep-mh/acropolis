@@ -4,7 +4,9 @@ from math import log, exp, sqrt
 from cmath import exp as cexp
 # numpy
 import numpy as np
-#enum
+# scipy
+from scipy.optimize import root
+# enum
 from enum import Enum
 
 # pprint
@@ -43,6 +45,28 @@ def _boost_projectile(particle, K, gcm, vcm):
     p = sqrt( K**2. + 2.*K*m )
 
     return gcm * ( E - vcm*p ) - m
+
+
+# Ecm in MeV
+def _equip(particles, Ecm):
+    # Extract the masses of all particles
+    masses = np.array([mass[particle] for particle in particles])
+
+    def _root_fct(p):
+        return Ecm - np.sum(
+            sqrt(p**2 + m**2) for m in masses
+        )
+    
+    # Run the optimizer (start with non-rel limit)
+    p0 = sqrt( 2. * ( Ecm - np.sum(masses) ) / np.sum(1./masses) )
+    # -->
+    res = root(_root_fct, p0)
+
+    # Check if the optimizer was successful
+    if not res.success or len(res.x) != 1:
+        return np.nan
+    
+    return res.x[0]
 
 
 # s in MeV²
@@ -256,9 +280,10 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
             Kj_p_L.append( 5.789 ) # MeV
 
             # Update the available COM energy
-            # (E ~ 5.789 MeV is fixed by the distribution)
+            # (K ~ 5.789 MeV is fixed by the distribution)
             Ecm_d -= gcm * ( Kj_p_L[-1] + md ) # v*p ~ 0.
         else:
+            # Kj_p_cm ~ Kt
             Kj_p_L.append( gcm * ( Kt + md ) - md )
 
             # Update the list of active daughter particles
@@ -268,12 +293,21 @@ def _inelastic(egrid, projectile, Ki, target, daughters, projectile_action):
         dM -= md
     
     # Ensure energy conservation
-    # TODO: Implement (careful with pions)
-    if Ki + dM > Ki_p + sum(Kj_p_L): # Energy not conserved
-        # In the opposite case, we assume that
-        # the remaining energy is carried by
-        # additional pions
-        print("foo")
+    # NOTE: In the '<' case, we assume that the remaining
+    # energy is carried away by additional pions
+    if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
+        # Assume equipartition of momenta
+        pe = _equip(non_spectators, Ecm_d)
+
+        for i, daughter in enumerate(daughters):
+            if is_spectator(daughter):
+                continue
+
+            md = masses[daughter]
+            # -->
+            Ej_p_cm = sqrt( pe**2. + md**2. ) 
+            # -->
+            Kj_p_L[i] = gcm * Ej_p_cm - md
 
     # Fill the spectrum
     if projectile_remnant != Particles.NULL:
