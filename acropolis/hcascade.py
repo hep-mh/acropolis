@@ -409,6 +409,10 @@ class ParticleSpectrum(object):
             self._sEntries[index] *= factor
 
 
+    def egrid(self):
+        return self._sEnergyGrid
+
+
     def __repr__(self):
         str_repr = ""
 
