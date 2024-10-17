@@ -9,8 +9,6 @@ from scipy.optimize import root
 # enum
 from enum import Enum
 
-# pprint
-from acropolis.pprint import print_error
 # hcascade
 from acropolis.hcascade import mass
 from acropolis.hcascade import Particles, is_pion, is_spectator, convert
@@ -527,80 +525,74 @@ def _r8_alpha(spectrum, projectile, Ki, prob):
 def _update_spectrum(spectrum, rid, projectile, Ki, prob):
     params = (spectrum, projectile, Ki, prob)
 
-    if rid == 0:
+    if   rid == 0:
         # n -> p* + [...]
         _r0_null(*params)
 
-    if rid == 1: # {pp_pp, np_np}
+    elif rid == 1: # {pp_pp, np_np}
         # p + p(bg) -> p + [p]
         # n + p(bg) -> n + [p]
         _r1_proton(*params)
 
-    if rid == 2: # {pp_inel, np_inel}
+    elif rid == 2: # {pp_inel, np_inel}
         # p + p(bg) -> p + [p + pi0]
         # n + p(bg) -> n + [p + pi0]
         _r2_proton(*params)
     
-    if rid == 3: # {pp_inel, np_inel}
+    elif rid == 3: # {pp_inel, np_inel}
         # p + p(bg) -> p + [n + pi+]
         # n + p(bg) -> n + [n + pi+]
         _r3_proton(*params)
     
-    if rid == 4: # {pp_inel, np_inel}
+    elif rid == 4: # {pp_inel, np_inel}
         # p + p(bg) -> n* + [n + 2pi+]
         # n + p(bg) -> p* + [n + 2pi0]
         _r4_proton(*params)
     
-    if rid == 5: # {pp_inel, np_inel}
+    elif rid == 5: # {pp_inel, np_inel}
         # p + p(bg) -> n* + [p + pi+]
         # n + p(bg) -> p* + [p + pi-]
         _r5_proton(*params)
     
-    if rid == 6: # {pHe4_pHe4}
+    elif rid == 6: # {pHe4_pHe4}
         # p + He4(bg) -> p + [He4]
         # n + He4(bg) -> n + [He4]
         _r1_alpha(*params)
     
-    if rid == 7: # {pHe4_DHe3}
+    elif rid == 7: # {pHe4_DHe3}
         # p + He4(bg) -> _ + [D + He3]
         # n + He4(bg) -> _ + [D + T]
         _r2_alpha(*params)
     
-    if rid == 8: # {pHe4_pnHe3}
+    elif rid == 8: # {pHe4_pnHe3}
         # p + He4(bg) -> p + [n + He3]
         # n + He4(bg) -> n + [n + He3]
         _r3_alpha(*params)
     
-    if rid == 9: # {pHe4_2pT}
+    elif rid == 9: # {pHe4_2pT}
         # p + He4(bg) -> p + [p + T]
         # n + He4(bg) -> n + [p + T]
         _r4_alpha(*params)
     
-    if rid == 10: # {pHe4_p2D}
+    elif rid == 10: # {pHe4_p2D}
         # p + He4(bg) -> p + [2D]
         # n + He4(bg) -> n + [2D]
         _r5_alpha(*params)
     
-    if rid == 11: # {pHe4_2pnD}
+    elif rid == 11: # {pHe4_2pnD}
         # p + He4(bg) -> p + [p + n + D]
         # n + He4(bg) -> n + [p + n + D]
         _r6_alpha(*params)
     
-    if rid == 12: # {pHe4_3p2n}
+    elif rid == 12: # {pHe4_3p2n}
         # p + He4(bg) -> p + [2p + 2n]
         # n + He4(bg) -> n + [2p + 2n]
         _r7_alpha(*params)
     
-    if rid == 13: # {pHe4_pHe4pi}
+    elif rid == 13: # {pHe4_pHe4pi}
         # p + He4(bg) -> p + [He4 + pi0]
         # n + He4(bg) -> n + [He4 + pi0]
         _r8_alpha(*params)
-    
-    # Invalid reaction id
-    print_error(
-        "Reaction with rid = " + str(rid) + " does not exist.",
-        "acropolis.etransfer._update"
-    )
 
 
 def get_fs_spectrum(egrid, projectile, Ki, probs):
