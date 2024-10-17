@@ -607,9 +607,12 @@ def get_fs_spectrum(egrid, projectile, Ki, probs):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
-    # Loop over all reactions and update
-    # the spectrum along the way
+    # Loop over all reactions and update the
+    # spectrum based on the given probability
     for rid, prob in enumerate(probs):
+        if prob == 0:
+            continue
+        
         _update_spectrum(spectrum, rid, projectile, Ki, prob)
     
     # Return the final spectrum

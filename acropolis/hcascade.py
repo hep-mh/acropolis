@@ -388,7 +388,7 @@ class ParticleSpectrum(object):
         
         else:
             raise ValueError(
-                "The given particles cannot be included in the spectrum"
+                "The given particles cannot be added to the spectrum"
             )
 
 
