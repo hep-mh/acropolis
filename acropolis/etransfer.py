@@ -10,8 +10,9 @@ from scipy.optimize import root
 from enum import Enum
 
 # particles
-from acropolis.particles import Particles, ParticleSpectrum, mass
-from acropolis.particles import is_valid_projectile, is_pion, is_spectator, convert
+from acropolis.particles import Particles, ParticleSpectrum, mass, eth
+from acropolis.particles import is_valid_projectile
+from acropolis.particles import is_pion, is_spectator, is_nucleus, convert
 # pprint
 from acropolis.pprint import print_error
 # params
@@ -26,6 +27,13 @@ class _Actions(Enum):
     CONVERT = 2
 
 
+class _Background(object):
+    def __init__(self, T, Y, eta):
+        self.T   = T
+        self.Y   = Y
+        self.eta = eta
+
+
 # HELPER FUNCTIONS ##################################################
 
 # K in MeV
@@ -33,6 +41,28 @@ def _s(projectile, target, K):
     mN, mA = mass[projectile], mass[target]
 
     return mN**2. + mA**2. + 2.*(K + mN)*mA # MeV
+
+
+# K in MeV
+def _Ecm(projectile, target, K):
+    mN, mA = mass[projectile], mass[target]
+
+    return sqrt( (mN + mA)**2. + 2.*mA*K )
+
+
+# K in MeV
+def _gcm(projectile, target, K):
+    mN, mA = mass[projectile], mass[target]
+
+    return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
+
+"""
+# K in MeV
+def _vcm(projectile, target, K):
+    mN, mA = mass[projectile], mass[target]
+
+    return sqrt( K**2. + 2*mN*K )/( K + mN + mA )
+"""
 
 """
 # K in MeV
@@ -45,6 +75,20 @@ def _boost_projectile(particle, K, gcm, vcm):
 
     return gcm * ( E - vcm*p ) - m
 """
+
+def _survival(nucleus, Ki, bg):
+    if not is_nucleus(nucleus):
+        return True
+
+    # Photodisintegration via CMB photons
+    if sqrt( 3*Ki*bg.T ) > eth[nucleus]:
+        return False
+    
+    # Hadrodisintegration via background protons
+    # TODO
+
+    return True
+
 
 # Ecm in MeV
 def _equip(particles, Ecm):
@@ -136,27 +180,6 @@ def _Bsl(target, s):
     return np.nan
 
 
-# K in MeV
-def _Ecm(projectile, target, K):
-    mN, mA = mass[projectile], mass[target]
-
-    return sqrt( (mN + mA)**2. + 2.*mA*K )
-
-
-# K in MeV
-def _gcm(projectile, target, K):
-    mN, mA = mass[projectile], mass[target]
-
-    return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
-
-"""
-# K in MeV
-def _vcm(projectile, target, K):
-    mN, mA = mass[projectile], mass[target]
-
-    return sqrt( K**2. + 2*mN*K )/( K + mN + mA )
-"""
-
 # GENERIC FUNCTIONS #################################################
 
 # Reactions of the form
@@ -220,8 +243,9 @@ def _elastic(spectrum, projectile, Ki, prob, target):
         spectrum.add(target    , prob*_integrate_fj_over_bin(i), egrid[i])
 
     # Account for the destruction of any helium-4 target
-    if target == Particles.HELIUM4:
-        spectrum.add(target, -prob, 0.)
+    # TODO
+    # if target == Particles.HELIUM4:
+    #     spectrum.add(target, -prob, 0.)
 
 
 # Reactions of the form
