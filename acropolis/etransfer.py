@@ -236,16 +236,23 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
 
     # Update the spectrum by looping over all bins
     for i in range( egrid.nbins() ):
-        # Handle the scattered projectile particle
-        spectrum.add(projectile, prob*_integrate_fi_over_bin(i), egrid[i])
+        Fi = _integrate_fi_over_bin(i)
+        Fj = _integrate_fj_over_bin(i)
 
-        # Handle the scattered target particle
-        spectrum.add(target    , prob*_integrate_fj_over_bin(i), egrid[i])
+        # Extract the current energy
+        Ki_p = Kj_p = egrid[i]
 
-    # Account for the destruction of any helium-4 target
-    # TODO
-    # if target == Particles.HELIUM4:
-    #     spectrum.add(target, -prob, 0.)
+        # Handle the scattered PROJECTILE particle
+        spectrum.add(projectile, prob*Fi, Ki_p)
+
+        # Handle the scattered TARGET particle
+        if is_nucleus(target):
+            # The net change is only < 0 if the scattered
+            # nucleus undergoes a dissociation reaction
+            if not _survives(target, Kj_p, bg):
+                spectrum.add(target, -prob*Fj, Kj_p) 
+        else:
+            spectrum.add(target, prob*Fj, Kj_p)
 
 
 # Reactions of the form
@@ -260,6 +267,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     gcm = _gcm(projectile, target, Ki)
 
     # Determine the projectile remnant
+    # final_state = [projectile_remnant, *daughters]
     projectile_remnant = {
         _Actions.KEEP   : projectile,
         _Actions.DESTROY: Particles.NULL,
@@ -306,7 +314,8 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         dM -= md
     
     # Ensure energy conservation
-    # NOTE: In the '<' case, we assume that the remaining
+    # NOTE:
+    # In the '<' case, we assume that the remaining
     # energy is carried away by additional pions
     if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
         # DEBUG
@@ -343,18 +352,18 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             continue # ignore pions
 
         # NOTE:
-        # For now, We negelect the reinjection of
+        # Here, we negelect the reinjection of
         # the resulting dissociation products
         if _survives(daughter, Kj_p_L[i], bg):
             spectrum.add(daughter, prob, Kj_p_L[i])
     
-    # Account for the destruction of any helium-4 target
+    # Account for the destruction of target nuclei
     # NOTE:
     # For reactions of the form p + He4 -> p + He4 + pi,
     # the final-state helium-4 nucleus is added with 
     # +prob (see above). Unless the resulting nucleus
     # is getting dissociated, the net change is thus 0
-    if target == Particles.HELIUM4:
+    if is_nucleus(target):
         spectrum.add(target, -prob, 0.)
 
 

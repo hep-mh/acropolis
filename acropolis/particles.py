@@ -110,10 +110,10 @@ charge = {
 
 # All threshold energies in MeV
 eth_pdi = {
-    Particles.DEUTERIUM: mD   - 1*mp - 1*mn,
-    Particles.TRITIUM  : mT   - 1*mp - 2*mn,
-    Particles.HELIUM3  : mHe3 - 2*mp - 1*mn,
-    Particles.HELIUM4  : mHe4 - 2*mp - 2*mn,
+    Particles.DEUTERIUM: 1*mp + 1*mn - mD  ,
+    Particles.TRITIUM  : 1*mp + 2*mn - mT  ,
+    Particles.HELIUM3  : 2*mp + 1*mn - mHe3,
+    Particles.HELIUM4  : 2*mp + 2*mn - mHe4,
 }
 
 
