@@ -5,6 +5,8 @@ import numpy as np
 # enum
 from enum import Enum
 
+# etransfer
+from acropolis.etransfer import get_fs_spectrum
 # input
 from acropolis.input import locate_data_file
 # pprint
@@ -186,7 +188,7 @@ charge = {
 #####################################################################
 
 
-def get_all_rates(projectile, Ki, T, Y, eta):
+def _get_all_rates(projectile, Ki, T, Y, eta):
     # PREPARE #######################################################
 
     # Initialize an array for storing the rates
@@ -262,8 +264,8 @@ def get_all_rates(projectile, Ki, T, Y, eta):
     return rates
 
 
-def get_all_probs(projectile, Ki, T, Y, eta):
-    rates = get_all_rates(projectile, Ki, T, Y, eta)
+def _get_all_probs(projectile, Ki, T, Y, eta):
+    rates = _get_all_rates(projectile, Ki, T, Y, eta)
 
     return rates/np.sum(rates)
 
@@ -434,8 +436,30 @@ class ParticleSpectrum(object):
         
         return str_repr
 
+#####################################################################
 
-class TransitionMatrix(object):
+def _get_etransfer_matrix(egrid, T, Y, eta):
+    # Extract the number of bins
+    N = egrid.nbins()
 
-    def __init__(self, Kmin, Kmax, N):
-        self._sEnergyGrid = EnergyGrid(Kmin, Kmax, N)
+    # Initialize the matrix
+    matrix = np.identity(N)
+
+    # Loop over all possible projectiles
+    for projectile in [Particles.PROTON, Particles.NEUTRON]:
+        # Loop over all possible energies
+        for i in len(N):
+            Ki = egrid[i]
+
+            # Calculate the scattering probabilities
+            probs = _get_all_probs(projectile, Ki, T, Y, eta)
+
+            # Calculate the final-state spectrum
+            spectrum = get_fs_spectrum(egrid, projectile, Ki, probs)
+
+            # Loop over the spectrum and fill the matrix
+            for (j, val) in spectrum.non_zero():
+                matrix[j,i] = val
+    
+    return matrix
+
