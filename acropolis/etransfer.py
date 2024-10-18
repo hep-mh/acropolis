@@ -345,6 +345,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
 
     # Update the spectrum
     if projectile_remnant != Particles.NULL:
+        # (_survives == True) for any type of remnant
         spectrum.add(projectile_remnant, prob, Ki_p)
     
     for i, daughter in enumerate(daughters):
@@ -357,7 +358,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         if _survives(daughter, Kj_p_L[i], bg):
             spectrum.add(daughter, prob, Kj_p_L[i])
     
-    # Account for the destruction of target nuclei
+    # Account for the destruction of the target nucleus
     # NOTE:
     # For reactions of the form p + He4 -> p + He4 + pi,
     # the final-state helium-4 nucleus is added with 
