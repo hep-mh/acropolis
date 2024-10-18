@@ -9,10 +9,9 @@ from scipy.optimize import root
 # enum
 from enum import Enum
 
-# hcascade
-from acropolis.hcascade import mass
-from acropolis.hcascade import Particles, is_pion, is_spectator, convert
-from acropolis.hcascade import ParticleSpectrum
+# particles
+from acropolis.particles import Particles, ParticleSpectrum
+from acropolis.particles import mass, is_pion, is_spectator, convert
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
@@ -282,7 +281,7 @@ def _inelastic(spectrum, projectile, Ki, prob, target, daughters, projectile_act
     if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
         # DEBUG
         print("Energy not conserved: Using equpartition of momenta")
-        
+
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
         
