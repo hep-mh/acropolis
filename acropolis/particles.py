@@ -96,10 +96,15 @@ charge = {
     Particles.HELIUM3  : 2,
     Particles.HELIUM4  : 2,
 
-    #Particles.NEUTRAL_PION: 0,
-    #Particles.CHARGED_PION: 1,
-
     Particles.NULL: 0
+}
+
+# All threshold energies in MeV
+eth = {
+    Particles.DEUTERIUM: mD   - 1*mp - 1*mn,
+    Particles.TRITIUM  : mT   - 1*mp - 2*mn,
+    Particles.HELIUM3  : mHe3 - 2*mp - 1*mn,
+    Particles.HELIUM4  : mHe4 - 2*mp - 2*mn,
 }
 
 
