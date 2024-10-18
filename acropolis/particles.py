@@ -13,8 +13,8 @@ class Particles(Enum):
     NEUTRON =  1
 
     # pions
-    CHARGED_PION = -6
-    NEUTRAL_PION = -5
+    CHARGED_PION = 2
+    NEUTRAL_PION = 3
 
     # nuclei
     DEUTERIUM = -4
@@ -44,7 +44,7 @@ def is_pion(particle):
     if particle not in Particles:
         return False
     
-    return (-6 <= particle.value <= -5)
+    return (2 <= particle.value <= 3)
 
 
 # TRITIUM, HELIUM3
