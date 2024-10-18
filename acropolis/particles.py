@@ -6,18 +6,21 @@ from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 
 
 class Particles(Enum):
+    NULL = None
+
+    # nucleons
     PROTON  =  0
     NEUTRON =  1
 
+    # pions
+    CHARGED_PION = -6
+    NEUTRAL_PION = -5
+
+    # nuclei
     DEUTERIUM = -4
     TRITIUM   = -3
     HELIUM3   = -2
     HELIUM4   = -1
-
-    CHARGED_PION = -6
-    NEUTRAL_PION = -5
-
-    NULL = None
 
 
 # PROTON, NEUTRON
@@ -27,6 +30,7 @@ def is_nucleon(particle):
 
     return (0 <= particle.value <= 1)
 
+
 # DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
 def is_nucleus(particle):
     if particle not in Particles:
@@ -34,12 +38,14 @@ def is_nucleus(particle):
     
     return (-4 <= particle.value <= -1)
 
+
 # NEUTRAL_PION, CHARGED_PION
 def is_pion(particle):
     if particle not in Particles:
         return False
     
     return (-6 <= particle.value <= -5)
+
 
 # TRITIUM, HELIUM3
 def is_spectator(particle):
@@ -49,9 +55,11 @@ def is_spectator(particle):
     # T and He3 act as spectator particles
     return (-3 <= particle.value <= -2)
 
+
 # PROTON, NEUTRON
 def is_projectile(particle):
     return is_nucleon(particle)
+
 
 # PROTON, HELIUM4
 def is_target(particle):
