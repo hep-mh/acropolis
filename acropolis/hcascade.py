@@ -373,6 +373,9 @@ class ParticleSpectrum(object):
 
 
     def add(self, particle, increment, K):
+        # DEBUG
+        print(f"Adding {particle} with energy {K:.5e}MeV")
+        
         if K > self._sEnergyGrid.upper_edge():
             raise ValueError(
                 "The given value of K lies ouside the energy grid"
