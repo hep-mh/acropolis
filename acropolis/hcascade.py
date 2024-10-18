@@ -9,6 +9,7 @@ from acropolis.etransfer import get_fs_spectrum
 from acropolis.input import locate_data_file
 # particles
 from acropolis.particles import Particles, mass
+from acropolis.particles import is_nucleon, is_nucleus
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
@@ -223,11 +224,16 @@ class EnergyGrid(object):
 
 
 def _get_etransfer_matrix(egrid, T, Y, eta):
-    # Extract the number of bins
+    # Extract the number of energy bins
     N = egrid.nbins()
 
+    # Extract the number of nucleons
+    Na = sum(is_nucleon(particle) for particle in Particles)
+    # Extract the number of nuclei
+    Nb = sum(is_nucleus(particle) for particle in Particles)
+
     # Initialize the matrix
-    matrix = np.identity(N)
+    matrix = np.identity( Na*N + Nb )
 
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
@@ -252,8 +258,15 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     # Extract the number of bins
     N = egrid.nbins()
 
+
+    # Extract the number of nucleons
+    Na = sum(is_nucleon(particle) for particle in Particles)
+    # Extract the number of nuclei
+    Nb = sum(is_nucleus(particle) for particle in Particles)
+
     # Initialize the matrix
-    matrix = np.identity(N)
+    matrix = np.identity( Na*N + Nb )
+    
 
     # TODO
 

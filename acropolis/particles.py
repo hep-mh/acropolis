@@ -154,9 +154,7 @@ class ParticleSpectrum(object):
         self._increment(index, increment)
 
 
-    def _add_nucleus(self, nucleus, increment, K):
-        # TODO: Check if the nucleus survives
-
+    def _add_nucleus(self, nucleus, increment):
         index = nucleus.value
         # -->
         self._increment(index, increment)
@@ -177,7 +175,7 @@ class ParticleSpectrum(object):
         
         # Nuclei
         elif is_nucleus(particle):
-            self._add_nucleus(particle, increment, K)
+            self._add_nucleus(particle, increment)
         
         else:
             raise ValueError(
