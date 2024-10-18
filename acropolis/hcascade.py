@@ -224,6 +224,8 @@ class EnergyGrid(object):
 
 
 def _get_etransfer_matrix(egrid, T, Y, eta):
+    bg = (T, Y, eta)
+
     # Extract the number of energy bins
     N = egrid.nbins()
 
@@ -242,10 +244,10 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
             Ki = egrid[i]
 
             # Calculate the scattering probabilities
-            probs = _get_all_probs(projectile, Ki, T, Y, eta)
+            probs = _get_all_probs(projectile, Ki, *bg)
 
             # Calculate the final-state spectrum
-            spectrum = get_fs_spectrum(egrid, projectile, Ki, probs)
+            spectrum = get_fs_spectrum(egrid, projectile, Ki, probs, *bg)
 
             # Loop over the spectrum and fill the matrix
             for (j, val) in spectrum.non_zero():
@@ -258,7 +260,6 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     # Extract the number of bins
     N = egrid.nbins()
 
-
     # Extract the number of nucleons
     Na = sum(is_nucleon(particle) for particle in Particles)
     # Extract the number of nuclei
@@ -267,7 +268,6 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     # Initialize the matrix
     matrix = np.identity( Na*N + Nb )
     
-
     # TODO
 
     return matrix
