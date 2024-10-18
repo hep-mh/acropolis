@@ -291,7 +291,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     if projectile_remnant != Particles.NULL:
         particles_equip.append(projectile_remnant)
 
-    Kj_p_L= []
+    Kj_p_L = []
     # Loop over the various daughter particles
     for i, daughter in enumerate(daughters):
         md = mass[daughter]
@@ -352,7 +352,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             continue # ignore pions
 
         # NOTE:
-        # Here, we negelect the reinjection of
+        # Here, we neglect the reinjection of
         # the resulting dissociation products
         if _survives(daughter, Kj_p_L[i], bg):
             spectrum.add(daughter, prob, Kj_p_L[i])
