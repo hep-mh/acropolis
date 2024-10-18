@@ -339,20 +339,21 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         spectrum.add(projectile_remnant, prob, Ki_p)
     
     for i, daughter in enumerate(daughters):
-        if is_pion(daughter): # ignore pions
-            continue
+        if is_pion(daughter):
+            continue # ignore pions
 
         # NOTE:
         # For now, We negelect the reinjection of
-        # the dissociation products
+        # the resulting dissociation products
         if _survives(daughter, Kj_p_L[i], bg):
             spectrum.add(daughter, prob, Kj_p_L[i])
     
     # Account for the destruction of any helium-4 target
     # NOTE:
     # For reactions of the form p + He4 -> p + He4 + pi,
-    # the final-state helium-4 nuclei is added above,
-    # but only if it does not get dissociated
+    # the final-state helium-4 nucleus is added with 
+    # +prob (see above). Unless the resulting nucleus
+    # is getting dissociated, the net change is thus 0
     if target == Particles.HELIUM4:
         spectrum.add(target, -prob, 0.)
 
