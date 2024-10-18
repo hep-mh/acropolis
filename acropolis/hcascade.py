@@ -24,6 +24,8 @@ NR = 14
 # K ≘ kinetic energy, E ≘ total energy
 
 
+# READ REACTION DATA AND EVALUATE RATES #############################
+
 def _nH(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
@@ -32,7 +34,6 @@ def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 
-#####################################################################
 
 _reaction_labels = [
     "pp_pp",
@@ -81,9 +82,6 @@ def _interp_reaction_data(label, K):
     return exp(
         np.interp( logK, log_reaction_data[:,0], log_reaction_data[:,1] )
     )
-
-
-#####################################################################
 
 
 def _get_all_rates(projectile, Ki, T, Y, eta):
@@ -168,8 +166,7 @@ def _get_all_probs(projectile, Ki, T, Y, eta):
     return rates/np.sum(rates)
 
 
-#####################################################################
-
+# CONSTRUCT THE TRANSFER MATRIX #####################################
 
 class EnergyGrid(object):
 
@@ -232,8 +229,6 @@ class EnergyGrid(object):
     def __getitem__(self, i):
         return self._sKcent[i]
 
-
-#####################################################################
 
 def _get_etransfer_matrix(egrid, T, Y, eta):
     # Extract the number of bins
