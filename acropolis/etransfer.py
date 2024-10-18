@@ -219,6 +219,10 @@ def _elastic(spectrum, projectile, Ki, prob, target):
         # Handle the scattered target particle
         spectrum.add(target    , prob*_integrate_fj_over_bin(i), egrid[i])
 
+    # Account for the destruction of any helium-4 target
+    if target == Particles.HELIUM4:
+        spectrum.add(target, -prob, 0.)
+
 
 # Reactions of the form
 # p + X(bg) -> Y
@@ -313,6 +317,10 @@ def _inelastic(spectrum, projectile, Ki, prob, target, daughters, projectile_act
     for i, daughter in enumerate(daughters):
         if not is_pion(daughter): # ignore pions
             spectrum.add(daughter, prob, Kj_p_L[i])
+    
+    # Account for the destruction of any helium-4 targets
+    if target == Particles.HELIUM4:
+        spectrum.add(target, -prob, 0.)
 
 
 # INDIVIDUAL FUNCTIONS ##############################################

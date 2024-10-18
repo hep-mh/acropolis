@@ -116,7 +116,7 @@ class ParticleSpectrum(object):
 
 
     def _increment(self, index, increment, acc=1e-5):
-        if increment <= acc/self._sN:
+        if abs(increment) <= acc/self._sN:
             return
 
         if index in self._sEntries:
