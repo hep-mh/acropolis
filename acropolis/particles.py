@@ -117,6 +117,12 @@ eth_pdi = {
 }
 
 
+# For NUCLEONS (PROTON, NEUTRON), this class
+# counts the number of "active" nucleons per
+# energy bin
+# For NUCLEI (DEUTERIUM, ...), this class
+# counts the total number of destroyed/created
+# background nuclei
 class ParticleSpectrum(object):
 
     def __init__(self, energy_grid):
