@@ -20,27 +20,28 @@ class Particles(Enum):
     NULL = None
 
 
+# PROTON, NEUTRON
 def is_nucleon(particle):
     if particle not in Particles:
         return False
 
     return (0 <= particle.value <= 1)
 
-
+# DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
 def is_nucleus(particle):
     if particle not in Particles:
         return False
     
     return (-4 <= particle.value <= -1)
 
-
+# NEUTRAL_PION, CHARGED_PION
 def is_pion(particle):
     if particle not in Particles:
         return False
     
     return (-6 <= particle.value <= -5)
 
-
+# TRITIUM, HELIUM3
 def is_spectator(particle):
     if particle not in Particles:
         return False
@@ -48,12 +49,12 @@ def is_spectator(particle):
     # T and He3 act as spectator particles
     return (-3 <= particle.value <= -2)
 
-
-def is_valid_projectile(particle):
+# PROTON, NEUTRON
+def is_projectile(particle):
     return is_nucleon(particle)
 
-
-def is_valid_target(particle):
+# PROTON, HELIUM4
+def is_target(particle):
     if particle not in Particles:
         return False
 
@@ -100,7 +101,7 @@ charge = {
 }
 
 # All threshold energies in MeV
-eth = {
+eth_pdi = {
     Particles.DEUTERIUM: mD   - 1*mp - 1*mn,
     Particles.TRITIUM  : mT   - 1*mp - 2*mn,
     Particles.HELIUM3  : mHe3 - 2*mp - 1*mn,
