@@ -10,8 +10,10 @@ from scipy.optimize import root
 from enum import Enum
 
 # particles
-from acropolis.particles import Particles, ParticleSpectrum
-from acropolis.particles import mass, is_pion, is_spectator, convert
+from acropolis.particles import Particles, ParticleSpectrum, mass
+from acropolis.particles import is_valid_projectile, is_pion, is_spectator, convert
+# pprint
+from acropolis.pprint import print_error
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
@@ -598,6 +600,12 @@ def _update_spectrum(spectrum, rid, projectile, Ki, prob):
 
 
 def get_fs_spectrum(egrid, projectile, Ki, probs):
+    if not is_valid_projectile(projectile):
+        print_error(
+            "The given particle is not a valid projectile",
+            "acropolis.etransfer.get_fs_spectrum"
+        )
+
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 

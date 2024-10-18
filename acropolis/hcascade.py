@@ -8,9 +8,7 @@ from acropolis.etransfer import get_fs_spectrum
 # input
 from acropolis.input import locate_data_file
 # particles
-from acropolis.particles import Particles, mass, is_valid_projectile
-# pprint
-from acropolis.pprint import print_error
+from acropolis.particles import Particles, mass
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
@@ -89,12 +87,6 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
 
     # Initialize an array for storing the rates
     rates = np.zeros(NR)
-
-    if not is_valid_projectile(projectile):
-        print_error(
-            "The given particles is not a valid projectile.",
-            "acropolis.hcascade.get_all_rates"
-        )
     
     x = {
         Particles.PROTON : "p",
