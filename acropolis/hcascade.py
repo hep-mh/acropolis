@@ -255,3 +255,14 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
     
     return matrix
 
+
+def _get_eloss_matrix(egrid, T, Y, eta):
+    # Extract the number of bins
+    N = egrid.nbins()
+
+    # Initialize the matrix
+    matrix = np.identity(N)
+
+    # TODO
+
+    return matrix
