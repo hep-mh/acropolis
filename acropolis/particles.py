@@ -5,6 +5,8 @@ from enum import Enum
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 
 
+# NOTE: _NEUTRON and _PROTON are 
+# not meant to be used directly
 class Particles(Enum):
     NULL = None
 
@@ -72,10 +74,18 @@ def is_target(particle):
     return (particle.value in [0, -1] )
 
 
+# PROTON, NEUTRON
+def has_nuceq(particle):
+    if particle not in Particles:
+        return False
+    
+    return (0 <= particle.value <= 1)
+
+
 def convert(nucleon):
     if not is_nucleon(nucleon):
         raise ValueError(
-            "The given particle is not a nucleon"
+            "The given nucleon cannot be identified as such"
         )
     
     if nucleon == Particles.PROTON:
@@ -86,7 +96,7 @@ def convert(nucleon):
 
 
 def nuceq(nucleon):
-    if nucleon not in [Particles.PROTON, Particles.NEUTRON]:
+    if not has_nuceq(nucleon):
         raise ValueError(
             "The given nucleon does not have a nucleus equivalent"
         )
@@ -173,6 +183,39 @@ class ParticleSpectrum(object):
 
 
     def _add_nucleus(self, nucleus, increment):
+        index = nucleus.value
+        # -->
+        self._increment(index, increment)
+
+
+    def add_projectile(self, projectile, increment, K):
+        if K < self._sEnergyGrid.lower_edge():
+            return
+
+        if K > self._sEnergyGrid.upper_edge():
+            raise ValueError(
+                "The given value of K lies ouside the energy range"
+            )
+        
+        if not is_projectile(projectile):
+            raise ValueError(
+                "The given projectile cannot be identified as such"
+            )
+        
+        index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
+        # -->
+        self._increment(index, increment)
+
+
+    def add_nucleus(self, nucleus, increment):
+        if has_nuceq(nucleus):
+            nucleus = nuceq(nucleus)
+        
+        if not is_nucleus(nucleus):
+            raise ValueError(
+                "The given nucleus cannot be identified as such"
+            )
+        
         index = nucleus.value
         # -->
         self._increment(index, increment)
