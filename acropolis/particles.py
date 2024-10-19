@@ -17,6 +17,9 @@ class Particles(Enum):
     NEUTRAL_PION = 3
 
     # nuclei
+    _NEUTRON  = -6
+    _PROTON   = -5
+
     DEUTERIUM = -4
     TRITIUM   = -3
     HELIUM3   = -2
@@ -31,12 +34,12 @@ def is_nucleon(particle):
     return (0 <= particle.value <= 1)
 
 
-# DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
+# _NEUTRON, _PROTON, DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
 def is_nucleus(particle):
     if particle not in Particles:
         return False
     
-    return (-4 <= particle.value <= -1)
+    return (-6 <= particle.value <= -1)
 
 
 # NEUTRAL_PION, CHARGED_PION
@@ -69,15 +72,30 @@ def is_target(particle):
     return (particle.value in [0, -1] )
 
 
-def convert(particle):
-    if not is_nucleon(particle):
-        return particle
+def convert(nucleon):
+    if not is_nucleon(nucleon):
+        raise ValueError(
+            "The given particle is not a nucleon"
+        )
     
-    if particle == Particles.PROTON:
+    if nucleon == Particles.PROTON:
         return Particles.NEUTRON
     
-    if particle == Particles.NEUTRON:
+    if nucleon == Particles.NEUTRON:
         return Particles.PROTON
+
+
+def nuceq(nucleon):
+    if nucleon not in [Particles.PROTON, Particles.NEUTRON]:
+        raise ValueError(
+            "The given nucleon does not have a nucleus equivalent"
+        )
+    
+    if nucleon == Particles.PROTON:
+        return Particles._PROTON
+    
+    if nucleon == Particles.NEUTRON:
+        return Particles._NEUTRON
 
 
 # All masses in MeV
