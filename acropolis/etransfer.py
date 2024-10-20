@@ -203,7 +203,7 @@ def _decay(spectrum, projectile, Ki, prob):
 
     # Account for the destruction of the
     # initial state projectile
-    spectrum.add(projectile, -prob, -1)
+    spectrum.add(projectile, -prob)
 
 
 # Reactions of the form
@@ -267,8 +267,8 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
     # Account for (1) the destruction of the
     # initial-state particles, as well as (2)
     # the creation of particles below Kmin
-    spectrum.add(projectile, -prob*sum_Fi, -1)
-    spectrum.add(target    , -prob*sum_Fj, -1)
+    spectrum.add(projectile, -prob*sum_Fi)
+    spectrum.add(target    , -prob*sum_Fj)
 
 
 # Reactions of the form
@@ -373,8 +373,8 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     
     # Account for the destruction of the
     # initial-state particles
-    spectrum.add(projectile, -prob, -1)
-    spectrum.add(target    , -prob, -1)
+    spectrum.add(projectile, -prob)
+    spectrum.add(target    , -prob)
 
 
 # INDIVIDUAL FUNCTIONS ##############################################

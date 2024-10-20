@@ -200,7 +200,7 @@ class ParticleSpectrum(object):
         self._increment(index, increment)
 
 
-    def add(self, particle, increment, K):
+    def add(self, particle, increment, K=0):
         if is_projectile(particle):
             self._add_projectile(particle, increment, K)
         
