@@ -163,7 +163,7 @@ class ParticleSpectrum(object):
         self._sEntries = {}
 
 
-    def _increment(self, index, increment, acc=1e-5):
+    def _increment(self, index, increment, acc=0):
         if abs(increment) <= acc/self._sN:
             return
 
@@ -173,48 +173,27 @@ class ParticleSpectrum(object):
             self._sEntries[index] = increment
 
 
-    def _add_nucleon(self, nucleon, increment, K):
-        if K < self._sEnergyGrid.lower_edge():
-            return
-
-        index = nucleon.value*self._sN + self._sEnergyGrid.index_of(K)
-        # -->
-        self._increment(index, increment)
-
-
-    def _add_nucleus(self, nucleus, increment):
-        index = nucleus.value
-        # -->
-        self._increment(index, increment)
-
-
-    def add_projectile(self, projectile, increment, K):
+    def _add_projectile(self, projectile, increment, K):
         if K < self._sEnergyGrid.lower_edge():
             return
 
         if K > self._sEnergyGrid.upper_edge():
-            raise ValueError(
-                "The given value of K lies ouside the energy range"
-            )
+            raise ValueError("The given value of K lies outside the energy range")
         
         if not is_projectile(projectile):
-            raise ValueError(
-                "The given projectile cannot be identified as such"
-            )
+            raise ValueError("The given particle is not a projectile")
         
         index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
         # -->
         self._increment(index, increment)
 
 
-    def add_nucleus(self, nucleus, increment):
+    def _add_nucleus(self, nucleus, increment):
         if has_nuceq(nucleus):
             nucleus = nuceq(nucleus)
         
         if not is_nucleus(nucleus):
-            raise ValueError(
-                "The given nucleus cannot be identified as such"
-            )
+            raise ValueError("The given particle is not a nucleus")
         
         index = nucleus.value
         # -->
@@ -222,26 +201,11 @@ class ParticleSpectrum(object):
 
 
     def add(self, particle, increment, K):
-        # DEBUG
-        print(f"Adding {particle} with energy {K:.5e}MeV")
+        if is_projectile(particle):
+            self._add_projectile(particle, increment, K)
         
-        if K > self._sEnergyGrid.upper_edge():
-            raise ValueError(
-                "The given value of K lies ouside the energy grid"
-            )
-
-        # Protons & Neutrons
-        if is_nucleon(particle):
-            self._add_nucleon(particle, increment, K)
-        
-        # Nuclei
-        elif is_nucleus(particle):
+        if is_nucleus(particle) or has_nuceq(particle):
             self._add_nucleus(particle, increment)
-        
-        else:
-            raise ValueError(
-                "The given particles cannot be added to the spectrum"
-            )
 
 
     def non_zero(self):
@@ -269,16 +233,16 @@ class ParticleSpectrum(object):
         str_repr = ""
 
         for i in range(self._sN):
-            str_repr += f"{self._sEnergyGrid[i]:.3e} |"
+            str_repr += f" {self._sEnergyGrid[i]:.3e} |"
 
             for j in range(0, 2): # nucleons
                 str_repr += f" {self.at(j*self._sN + i):.3e}"
             
             str_repr += "\n"
         
-        str_repr += "----------x\n"
+        str_repr += "-----------x\n"
 
-        for k in range(-4, 0): # nuclei
-            str_repr += f"{self.at(k):.3e} | \n"
+        for k in range(-6, 0): # nuclei
+            str_repr += f"{self.at(k):+.3e} | \n"
         
         return str_repr

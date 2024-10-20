@@ -18,7 +18,7 @@ from acropolis.pprint import print_error
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import Kt, mp, mn
+from acropolis.params import Kt
 
 
 class _Actions(Enum):
@@ -186,14 +186,24 @@ def _Bsl(target, s):
 # p -> p
 # n -> p + [...]
 def _decay(spectrum, projectile, Ki, prob):
-    # Estimate the energy of the resulting proton
-    if   projectile == Particles.PROTON:
-        Ki_p = Ki
-    elif projectile == Particles.NEUTRON:
-        Ki_p = (Ki + mn) - mp # Ep ~ En
+    # Determine the projectile remnant after
+    # the decay
+    projectile_remnant = {
+        Particles.PROTON : Particles.PROTON,
+        Particles.NEUTRON: Particles.PROTON
+    }[projectile]
 
-    # Update the spectrum
-    spectrum.add(Particles.PROTON, prob, Ki_p)
+    # Estimate the kinetic energy of the remnant
+    # Ep ~ En
+    Ki_p = Ki + mass[projectile] - mass[projectile_remnant]
+
+    # UPDATE THE SPECTRUM #################################
+    # _survives(projectile_remnant) == True
+    spectrum.add(projectile_remnant, prob, Ki_p)
+
+    # Account for the destruction of the
+    # initial state projectile
+    spectrum.add(projectile, -prob, -1)
 
 
 # Reactions of the form
@@ -234,25 +244,31 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
 
         return pref * ( exp( -2.*mA*Bsl*(Ki-Ki_p_h) ) - exp( -2.*mA*Bsl*(Ki-Ki_p_l) ) )
 
-    # Update the spectrum by looping over all bins
+    # UPDATE THE SPECTRUM #################################
+    sum_Fi, sum_Fj = 0., 0.
     for i in range( egrid.nbins() ):
         Fi = _integrate_fi_over_bin(i)
         Fj = _integrate_fj_over_bin(i)
+        # ->
+        sum_Fi += Fi
+        sum_Fj += Fj
 
         # Extract the current energy
         Ki_p = Kj_p = egrid[i]
 
         # Handle the scattered PROJECTILE particle
+        # _survives(projectile) == True
         spectrum.add(projectile, prob*Fi, Ki_p)
 
         # Handle the scattered TARGET particle
-        if is_nucleus(target):
-            # The net change is only < 0 if the scattered
-            # nucleus undergoes a dissociation reaction
-            if not _survives(target, Kj_p, bg):
-                spectrum.add(target, -prob*Fj, Kj_p) 
-        else:
+        if _survives(target, Kj_p, bg):
             spectrum.add(target, prob*Fj, Kj_p)
+        
+    # Account for (1) the destruction of the
+    # initial-state particles, as well as (2)
+    # the creation of particles below Kmin
+    spectrum.add(projectile, -prob*sum_Fi, -1)
+    spectrum.add(target    , -prob*sum_Fj, -1)
 
 
 # Reactions of the form
@@ -343,29 +359,22 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             # -->
             Kj_p_L[i] = gcm * Ej_p_cm - md
 
-    # Update the spectrum
+    # UPDATE THE SPECTRUM ###########################################
     if projectile_remnant != Particles.NULL:
-        # (_survives == True) for any type of remnant
+        # _survives(projectile_remnant) == True
         spectrum.add(projectile_remnant, prob, Ki_p)
     
     for i, daughter in enumerate(daughters):
         if is_pion(daughter):
             continue # ignore pions
 
-        # NOTE:
-        # Here, we neglect the reinjection of
-        # the resulting dissociation products
         if _survives(daughter, Kj_p_L[i], bg):
             spectrum.add(daughter, prob, Kj_p_L[i])
     
-    # Account for the destruction of the target nucleus
-    # NOTE:
-    # For reactions of the form p + He4 -> p + He4 + pi,
-    # the final-state helium-4 nucleus is added with 
-    # +prob (see above). Unless the resulting nucleus
-    # is getting dissociated, the net change is thus 0
-    if is_nucleus(target):
-        spectrum.add(target, -prob, 0.)
+    # Account for the destruction of the
+    # initial-state particles
+    spectrum.add(projectile, -prob, -1)
+    spectrum.add(target    , -prob, -1)
 
 
 # INDIVIDUAL FUNCTIONS ##############################################
