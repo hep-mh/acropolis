@@ -141,7 +141,7 @@ eth_pdi = {
     Particles.DEUTERIUM: 1*mp + 1*mn - mD  ,
     Particles.TRITIUM  : 1*mp + 2*mn - mT  ,
     Particles.HELIUM3  : 2*mp + 1*mn - mHe3,
-    Particles.HELIUM4  : 2*mp + 2*mn - mHe4,
+    Particles.HELIUM4  : 2*mp + 2*mn - mHe4
 }
 
 

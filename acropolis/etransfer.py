@@ -267,6 +267,7 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
     # Account for (1) the destruction of the
     # initial-state particles, as well as (2)
     # the creation of particles below Kmin
+    #                        = -1 + (1 - sum_Fx)
     spectrum.add(projectile, -prob*sum_Fi)
     spectrum.add(target    , -prob*sum_Fj)
 
