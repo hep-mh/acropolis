@@ -19,7 +19,7 @@ from acropolis.pprint import print_error
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import Kt
+from acropolis.params import Kt, mn, mp
 
 
 class _Actions(Enum):
@@ -95,9 +95,20 @@ def _fragments(particle, Ki, bg):
     if _survives(particle, Ki, bg):
         return [(particle, Ki)]
     
+    # Extract the mass number and the
+    # atomic number of the particle
     Z, A = za[particle]
 
-    return [(Particles.PROTON, 0.)]*Z + [(Particles.NEUTRON, 0.)]*(A-Z)
+    # Extract the mass of the particle
+    m = mass[particle]
+
+    # Calculate the kinetic energy of the
+    # resulting protons and neutrons
+    Kp_p = (Ki + m)/A - mp
+    Kn_p = (Ki + m)/A - mn
+    
+    # -->
+    return [(Particles.PROTON, Kp_p)]*Z + [(Particles.NEUTRON, Kn_p)]*(A-Z)
 
 
 # Ecm in MeV
