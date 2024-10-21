@@ -82,7 +82,7 @@ def _survives(nucleus, Ki, bg):
         return True
 
     # Photodisintegration via CMB photons
-    if sqrt( 3*Ki*bg.T ) > eth_pdi[nucleus]:
+    if sqrt( 3*Ki*bg.T ) > eth_pdi(nucleus):
         return False
     
     # Hadrodisintegration via background protons
