@@ -229,19 +229,28 @@ class ParticleSpectrum(object):
 
 
     def __repr__(self):
+        id_str = {
+            -6: "n  ",
+            -5: "p  ",
+            -4: "H2 ",
+            -3: "H3 ",
+            -2: "He3",
+            -1: "He4"
+        } 
+
         str_repr = ""
 
         for i in range(self._sN):
-            str_repr += f" {self._sEnergyGrid[i]:.3e} |"
+            str_repr += f"      {self._sEnergyGrid[i]:.3e} |"
 
             for j in range(0, 2): # nucleons
                 str_repr += f" {self.at(j*self._sN + i):.3e}"
             
             str_repr += "\n"
         
-        str_repr += "-----------x\n"
+        str_repr += "----------------x\n"
 
         for k in range(-6, 0): # nuclei
-            str_repr += f"{self.at(k):+.3e} | \n"
+            str_repr += f"Δ{id_str[k]} {self.at(k):+.3e} | \n"
         
         return str_repr
