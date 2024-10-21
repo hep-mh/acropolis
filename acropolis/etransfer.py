@@ -81,6 +81,9 @@ def _survives(nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return True
     
+    # DEBUG
+    print(f"{nucleus} with kinetic energy {Ki:.2e}MeV did not survive")
+
     Z, A = za[nucleus]
 
     # Calculate the threshold energy for
