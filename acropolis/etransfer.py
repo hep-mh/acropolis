@@ -80,9 +80,6 @@ def _boost_projectile(particle, K, gcm, vcm):
 def _survives(nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return True
-    
-    # DEBUG
-    print(f"{nucleus} with kinetic energy {Ki:.2e}MeV did not survive")
 
     Z, A = za[nucleus]
 
@@ -92,6 +89,9 @@ def _survives(nucleus, Ki, bg):
 
     # Photodisintegration via CMB photons
     if sqrt( 3*Ki*bg.T ) > Eth_pdi:
+        # DEBUG
+        print(f"  • {nucleus} with kinetic energy {Ki:.3e}MeV did not survive")
+
         return False
     
     # Hadrodisintegration via background protons
