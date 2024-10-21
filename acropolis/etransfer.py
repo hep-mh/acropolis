@@ -10,9 +10,10 @@ from scipy.optimize import root
 from enum import Enum
 
 # particles
-from acropolis.particles import Particles, ParticleSpectrum, mass, eth_pdi
-from acropolis.particles import is_projectile
-from acropolis.particles import is_pion, is_spectator, is_nucleus, convert
+from acropolis.particles import Particles, ParticleSpectrum
+from acropolis.particles import mass, za, eth_pdi
+from acropolis.particles import is_projectile, is_pion, is_spectator, is_nucleus
+from acropolis.particles import convert
 # pprint
 from acropolis.pprint import print_error
 # params
@@ -88,6 +89,15 @@ def _survives(nucleus, Ki, bg):
     # TODO
 
     return True
+
+
+def _fragments(particle, Ki, bg):
+    if _survives(particle, Ki, bg):
+        return [(particle, Ki)]
+    
+    Z, A = za[particle]
+
+    return [(Particles.PROTON, 0.)]*Z + [(Particles.NEUTRON, 0.)]*(A-Z)
 
 
 # Ecm in MeV
@@ -261,8 +271,8 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
         spectrum.add(projectile, prob*Fi, Ki_p)
 
         # Handle the scattered TARGET particle
-        if _survives(target, Kj_p, bg):
-            spectrum.add(target, prob*Fj, Kj_p)
+        for fragment, Kj_f in _fragments(target, Kj_p, bg):
+            spectrum.add(fragment, prob*Fj, Kj_f)
         
     # Account for (1) the destruction of the
     # initial-state particles, as well as (2)
@@ -369,8 +379,8 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         if is_pion(daughter):
             continue # ignore pions
 
-        if _survives(daughter, Kj_p_L[i], bg):
-            spectrum.add(daughter, prob, Kj_p_L[i])
+        for fragment, Kj_f in _fragments(daughter, Kj_p_L[i], bg):
+            spectrum.add(fragment, prob, Kj_f)
     
     # Account for the destruction of the
     # initial-state particles

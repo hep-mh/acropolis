@@ -136,6 +136,13 @@ charge = {
     Particles.NULL: 0
 }
 
+za = {
+    Particles.DEUTERIUM: (1, 2),
+    Particles.TRITIUM  : (1, 3),
+    Particles.HELIUM3  : (2, 3),
+    Particles.HELIUM4  : (2, 4)
+}
+
 # All threshold energies in MeV
 eth_pdi = {
     Particles.DEUTERIUM: 1*mp + 1*mn - mD  ,
