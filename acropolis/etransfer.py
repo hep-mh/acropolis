@@ -361,10 +361,11 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         dM -= md
     
     # DEBUG
-    print(f"Gamma factor     : {gcm:.5e}")
-    print(f"Mass difference  : {dM:.5e}MeV")
-    print(f"Daughter energies: {[Ki_p, *Kj_p_L]}MeV")
-    print(f"Energy balance   : {Ki:.3e}MeV (in) vs. {Ki_p+sum(Kj_p_L)-dM:.3e}MeV (out)")
+    print(f"Gamma factor      : {gcm:.5e}")
+    print(f"Mass difference   : {dM:.5e}MeV")
+    print(f"Daughter energies : {[Ki_p, *Kj_p_L]}MeV")
+    print(f"Daughter particles: {daughters}")
+    print(f"Energy balance    : {Ki:.3e}MeV (in) vs. {Ki_p+sum(Kj_p_L)-dM:.3e}MeV (out)")
     
     # Ensure energy conservation
     # NOTE:
