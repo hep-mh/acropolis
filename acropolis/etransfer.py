@@ -361,6 +361,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         dM -= md
     
     # DEBUG
+    print(f"Inelastic scattering")
     print(f"Gamma factor   : {gcm:+.5e}")
     print(f"Mass difference: {dM:+.5e}MeV")
     print(f"Energy balance : {Ki:+.5e}MeV (in)")
