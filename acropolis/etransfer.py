@@ -378,7 +378,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     # energy is carried away by additional pions
     if Ki + dM < Ki_p + sum(Kj_p_L): # Energy too large
         # DEBUG
-        print("Energy not conserved: Using equpartition of momenta")
+        print("  • The FS energy is too large: Using equpartition of momenta")
 
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
