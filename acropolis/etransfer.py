@@ -11,7 +11,7 @@ from enum import Enum
 
 # particles
 from acropolis.particles import Particles, ParticleSpectrum
-from acropolis.particles import mass, za, eth_pdi
+from acropolis.particles import mass, za
 from acropolis.particles import is_projectile, is_pion, is_spectator, is_nucleus
 from acropolis.particles import convert
 # pprint
@@ -80,9 +80,15 @@ def _boost_projectile(particle, K, gcm, vcm):
 def _survives(nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return True
+    
+    Z, A = za[nucleus]
+
+    # Calculate the threshold energy for
+    # photodisintegration
+    Eth_pdi = Z*mp + (A-Z)*mn - mass[nucleus]
 
     # Photodisintegration via CMB photons
-    if sqrt( 3*Ki*bg.T ) > eth_pdi(nucleus):
+    if sqrt( 3*Ki*bg.T ) > Eth_pdi:
         return False
     
     # Hadrodisintegration via background protons

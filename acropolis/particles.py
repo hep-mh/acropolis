@@ -143,12 +143,6 @@ za = {
     Particles.HELIUM4  : (2, 4)
 }
 
-# All threshold energies in MeV
-def eth_pdi(nucleus):
-    Z, A = za[nucleus]
-
-    return Z*mp + (A-Z)*mn - mass[nucleus]
-
 
 # For NUCLEONS (PROTON, NEUTRON), this class
 # counts the number of "active" nucleons per
