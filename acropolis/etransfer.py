@@ -360,11 +360,17 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Update the mass difference
         dM -= md
     
+    # DEBUG
+    print(f"Gamma factor     : {gcm:.5e}")
+    print(f"Mass difference  : {dM:.5e}MeV")
+    print(f"Daughter energies: {[Ki_p, *Kj_p_L]}MeV")
+    print(f"Energy balance   : {Ki:.3e}MeV (in) vs. {Ki_p+sum(Kj_p_L)-dM:.3e}MeV (out)")
+    
     # Ensure energy conservation
     # NOTE:
-    # In the '<' case, we assume that the remaining
+    # In the '>' case, we assume that the remaining
     # energy is carried away by additional pions
-    if Ki + dM > Ki_p + sum(Kj_p_L): # Energy too large
+    if Ki + dM < Ki_p + sum(Kj_p_L): # Energy too large
         # DEBUG
         print("Energy not conserved: Using equpartition of momenta")
 
