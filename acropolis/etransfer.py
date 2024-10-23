@@ -349,7 +349,9 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
 
             # Update the available COM energy
             # (K ~ 5.789 MeV is fixed by the distribution)
-            Ecm_equip -= gcm * ( Kj_p_L[-1] + md ) # vm*p ~ 0
+            Ecm_equip -= ( Kj_p_L[-1] + md ) / gcm
+            # This substraction ensures energy conservation
+            # in the cosmic frame after equipartition
         else:
             # Kj_p_cm ~ Kt
             Kj_p_L.append( gcm * ( Kt + md ) - md )
@@ -360,30 +362,31 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Update the mass difference
         dM -= md
     
+    # Check if reaction is kinetmatically allowed
+    if Ki + dM <= 0 and not np.isclose(prob, 0.):
+        raise ValueError(
+            "Ki is too small: prob should be 0."
+        )
+
     # DEBUG
-    print(f"Inelastic scattering")
-    print(f"Gamma factor   : {gcm:+.5e}")
-    print(f"Mass difference: {dM:+.5e}MeV")
-    print(f"Energy balance : {Ki:+.5e}MeV (in)")
-    print(f"                 {Ki_p+sum(Kj_p_L)-dM:+.5e}MeV (out)")
-    print(f"FS particles   :")
+    print(f"Final-state particles :")
     _l1 = [Ki_p, *Kj_p_L]
     _l2 = [projectile_remnant, *daughters]
     for _K, _d in zip(_l1, _l2):
-        print(f"  • {_d:<22}: {_K:.3e}MeV")
-    print(f"Spectrum log   :")
+        print(f"  • {_d.name:<12}   {_K:.3e}MeV")
+    print(f"Gamma factor          :  {gcm:.5e}")
+    print(f"Mass difference       : {dM:+.5e}MeV")
+    print(f"Energy balance        :  {Ki:.5e}MeV (in)")
+    print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
 
     # Ensure energy conservation
     # NOTE:
     # In the '>' case, we assume that the remaining
     # energy is carried away by additional pions
     if Ki + dM < Ki_p + sum(Kj_p_L): # Energy too large
-        # DEBUG
-        print("  • The FS energy is too large: Using equpartition of momenta")
-
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
-        
+
         # Update the energy of the remnant
         if projectile_remnant != Particles.NULL:
             mr = mass[projectile_remnant]
@@ -402,6 +405,10 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             Ej_p_cm = sqrt( pe**2. + md**2. ) 
             # -->
             Kj_p_L[i] = gcm * Ej_p_cm - md
+        
+        # DEBUG
+        print(f"Energy balance (equip):  {Ki:.5e}MeV (in)")
+        print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
 
     # UPDATE THE SPECTRUM ###########################################
     if projectile_remnant != Particles.NULL:

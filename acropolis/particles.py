@@ -201,7 +201,7 @@ class ParticleSpectrum(object):
 
     def add(self, particle, increment, K=0):
         # DEBUG
-        print(f"  • Adding {particle:<17} ({increment:+.2e}) with kinetic energy {K:.2e}MeV")
+        print(f"▶ Adding {particle.name:<7} ({increment:+.2e}) with kinetic energy {K:.2e}MeV")
 
         if is_projectile(particle):
             self._add_projectile(particle, increment, K)
