@@ -89,9 +89,6 @@ def _survives(nucleus, Ki, bg):
 
     # Photodisintegration via CMB photons
     if sqrt( 3*Ki*bg.T ) > Eth_pdi:
-        # DEBUG
-        print(f"  • {nucleus} with kinetic energy {Ki:.3e}MeV did not survive")
-
         return False
     
     # Hadrodisintegration via background protons
@@ -385,7 +382,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     # NOTE:
     # In the '>' case, we assume that the remaining
     # energy is carried away by additional pions
-    if Ki + dM < Ki_p + sum(Kj_p_L): # Energy too large
+    if Ki + dM < Ki_p + sum(Kj_p_L): # Outgoing energy too large
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
 
@@ -408,6 +405,9 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             # -->
             Kj_p_L[i] = gcm * Ej_p_cm - md
         
+        # DEBUG
+        assert np.isclose(Ki+dM, Ki_p+sum(Kj_p_L))
+
         # DEBUG
         print(f"Energy balance (equip):  {Ki:.5e}MeV (in)")
         print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
