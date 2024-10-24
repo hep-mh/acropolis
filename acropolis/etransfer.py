@@ -338,7 +338,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     if projectile_remnant != Particles.NULL:
         particles_equip.append(projectile_remnant)
 
-    Kj_p_L = []
+    Kj_p_L, sum_Ksp = [], 0.
     # Loop over the various daughter particles
     for i, daughter in enumerate(daughters):
         md = mass[daughter]
@@ -352,6 +352,8 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             Ecm_equip -= ( Kj_p_L[-1] + md ) / gcm
             # This substraction ensures energy conservation
             # in the cosmic frame after equipartition
+
+            sum_Ksp += Kj_p_L[-1]
         else:
             # Kj_p_cm ~ Kt
             Kj_p_L.append( gcm * ( Kt + md ) - md )
@@ -363,7 +365,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         dM -= md
     
     # Check if reaction is kinetmatically allowed
-    if Ki + dM <= 0 and not np.isclose(prob, 0.):
+    if Ki + dM <= sum_Ksp and not np.isclose(prob, 0.):
         raise ValueError(
             "Ki is too small: prob should be 0."
         )
