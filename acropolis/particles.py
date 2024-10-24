@@ -1,6 +1,8 @@
 # enum
 from enum import Enum
 
+# flags
+import acropolis.flags as flags
 # params
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
 
@@ -54,9 +56,9 @@ def is_pion(particle):
 
 # TRITIUM, HELIUM3
 def is_spectator(particle):
-    # TODO
-    return False
-    
+    if not flags.A3_is_spectator:
+        return False
+
     if particle not in Particles or particle == Particles.NULL:
         return False
     

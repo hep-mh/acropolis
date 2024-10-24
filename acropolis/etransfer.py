@@ -9,6 +9,8 @@ from scipy.optimize import root
 # enum
 from enum import Enum
 
+# flags
+import acropolis.flags as flags
 # particles
 from acropolis.particles import Particles, ParticleSpectrum
 from acropolis.particles import mass, za
@@ -100,6 +102,9 @@ def _survives(nucleus, Ki, bg):
 def _fragments(particle, Ki, bg):
     if _survives(particle, Ki, bg):
         return [(particle, Ki)]
+    
+    if not flags.reinject_fragments:
+        return []
     
     # Extract the mass number and the
     # atomic number of the particle
