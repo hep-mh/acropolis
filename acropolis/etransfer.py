@@ -263,7 +263,7 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
         Ki_p_l, Ki_p_h = np.maximum(
             np.minimum( egrid.bin_range(i), Ki ), Ki - Kj_p_max
         )
-        # DEBUG
+        # -->
         assert Ki_p_l <= Ki_p_h
 
         if Ki_p_l == Ki_p_h:
@@ -405,7 +405,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
             # -->
             Kj_p_L[i] = gcm * Ej_p_cm - md
         
-        # DEBUG
+        # Check if energy is conserved
         assert np.isclose(Ki+dM, Ki_p+sum(Kj_p_L))
 
         # DEBUG
