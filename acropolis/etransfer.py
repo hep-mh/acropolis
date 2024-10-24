@@ -361,8 +361,10 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Update the mass difference
         dM -= md
     
-    # Check if reaction is kinetmatically allowed
-    if Ki + dM <= sum_Ksp:
+    # Check if reaction is kinematically allowed
+    M_equip = sum(mass[peq] for peq in particles_equip)
+    # -->
+    if Ecm_equip <= M_equip:
         raise ValueError(
             "Insufficient energy to create final-state particles"
         )
