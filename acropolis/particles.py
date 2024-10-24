@@ -81,7 +81,7 @@ def is_target(particle):
 
 
 # PROTON, NEUTRON
-def has_nuceq(particle):
+def _has_nuceq(particle):
     if particle not in Particles or particle == Particles.NULL:
         return False
     
@@ -101,8 +101,8 @@ def convert(nucleon):
         return Particles.PROTON
 
 
-def nuceq(nucleon):
-    if not has_nuceq(nucleon):
+def _nuceq(nucleon):
+    if not _has_nuceq(nucleon):
         raise ValueError(
             "The given nucleon does not have a nucleus equivalent"
         )
@@ -203,8 +203,8 @@ class ParticleSpectrum(object):
 
 
     def _add_nucleus(self, nucleus, increment):
-        if has_nuceq(nucleus):
-            nucleus = nuceq(nucleus)
+        if _has_nuceq(nucleus):
+            nucleus = _nuceq(nucleus)
         
         if not is_nucleus(nucleus):
             raise ValueError("The given particle is not a nucleus")
@@ -221,7 +221,7 @@ class ParticleSpectrum(object):
         if is_projectile(particle):
             self._add_projectile(particle, increment, K, acc=sp_acc)
         
-        if is_nucleus(particle) or has_nuceq(particle):
+        if is_nucleus(particle) or _has_nuceq(particle):
             self._add_nucleus(particle, increment)
 
 
