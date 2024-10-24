@@ -5,6 +5,7 @@ from enum import Enum
 import acropolis.flags as flags
 # params
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
+from acropolis.params import sp_acc
 
 
 # NOTE: _NEUTRON and _PROTON are 
@@ -169,7 +170,7 @@ class ParticleSpectrum(object):
         self._sEntries = {}
 
 
-    def _increment(self, index, increment, acc=0):
+    def _increment(self, index, increment, acc=0.):
         if abs(increment) <= acc/self._sN:
             return
 
@@ -179,7 +180,7 @@ class ParticleSpectrum(object):
             self._sEntries[index] = increment
 
 
-    def _add_projectile(self, projectile, increment, K):
+    def _add_projectile(self, projectile, increment, K, acc=0.):
         if K < self._sEnergyGrid.lower_edge():
             return
 
@@ -191,7 +192,7 @@ class ParticleSpectrum(object):
         
         index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
         # -->
-        self._increment(index, increment)
+        self._increment(index, increment, acc)
 
 
     def _add_nucleus(self, nucleus, increment):
@@ -211,7 +212,7 @@ class ParticleSpectrum(object):
         print(f"▶ Adding {particle.name:<9} ({increment:+.2e}) with kinetic energy {K:.2e}MeV")
 
         if is_projectile(particle):
-            self._add_projectile(particle, increment, K)
+            self._add_projectile(particle, increment, K, acc=sp_acc)
         
         if is_nucleus(particle) or has_nuceq(particle):
             self._add_nucleus(particle, increment)

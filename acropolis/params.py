@@ -151,3 +151,8 @@ NE_min = 10
 # nuclear rates
 # Default: 50
 NT_pd = 50
+
+# The accuracy that is used for the
+# projectile spectrum entering the
+# hadronic cascade
+sp_acc = 1e-5
