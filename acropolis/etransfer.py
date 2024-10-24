@@ -368,7 +368,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         )
 
     # DEBUG
-    print(f"Final-state particles :")
+    print("Final-state particles :")
     _l1 = [Ki_p, *Kj_p_L]
     _l2 = [projectile_remnant, *daughters]
     for _K, _d in zip(_l1, _l2):
