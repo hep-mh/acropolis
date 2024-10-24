@@ -59,25 +59,6 @@ def _gcm(projectile, target, K):
 
     return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
-"""
-# K in MeV
-def _vcm(projectile, target, K):
-    mN, mA = mass[projectile], mass[target]
-
-    return sqrt( K**2. + 2*mN*K )/( K + mN + mA )
-"""
-
-"""
-# K in MeV
-def _boost_projectile(particle, K, gcm, vcm):
-    m = mass[particle]
-
-    # -->
-    E = K + m
-    p = sqrt( K**2. + 2.*K*m )
-
-    return gcm * ( E - vcm*p ) - m
-"""
 
 def _survives(nucleus, Ki, bg):
     if not is_nucleus(nucleus):
