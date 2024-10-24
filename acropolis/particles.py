@@ -115,6 +115,8 @@ def nuceq(nucleon):
 
 
 # All masses in MeV
+# acropolis.eloss
+# acropolis.etransfer
 mass = {
     Particles.PROTON : mp,
     Particles.NEUTRON: mn,
@@ -130,6 +132,7 @@ mass = {
     Particles.NULL: 0.
 }
 
+# acropolis.eloss
 charge = {
     Particles.PROTON : 1,
     Particles.NEUTRON: 0,
@@ -140,6 +143,8 @@ charge = {
     Particles.HELIUM4  : 2,
 }
 
+# acropolis.etransfer
+# acropolis.particles
 za = {
     Particles._NEUTRON : (0, 1),
     Particles._PROTON  : (1, 1),
@@ -153,9 +158,9 @@ za = {
 # For NUCLEONS (PROTON, NEUTRON), this class
 # counts the number of "active" nucleons per
 # energy bin
-# For NUCLEI (DEUTERIUM, ...), this class
-# counts the total number of destroyed/created
-# background nuclei
+# For NUCLEI (_PROTON, DEUTERIUM, ...), this
+# class counts the total number of destroyed /
+# created background nuclei
 class ParticleSpectrum(object):
 
     def __init__(self, energy_grid):
