@@ -138,8 +138,6 @@ charge = {
     Particles.TRITIUM  : 1,
     Particles.HELIUM3  : 2,
     Particles.HELIUM4  : 2,
-
-    Particles.NULL: 0
 }
 
 za = {
