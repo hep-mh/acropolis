@@ -362,9 +362,9 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         dM -= md
     
     # Check if reaction is kinetmatically allowed
-    if Ki + dM <= sum_Ksp and not np.isclose(prob, 0.):
+    if Ki + dM <= sum_Ksp:
         raise ValueError(
-            "Ki is too small: prob should be 0."
+            "Insufficient energy to create final-state particles"
         )
 
     # DEBUG
