@@ -345,7 +345,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Update the mass difference
         dM -= md
     
-    # Check if reaction is kinematically allowed
+    # Check if the reaction is kinematically allowed
     M_equip = sum(mass[peq] for peq in particles_equip)
     # -->
     if Ecm_equip <= M_equip:
