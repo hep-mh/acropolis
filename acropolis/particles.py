@@ -54,6 +54,9 @@ def is_pion(particle):
 
 # TRITIUM, HELIUM3
 def is_spectator(particle):
+    # TODO
+    return False
+    
     if particle not in Particles or particle == Particles.NULL:
         return False
     
