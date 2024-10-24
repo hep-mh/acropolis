@@ -115,12 +115,14 @@ def nuceq(nucleon):
 
 
 # All masses in MeV
-# acropolis.eloss
-# acropolis.etransfer
+# acropolis.eloss     (is_projectile || is_nucleus)
+# acropolis.etransfer (any)
 mass = {
     Particles.PROTON : mp,
     Particles.NEUTRON: mn,
 
+    Particles._NEUTRON : mn,
+    Particles._PROTON  : mp,
     Particles.DEUTERIUM: mD,
     Particles.TRITIUM  : mT,
     Particles.HELIUM3  : mHe3,
@@ -132,19 +134,21 @@ mass = {
     Particles.NULL: 0.
 }
 
-# acropolis.eloss
+# acropolis.eloss (is_projectile || is_nucleus)
 charge = {
     Particles.PROTON : 1,
     Particles.NEUTRON: 0,
 
+    Particles._NEUTRON : 0,
+    Particles._PROTON  : 1,
     Particles.DEUTERIUM: 1,
     Particles.TRITIUM  : 1,
     Particles.HELIUM3  : 2,
     Particles.HELIUM4  : 2,
 }
 
-# acropolis.etransfer
-# acropolis.particles
+# acropolis.etransfer (is nucleus)
+# acropolis.particles (is_nucleus)
 za = {
     Particles._NEUTRON : (0, 1),
     Particles._PROTON  : (1, 1),
