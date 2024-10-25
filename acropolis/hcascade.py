@@ -132,7 +132,8 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     rates[3]  = rates[2]
 
     # rid = 4
-    rates[4]  = rates[2] if ( N_p_pi == 4 ) else 0.
+    if N_p_pi == 4:
+        rates[4]  = rates[2]
 
     # rid = 5
     rates[5]  = rates[2]
