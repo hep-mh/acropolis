@@ -35,15 +35,15 @@ def _nHe4(T, Y, eta):
 
 _reaction_labels = [
     "pp_pp",
-    "np_np",
+    "pn_pn",
     "pp_inel",
-    "np_inel",
+    "pn_inel",
     "pp_tot",
-    "np_tot",
-    "Dp_tot",
-    "Tp_tot",
-    "He3p_tot",
-    "He4p_tot",
+    "pn_tot",
+    "pD_tot",
+    "pT_tot",
+    "pHe3_tot",
+    "pHe4_tot",
     "pHe4_pHe4",
     "pHe4_2pnD",
     "pHe4_2pT",
@@ -111,7 +111,7 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     # Calculate the target densities
     nH, nHe4 = _nH(T, Y, eta), _nHe4(T, Y, eta)
 
-    # Determine, how many channels contribute to
+    # Determine how many channels contribute to
     # inelastic projectile-proton scattering
     N_p_pi = 4 if ( Ki > _r4_th[projectile] ) else 3. 
 
@@ -122,10 +122,10 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
         rates[0] = sqrt(1. - v**2.) * hbar / tau_n
     
     # rid = 1
-    rates[1]  = nH * _interp_reaction_data(f"{x}p_{x}p", Ki) * v
+    rates[1]  = nH * _interp_reaction_data(f"p{x}_p{x}", Ki) * v
 
     # rid = 2
-    rates[2]  = nH * _interp_reaction_data(f"{x}p_inel", Ki) * v / N_p_pi
+    rates[2]  = nH * _interp_reaction_data(f"p{x}_inel", Ki) * v / N_p_pi
 
     # rid = 3
     rates[3]  = rates[2]
@@ -173,21 +173,17 @@ def _get_all_probs(projectile, Ki, T, Y, eta):
 
 
 def _get_mean_free_path(particle, Ki, T, Y, eta):
-    if not (is_projectile(particle) or is_nucleus(particle)):
-        return np.inf
-
-    # Initialize a variable for the total scattering rate
     rate = 0.
 
     # Extract the particle label
     x = label[particle]
 
     # Handle scattering on protons
-    rate += _nH(T, Y, eta) * _interp_reaction_data(f"{x}p_tot", Ki)
+    rate += _nH(T, Y, eta) * _interp_reaction_data(f"p{x}_tot", Ki)
 
     # Handle scattering on helium-4
     if is_projectile(particle): # p ~ n in this case
-        rate += _nHe4(T, Y, eta) * _interp_reaction_data(f"He4p_tot", Ki)
+        rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki)
     
     # TODO Neutron decay?
 
