@@ -172,6 +172,28 @@ def _get_all_probs(projectile, Ki, T, Y, eta):
     return rates/np.sum(rates)
 
 
+def _get_mean_free_path(particle, Ki, T, Y, eta):
+    if not (is_projectile(particle) or is_nucleus(particle)):
+        return np.inf
+
+    # Initialize a variable for the total scattering rate
+    rate = 0.
+
+    # Extract the particle label
+    x = label[particle]
+
+    # Handle scattering on protons
+    rate += _nH(T, Y, eta) * _interp_reaction_data(f"{x}p_tot", Ki)
+
+    # Handle scattering on helium-4
+    if is_projectile(particle): # p ~ n in this case
+        rate += _nHe4(T, Y, eta) * _interp_reaction_data(f"He4p_tot", Ki)
+    
+    # TODO Neutron decay?
+
+    return 1./rate
+
+
 # CONSTRUCT THE TRANSFER MATRIX #####################################
 
 class EnergyGrid(object):
