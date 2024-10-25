@@ -82,6 +82,15 @@ def _interp_reaction_data(label, K):
         np.interp( logK, log_reaction_data[:,0], log_reaction_data[:,1] )
     )
 
+# Threshold energies in MeV, for two pion prodiction
+# r4:
+# p + p(bg) -> n* + [n + 2pi+]
+# n + p(bg) -> p* + [n + 2pi0]
+_r4_th = {
+    Particles.PROTON : 605.7509051898966,
+    Particles.NEUTRON: 579.1139640875533
+}
+
 
 def _get_all_rates(projectile, Ki, T, Y, eta):
     # PREPARE #######################################################
