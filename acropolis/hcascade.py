@@ -83,14 +83,14 @@ def _interp_reaction_data(label, K):
     )
 
 
-# Threshold energies in MeV, for two pion prodiction
+# Threshold energies for two pion production
 # r4:
 # p + p(bg) -> n* + [n + 2pi+]
 # n + p(bg) -> p* + [n + 2pi0]
-_r4_th = {
+_Kth_r4 = {
     Particles.PROTON : 605.7509051898966,
     Particles.NEUTRON: 579.1139640875533
-}
+} # MeV
 
 
 def _get_all_rates(projectile, Ki, T, Y, eta):
@@ -113,7 +113,7 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
 
     # Determine how many channels contribute to
     # inelastic projectile-proton scattering
-    N_p_pi = 4 if ( Ki > _r4_th[projectile] ) else 3. 
+    N_p_pi = 4 if ( Ki > _Kth_r4[projectile] ) else 3. 
 
     # FILL ##########################################################
 
