@@ -204,7 +204,7 @@ def _dEdt_nucleon_pion(T, E, M):
 
 
 # All reactions
-def dEdt(particle, K, T, Y, eta):
+def dEdt(particle, K, T, Y, eta): # = dKdt
     if not ( is_projectile(particle) or is_nucleus(particle) ):
         raise NotImplementedError(
             "The calculation of dEdt is not supported for the given particle"

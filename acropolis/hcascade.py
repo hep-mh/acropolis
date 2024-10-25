@@ -9,7 +9,7 @@ from acropolis.etransfer import get_fs_spectrum
 from acropolis.input import locate_data_file
 # particles
 from acropolis.particles import Particles, mass, label
-from acropolis.particles import is_nucleon, is_nucleus
+from acropolis.particles import is_projectile, is_nucleon, is_nucleus
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
