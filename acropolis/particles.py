@@ -162,7 +162,7 @@ charge = {
     Particles.HELIUM4  : 2,
 }
 
-# acropolis.eloss (is_projectile || is_nucleus)
+# acropolis.eloss (is_projectile)
 dipole = {
     Particles.PROTON : gp,
     Particles.NEUTRON: gn

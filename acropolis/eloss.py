@@ -7,6 +7,9 @@ from scipy.integrate import quad
 from acropolis.cosmo import na, nee
 # jit
 from acropolis.jit import jit
+# particles
+from acropolis.particles import is_projectile, is_nucleus
+from acropolis.particles import mass, charge, dipole
 # params
 from acropolis.params import pi, pi2
 from acropolis.params import alpha, me, me2
@@ -198,3 +201,37 @@ def _dEdt_nucleon_pion(T, E, M):
     # E >= eps0*M/T
     #                | 1/(yr K³) --> 1/MeV²
     return -1.8e-8 * 3.2616628389e+01 * E * (T**3.) / (2.7**3.)
+
+
+# All reactions
+def dEdt(particle, K, T, Y, eta):
+    if not ( is_projectile(particle) or is_nucleus(particle) ):
+        raise NotImplementedError(
+            "The calculation of dEdt is not supported for the given particle"
+        )
+    
+    # Extract the mass of the particle
+    M = mass[particle]
+
+    # Extract the charge of the particle
+    Q = charge[particle]
+
+    # Extract the magnetic moment of the particle
+    G = 0. # for nuclei
+    if is_projectile(particle):
+        G = dipole[particle]
+
+    # Calculate the total energy of the particle
+    E = K + M
+
+    # Initialize the differential energy loss
+    dEdt = 0.
+    # -->
+    if Q != 0.:
+        dEdt += _dEdt_coulomb(T, E, M, Q, Y, eta)
+        dEdt += _dEdt_thomson(T, E, M, Q)
+        dEdt += _dEdt_bethe_heitler(T, E, M, Q)
+    elif G != 0.: # Q == 0.
+        dEdt += _dEdt_magnetic_moment(T, E, M, G, Y, eta)
+    
+    return dEdt
