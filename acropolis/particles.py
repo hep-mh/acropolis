@@ -33,15 +33,9 @@ class Particles(Enum):
 
 def _is_particle(particle):
     if particle not in Particles:
-        # DEBUG
-        raise ValueError("foo")
-
         return False
     
     if particle == Particles.NULL:
-        # DEBUG
-        raise ValueError("bar")
-
         return False
     
     return True
@@ -234,7 +228,7 @@ class ParticleSpectrum(object):
 
     def add(self, particle, increment, K=0):
         # DEBUG
-        print(f"▶ Adding {particle.name:<9} ({increment:+.2e}) with kinetic energy {K:.2e}MeV")
+        #print(f"▶ Adding {particle.name:<9} ({increment:+.2e}) with kinetic energy {K:.2e}MeV")
 
         if is_projectile(particle):
             self._add_projectile(particle, increment, K, acc=sp_acc)

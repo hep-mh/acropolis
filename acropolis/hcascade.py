@@ -240,7 +240,7 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
         # Loop over all possible energies
-        for i in len(N):
+        for i in range(N):
             Ki = egrid[i]
 
             # Calculate the scattering probabilities
@@ -257,17 +257,4 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
 
 
 def _get_eloss_matrix(egrid, T, Y, eta):
-    # Extract the number of bins
-    N = egrid.nbins()
-
-    # Extract the number of nucleons
-    Na = sum(is_nucleon(particle) for particle in Particles)
-    # Extract the number of nuclei
-    Nb = sum(is_nucleus(particle) for particle in Particles)
-
-    # Initialize the matrix
-    matrix = np.identity( Na*N + Nb )
-    
-    # TODO
-
-    return matrix
+    pass
