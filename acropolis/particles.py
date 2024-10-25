@@ -5,6 +5,7 @@ from enum import Enum
 import acropolis.flags as flags
 # params
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
+from acropolis.params import gp, gn
 from acropolis.params import sp_acc
 
 
@@ -159,6 +160,12 @@ charge = {
     Particles.TRITIUM  : 1,
     Particles.HELIUM3  : 2,
     Particles.HELIUM4  : 2,
+}
+
+# acropolis.eloss (is_projectile || is_nucleus)
+magm = {
+    Particles.PROTON : gp,
+    Particles.NEUTRON: gn
 }
 
 # acropolis.etransfer (is nucleus)
