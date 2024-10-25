@@ -104,6 +104,14 @@ def _has_nuceq(particle):
     return (0 <= particle.value <= 1)
 
 
+# _PROTON, _NEUTRON
+def _is_nuceq(particle):
+    if not _is_particle(particle):
+        return False
+    
+    return (-6 <= particle.value <= -5)
+
+
 def convert(nucleon):
     if not is_nucleon(nucleon):
         raise ValueError(
@@ -264,8 +272,10 @@ class ParticleSpectrum(object):
             if not is_nucleus(particle):
                 continue
 
-            A = 1:
-            _, A = za[particle]
+            A = 1
+            if not _is_nuceq(particle):
+                _, A = za[particle]
+            
             # -->
             Nb += self.at(particle.value)*A
         
