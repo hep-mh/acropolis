@@ -394,10 +394,6 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Check if energy is conserved
         assert np.isclose(Ki+dM, Ki_p+sum(Kj_p_L))
 
-        # DEBUG
-        print(f"Energy balance (equip):  {Ki:.5e}MeV (in)")
-        print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
-
     # UPDATE THE SPECTRUM ###########################################
     if projectile_remnant != Particles.NULL:
         # _survives(projectile_remnant) == True
