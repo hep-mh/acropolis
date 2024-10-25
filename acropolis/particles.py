@@ -163,7 +163,7 @@ charge = {
 }
 
 # acropolis.eloss (is_projectile || is_nucleus)
-magm = {
+dipole = {
     Particles.PROTON : gp,
     Particles.NEUTRON: gn
 }
