@@ -14,7 +14,6 @@ from acropolis.particles import is_nucleon, is_nucleus
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
 from acropolis.params import hbar, tau_n
-from acropolis.params import approx_zero
 
 
 # TODO: Move
@@ -76,11 +75,12 @@ def _interp_reaction_data(label, K):
     log_reaction_data = _log_reaction_data[label]
 
     if logK < log_reaction_data[0,0]:
-        return approx_zero
+        return 0.
 
     return exp(
         np.interp( logK, log_reaction_data[:,0], log_reaction_data[:,1] )
     )
+
 
 # Threshold energies in MeV, for two pion prodiction
 # r4:
