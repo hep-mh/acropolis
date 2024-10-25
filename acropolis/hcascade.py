@@ -263,6 +263,9 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
             # Calculate the final-state spectrum
             spectrum = get_fs_spectrum(egrid, projectile, Ki, probs, *bg)
 
+            # -->
+            assert np.isclose(spectrum.baryon_number(), 0.)
+
             # Loop over the spectrum and fill the matrix
             for (j, val) in spectrum.non_zero():
                 matrix[j,i] = val

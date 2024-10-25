@@ -258,7 +258,6 @@ class ParticleSpectrum(object):
         return self._sEnergyGrid
 
 
-    """
     def baryon_number(self):
         Nb = 0
 
@@ -274,7 +273,6 @@ class ParticleSpectrum(object):
             Nb += self.at(particle.value)*A
         
         return Nb
-    """
 
 
     def __repr__(self):
