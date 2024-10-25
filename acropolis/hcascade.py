@@ -8,7 +8,7 @@ from acropolis.etransfer import get_fs_spectrum
 # input
 from acropolis.input import locate_data_file
 # particles
-from acropolis.particles import Particles, mass
+from acropolis.particles import Particles, mass, label
 from acropolis.particles import is_nucleon, is_nucleus
 # params
 from acropolis.params import zeta3, pi2
@@ -99,10 +99,8 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     # Initialize an array for storing the rates
     rates = np.zeros(NR)
     
-    x = {
-        Particles.PROTON : "p",
-        Particles.NEUTRON: "n"
-    }[projectile]
+    # Extract the projectile label
+    x = label[projectile]
 
     # Extract the mass of the projectile
     m = mass[projectile]

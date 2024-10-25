@@ -168,6 +168,17 @@ dipole = {
     Particles.NEUTRON: gn
 }
 
+# acropolis.hcascade (is_projectile)
+label = {
+    Particles.PROTON   : "p",
+    Particles.NEUTRON  : "n",
+
+    Particles.DEUTERIUM: "D",
+    Particles.TRITIUM  : "T",
+    Particles.HELIUM3  : "He3",
+    Particles.HELIUM4  : "He4"
+}
+
 # acropolis.etransfer (is nucleus)
 # acropolis.particles (is_nucleus)
 za = {
