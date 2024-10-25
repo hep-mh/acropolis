@@ -120,7 +120,7 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
 
     # rid = 0
     if projectile == Particles.NEUTRON:
-        rates[0] = sqrt(1. - v**2.) *hbar / tau_n
+        rates[0] = sqrt(1. - v**2.) * hbar / tau_n
     
     # rid = 1
     rates[1]  = nH * _interp_reaction_data(f"{x}p_{x}p", Ki) * v
