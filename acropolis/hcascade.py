@@ -112,6 +112,10 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     # Calculate the target densities
     nH, nHe4 = _nH(T, Y, eta), _nHe4(T, Y, eta)
 
+    # Determine, how many channels contribute to
+    # inelastic projectile-proton scattering
+    N_p_pi = 4 if ( Ki > _r4_th[projectile] ) else 3. 
+
     # FILL ##########################################################
 
     # rid = 0
@@ -122,13 +126,13 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     rates[1]  = nH * _interp_reaction_data(f"{x}p_{x}p", Ki) * v
 
     # rid = 2
-    rates[2]  = nH * _interp_reaction_data(f"{x}p_inel", Ki) * v / 4.
+    rates[2]  = nH * _interp_reaction_data(f"{x}p_inel", Ki) * v / N_p_pi
 
     # rid = 3
     rates[3]  = rates[2]
 
     # rid = 4
-    rates[4]  = rates[2]
+    rates[4]  = rates[2] if ( N_p_pi == 4 ) else 0.
 
     # rid = 5
     rates[5]  = rates[2]
