@@ -31,9 +31,25 @@ class Particles(Enum):
     HELIUM4   = -1
 
 
+def _is_particle(particle):
+    if particle not in Particles:
+        # DEBUG
+        raise ValueError("foo")
+
+        return False
+    
+    if particle == Particles.NULL:
+        # DEBUG
+        raise ValueError("bar")
+
+        return False
+    
+    return True
+
+
 # PROTON, NEUTRON
 def is_nucleon(particle):
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
 
     return (0 <= particle.value <= 1)
@@ -41,7 +57,7 @@ def is_nucleon(particle):
 
 # _NEUTRON, _PROTON, DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
 def is_nucleus(particle):
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
     
     return (-6 <= particle.value <= -1)
@@ -49,7 +65,7 @@ def is_nucleus(particle):
 
 # NEUTRAL_PION, CHARGED_PION
 def is_pion(particle):
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
     
     return (2 <= particle.value <= 3)
@@ -60,7 +76,7 @@ def is_spectator(particle):
     if not flags.A3_is_spectator:
         return False
 
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
     
     # T and He3 act as spectator particles
@@ -74,7 +90,7 @@ def is_projectile(particle):
 
 # PROTON, HELIUM4
 def is_target(particle):
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
 
     return (particle.value in [0, -1] )
@@ -82,7 +98,7 @@ def is_target(particle):
 
 # PROTON, NEUTRON
 def _has_nuceq(particle):
-    if particle not in Particles or particle == Particles.NULL:
+    if not _is_particle(particle):
         return False
     
     return (0 <= particle.value <= 1)
@@ -145,10 +161,7 @@ charge = {
 
 # acropolis.etransfer (is nucleus)
 # acropolis.particles (is_nucleus)
-# TODO: Drop _
 za = {
-    Particles._NEUTRON : (0, 1),
-    Particles._PROTON  : (1, 1),
     Particles.DEUTERIUM: (1, 2),
     Particles.TRITIUM  : (1, 3),
     Particles.HELIUM3  : (2, 3),
@@ -243,6 +256,7 @@ class ParticleSpectrum(object):
         return self._sEnergyGrid
 
 
+    """
     def baryon_number(self):
         Nb = 0
 
@@ -250,11 +264,13 @@ class ParticleSpectrum(object):
             if not is_nucleus(particle):
                 continue
 
+            A = 1:
             _, A = za[particle]
             # -->
             Nb += self.at(particle.value)*A
         
         return Nb
+    """
 
 
     def __repr__(self):
