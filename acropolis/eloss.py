@@ -4,7 +4,7 @@ from math import log, exp, sqrt, erf
 from scipy.integrate import quad
 
 # cosmo
-from acropolis.cosmo import na, nee
+from acropolis.cosmo import nee
 # jit
 from acropolis.jit import jit
 # particles
@@ -161,11 +161,21 @@ def _dEdt_magnetic_moment(T, E, M, G, Y, eta):
     # For larger temperatures, the formulae are different
     assert T <= me
 
-    # Calculate the kinetic energy of the neutral particle
-    Ekin = E - M # > 0
-
     # Calculate the number density of electrons and positrons
     ne = nee(T, Y, eta)
+
+    # Calculate the gamma factor of the neutral particle
+    ga = E/M
+    
+    # Calculate the velocity of the neutral particle
+    v  = sqrt(1. - 1./ga**2.)
+
+    # -->
+    return -3. * pi * (alpha**2.) * (G**2.) * me * ne * ga**2 * v**3 / (M**2.)
+
+    """
+    # Calculate the kinetic energy of the neutral particle
+    Ekin = E - M # > 0
 
     # In the low-temperature regime, use the formula
     # from the footnote of 'astro-ph/0408426v2'
@@ -181,6 +191,7 @@ def _dEdt_magnetic_moment(T, E, M, G, Y, eta):
 
     # Ekin <= M
     return -16. * (alpha**2.) * (G**2.) * (T**4.) * exp(-x) * Ge * Ekin / ( 3. * pi * (M**3.) )
+    """
 
 
 # p/n + a > p/n + pi0
