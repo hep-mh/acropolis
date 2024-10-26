@@ -178,12 +178,21 @@ def _get_mean_free_path(particle, Ki, T, Y, eta):
     # Extract the particle label
     x = label[particle]
 
+    # Extract the mass of the particle
+    m = mass[particle]
+
+    # Calculate the gamma factor of the particle
+    ga = (Ki+m)/m
+
+    # Calculate the velocity of the particle
+    v = sqrt(1. - 1./ga**2.)
+
     # Handle scattering on protons
-    rate += _nH(T, Y, eta) * _interp_reaction_data(f"p{x}_tot", Ki)
+    rate += _nH(T, Y, eta) * _interp_reaction_data(f"p{x}_tot", Ki) * v
 
     # Handle scattering on helium-4
     if is_projectile(particle): # p ~ n in this case
-        rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki)
+        rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
     
     # TODO Neutron decay?
 
