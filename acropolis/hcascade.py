@@ -3,6 +3,8 @@ from math import log10, sqrt, log, exp
 # numpy
 import numpy as np
 
+# eloss
+from acropolis.eloss import dEdt
 # etransfer
 from acropolis.etransfer import get_fs_spectrum
 # input
@@ -197,6 +199,17 @@ def _get_mean_free_path(particle, Ki, T, Y, eta):
     # TODO Neutron decay?
 
     return 1./rate
+
+
+def _get_eloss_kernel(particle, Ki, T, Y, eta):
+    # Calculate the mean free path of the particle
+    _lN = _get_mean_free_path(particle, Ki, T, Y, eta)
+
+    # Calculate the energy loss of the particle
+    _dEdt = dEdt(particle, Ki, T, Y, eta)
+
+    # -->
+    return 1./( _lN * _dEdt )
 
 
 # CONSTRUCT THE TRANSFER MATRIX #####################################
