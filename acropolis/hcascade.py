@@ -2,6 +2,8 @@
 from math import log10, sqrt, log, exp
 # numpy
 import numpy as np
+# scipy
+from scipy.interpolate import interp1d
 
 # eloss
 from acropolis.eloss import dEdt
@@ -12,10 +14,13 @@ from acropolis.input import locate_data_file
 # particles
 from acropolis.particles import Particles, mass, label
 from acropolis.particles import is_projectile, is_nucleon, is_nucleus
+# utils
+from acropolis.utils import flipped_cumsimp
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
 from acropolis.params import hbar, tau_n
+from acropolis.params import approx_zero
 
 
 # TODO: Move
@@ -196,7 +201,7 @@ def _get_mean_free_path(particle, Ki, T, Y, eta):
     if is_projectile(particle): # p ~ n in this case
         rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
     
-    # TODO Neutron decay?
+    # TODO: Handle neutron decay?
 
     return 1./rate
 
@@ -210,6 +215,40 @@ def _get_eloss_kernel(particle, Ki, T, Y, eta):
 
     # -->
     return 1./( _lN * _dEdt )
+
+
+def _get_energies_after_loss(particle, Ki_grid, T, Y, eta):
+    N = len(Ki_grid)
+    # -->
+    Kf_grid = np.zeros(N)
+
+    # TODO: Handle neutron decay
+    
+    # Calculate the integral kernel
+    Ik_grid = np.array([
+        -_get_eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
+    ])
+    
+    # Calculate the cummulative Simpson integral
+    # over the given integral kernel
+    C_grid = flipped_cumsimp(Ki_grid, Ik_grid)
+    # -->
+    C_grid[C_grid < approx_zero] = approx_zero
+
+    # Perform on interpolation for Kf(C)
+    Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
+    # -->
+    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=np.nan)
+
+    # Calculate the final energies
+    for i, Ki in enumerate(Ki_grid):
+        rhs = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
+
+        # -->
+        Kf_grid[i] = exp( Cf_log(rhs) )
+    
+    return Kf_grid
+
 
 
 # CONSTRUCT THE TRANSFER MATRIX #####################################
@@ -270,6 +309,10 @@ class EnergyGrid(object):
 
     def bin_range(self, i):
         return (self._sKbins[i], self._sKbins[i+1])
+
+
+    def central_values(self):
+        return self._sKcent
 
 
     def __getitem__(self, i):
