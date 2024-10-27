@@ -5,7 +5,7 @@ from enum import Enum
 import acropolis.flags as flags
 # params
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
-from acropolis.params import gp, gn, tau_n
+from acropolis.params import gp, gn, hbar, tau_n
 from acropolis.params import sp_acc
 
 
@@ -40,14 +40,6 @@ def _is_particle(particle):
         return False
     
     return True
-
-
-# PROTON, NEUTRON
-def is_nucleon(particle):
-    if not _is_particle(particle):
-        return False
-
-    return (0 <= particle.value <= 1)
 
 
 # _NEUTRON, _PROTON, DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
@@ -88,7 +80,10 @@ def is_unstable(particle):
 
 # PROTON, NEUTRON
 def is_projectile(particle):
-    return is_nucleon(particle)
+    if not _is_particle(particle):
+        return False
+
+    return (0 <= particle.value <= 1)
 
 
 # PROTON, HELIUM4
@@ -115,16 +110,16 @@ def _is_nuceq(particle):
     return (-6 <= particle.value <= -5)
 
 
-def convert(nucleon):
-    if not is_nucleon(nucleon):
+def convert(projectile):
+    if not is_projectile(projectile):
         raise ValueError(
-            "The given nucleon cannot be identified as such"
+            "The given projectile cannot be identified as such"
         )
     
-    if nucleon == Particles.PROTON:
+    if projectile == Particles.PROTON:
         return Particles.NEUTRON
     
-    if nucleon == Particles.NEUTRON:
+    if projectile == Particles.NEUTRON:
         return Particles.PROTON
 
 
@@ -158,8 +153,9 @@ mass = {
 }
 
 
+# All lfetimes in 1/MeV
 lifetime = {
-    Particles.NEUTRON: tau_n
+    Particles.NEUTRON: tau_n / hbar
 }
 
 
