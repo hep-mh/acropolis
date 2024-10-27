@@ -157,10 +157,6 @@ def _dEdt_magnetic_moment(T, E, M, G, Y, eta):
     if E <= M:
         return 0.
 
-    # In our scenario, this should always be the case
-    # For larger temperatures, the formulae are different
-    assert T <= me
-
     # Calculate the number density of electrons and positrons
     ne = nee(T, Y, eta)
 
@@ -172,26 +168,6 @@ def _dEdt_magnetic_moment(T, E, M, G, Y, eta):
 
     # -->
     return -3. * pi * (alpha**2.) * (G**2.) * me * ne * ga**2 * v**3 / (M**2.)
-
-    """
-    # Calculate the kinetic energy of the neutral particle
-    Ekin = E - M # > 0
-
-    # In the low-temperature regime, use the formula
-    # from the footnote of 'astro-ph/0408426v2'
-    if ne == ( 1. - Y/2. ) * eta * na(T):
-        return -4. * (alpha**2.) * (G**2.) * ne * (2.*pi/me/T)**1.5 * (me**3.) * T * Ekin / ( 3. * pi * (M**3.) )
-
-    if Ekin > M:
-        return -3. * pi * (alpha**2.) * (G**2.) * me * ne * (Ekin**2.) / (M**4.)
-    
-    x = me/T
-    # -->
-    Ge = (x**3.) + 3.*(x**2.) + 6.*x + 6.
-
-    # Ekin <= M
-    return -16. * (alpha**2.) * (G**2.) * (T**4.) * exp(-x) * Ge * Ekin / ( 3. * pi * (M**3.) )
-    """
 
 
 # p/n + a > p/n + pi0
