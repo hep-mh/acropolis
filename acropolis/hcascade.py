@@ -235,7 +235,7 @@ def _get_energies_after_loss(particle, Ki_grid, T, Y, eta):
     # -->
     C_grid[C_grid < approx_zero] = approx_zero
 
-    # Perform on interpolation for Kf(C)
+    # Perform an interpolation for Kf(C)
     Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
     # -->
     Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=np.nan)
