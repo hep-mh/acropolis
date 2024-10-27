@@ -272,7 +272,6 @@ def _track_eloss(particle, Ki_grid, T, Y, eta, fallback=None):
     return Kf_grid, pv_grid
 
 
-
 # CONSTRUCT THE TRANSFER MATRIX #####################################
 
 class EnergyGrid(object):
