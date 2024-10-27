@@ -12,14 +12,13 @@ from acropolis.etransfer import get_fs_spectrum
 # input
 from acropolis.input import locate_data_file
 # particles
-from acropolis.particles import Particles, mass, label
-from acropolis.particles import is_projectile, is_nucleon, is_nucleus
+from acropolis.particles import Particles, mass, lifetime, label
+from acropolis.particles import is_projectile, is_nucleus, is_unstable
 # utils
 from acropolis.utils import flipped_cumsimp
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import hbar, tau_n
 from acropolis.params import approx_zero
 
 
@@ -125,8 +124,8 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
     # FILL ##########################################################
 
     # rid = 0
-    if projectile == Particles.NEUTRON:
-        rates[0] = sqrt(1. - v**2.) * hbar / tau_n
+    # if projectile == Particles.NEUTRON:
+    #     rates[0] = sqrt(1. - v**2.) * hbar / tau_n
     
     # rid = 1
     rates[1]  = nH * _interp_reaction_data(f"p{x}_p{x}", Ki) * v
@@ -200,11 +199,11 @@ def _get_mean_free_path(particle, Ki, T, Y, eta):
     # Handle scattering on helium-4
     if is_projectile(particle): # p ~ n in this case
         rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
-    
-    # TODO: Handle neutron decay?
 
     return 1./rate
 
+
+# TRACK THE ENERGLY LOSS ############################################
 
 def _get_eloss_kernel(particle, Ki, T, Y, eta):
     # Calculate the mean free path of the particle
@@ -217,37 +216,60 @@ def _get_eloss_kernel(particle, Ki, T, Y, eta):
     return 1./( _lN * _dEdt )
 
 
-def _get_energies_after_loss(particle, Ki_grid, T, Y, eta):
-    N = len(Ki_grid)
-    # -->
-    Kf_grid = np.zeros(N)
+def _decays_before_scattering(particle, Ki, T, Y, eta):
+    if not is_unstable(particle):
+        return False
+    
+    # Extract the mass and the lifetime of the particle
+    m, tau = mass[particle], lifetime[particle]
 
-    # TODO: Handle neutron decay
+    # Calculate the reaction rates for scattering and decay
+    Rs = 1. / _get_mean_free_path(particle, Ki, T, Y, eta)
+    Rd = m / ( (Ki+m) * tau )
+
+    return (Rd > Rs)
+
+
+def _track_eloss(particle, Ki_grid, T, Y, eta, fallback=None):
+    N = len(Ki_grid)
+    
+    # Initialize the return values
+    Kf_grid = np.zeros(N)
+    pv_grid = np.zeros(N)
+
+    # Handle the special case of unstable particles
+    if is_unstable(particle):
+        if fallback is None:
+            raise ValueError("Unstable particles require a fallback")
+
+        (Kf_grid, pv_grid) = fallback
     
     # Calculate the integral kernel
     Ik_grid = np.array([
         -_get_eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
     ])
     
-    # Calculate the cummulative Simpson integral
+    # Perform a cummulative Simpson integration
     # over the given integral kernel
     C_grid = flipped_cumsimp(Ki_grid, Ik_grid)
     # -->
     C_grid[C_grid < approx_zero] = approx_zero
 
-    # Perform an interpolation for Kf(C)
+    # Perform an interpolation of Kf(C)
     Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
     # -->
     Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=np.nan)
 
     # Calculate the final energies
     for i, Ki in enumerate(Ki_grid):
-        rhs = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
+        if _decays_before_scattering(particle, Ki, T, Y, eta):
+            continue # Use fallback
 
+        val = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
         # -->
-        Kf_grid[i] = exp( Cf_log(rhs) )
+        Kf_grid[i], pv_grid[i] = exp( Cf_log(val) ), particle.value
     
-    return Kf_grid
+    return Kf_grid, pv_grid
 
 
 
@@ -326,7 +348,7 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
     N = egrid.nbins()
 
     # Extract the number of nucleons
-    Na = sum(is_nucleon(particle) for particle in Particles)
+    Na = sum(is_projectile(particle) for particle in Particles)
     # Extract the number of nuclei
     Nb = sum(is_nucleus(particle) for particle in Particles)
 
