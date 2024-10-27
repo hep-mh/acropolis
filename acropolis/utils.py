@@ -5,6 +5,8 @@ import numpy as np
 # scipy
 from scipy.integrate import cumulative_simpson
 
+# jit
+from acropolis.jit import jit
 
 class LogInterp(object):
 
@@ -78,3 +80,28 @@ class LogInterp(object):
 # Cummulative numerical Simpson integration
 def cumsimp(x_grid, y_grid):
     return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)
+
+@jit
+def _cumsimp(x_grid, y_grid):
+    n = len(x_grid)
+
+    dz = log(x_grid[-1]/x_grid[0])/(n-1)
+
+    g_grid = x_grid*y_grid
+    i_grid = np.zeros(n)
+
+    last_even_int = 0.
+    for i in range(1, int(n/2 + 1)):
+        ie = 2 * i
+        io = 2 * i - 1
+
+        i_grid[io] = last_even_int + .5 * dz * (g_grid[io-1] + g_grid[io])
+        if ie < n:
+            i_grid[ie] = last_even_int + dz * (g_grid[ie-2] + 4.*g_grid[ie-1] + g_grid[ie])/3.
+            last_even_int = i_grid[ie]
+
+    return i_grid
+
+@jit
+def flipped_cumsimp(x_grid, y_grid):
+     return -np.flip(_cumsimp(np.flip(x_grid), np.flip(y_grid)))
