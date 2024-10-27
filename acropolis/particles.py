@@ -5,7 +5,7 @@ from enum import Enum
 import acropolis.flags as flags
 # params
 from acropolis.params import mp, mn, mD, mT, mHe3, mHe4, mpi0, mpic
-from acropolis.params import gp, gn
+from acropolis.params import gp, gn, tau_n
 from acropolis.params import sp_acc
 
 
@@ -78,6 +78,14 @@ def is_spectator(particle):
     return (-3 <= particle.value <= -2)
 
 
+# NEUTRON
+def is_unstable(particle):
+    if not _is_particle(particle):
+        return False
+    
+    return (particle.value in [1])
+
+
 # PROTON, NEUTRON
 def is_projectile(particle):
     return is_nucleon(particle)
@@ -134,8 +142,6 @@ def _nuceq(nucleon):
 
 
 # All masses in MeV
-# acropolis.eloss     (is_projectile || is_nucleus)
-# acropolis.etransfer (any)
 mass = {
     Particles.PROTON : mp,
     Particles.NEUTRON: mn,
@@ -151,7 +157,12 @@ mass = {
     Particles.NULL: 0.
 }
 
-# acropolis.eloss (is_projectile || is_nucleus)
+
+lifetime = {
+    Particles.NEUTRON: tau_n
+}
+
+
 charge = {
     Particles.PROTON : 1,
     Particles.NEUTRON: 0,
@@ -162,13 +173,13 @@ charge = {
     Particles.HELIUM4  : 2,
 }
 
-# acropolis.eloss (is_projectile)
+
 dipole = {
     Particles.PROTON : gp,
     Particles.NEUTRON: gn
 }
 
-# acropolis.hcascade (is_projectile)
+
 label = {
     Particles.PROTON   : "p",
     Particles.NEUTRON  : "n",
