@@ -121,7 +121,7 @@ def _get_all_rates(projectile, Ki, T, Y, eta):
 
     # Determine how many channels contribute to
     # inelastic projectile-proton scattering
-    N_p_pi = 4 if ( Ki > _Kth_r4[projectile] ) else 3. 
+    N_p_pi = 4 if ( Ki > _Kth_r4[projectile] ) else 3 
 
     # FILL ##########################################################
 
