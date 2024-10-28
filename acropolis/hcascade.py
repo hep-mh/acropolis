@@ -255,8 +255,8 @@ def _track_eloss(egrid, particle, T, Y, eta, fallback=None):
     # Perform an interpolation of Kf(C)
     Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
     # -->
-    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=0.)
-    # Use fill_value=0. for Kf < egrid[0]
+    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=-np.inf)
+    # Use fill_value=-np.inf (Kf = 0) for Kf < egrid[0]
     # This avoids adding the particle to the spectrum
 
     spectra, raw = [], []
