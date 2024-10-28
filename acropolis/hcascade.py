@@ -12,8 +12,9 @@ from acropolis.etransfer import get_fs_spectrum
 # input
 from acropolis.input import locate_data_file
 # particles
-from acropolis.particles import Particles, mass, lifetime, label
-from acropolis.particles import is_projectile, is_nucleus, is_unstable
+from acropolis.particles import Particles, ParticleSpectrum, mass, lifetime, label
+from acropolis.particles import is_projectile, is_unstable
+from acropolis.particles import Np, Nn
 # utils
 from acropolis.utils import flipped_cumsimp
 # params
@@ -230,20 +231,16 @@ def _decays_before_scattering(particle, Ki, T, Y, eta):
     return (Rd > Rs)
 
 
-def _track_eloss(particle, Ki_grid, T, Y, eta, fallback=None):
-    N = len(Ki_grid)
-    
-    # Initialize the return values
-    Kf_grid = np.zeros(N)
-    pv_grid = np.zeros(N)
+def _track_eloss(egrid, particle, T, Y, eta, fallback=None):
+    N = egrid.nbins()
+
+    # Extract the central energy values
+    Ki_grid = egrid.central_values()
 
     # Handle the special case of unstable particles
-    if is_unstable(particle):
-        if fallback is None:
-            raise ValueError("Unstable particles require a fallback")
+    if is_unstable(particle) and (fallback is None):
+        raise ValueError("Unstable particles require a fallback")
 
-        (Kf_grid, pv_grid) = fallback
-    
     # Calculate the integral kernel
     Ik_grid = np.array([
         -_get_eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
@@ -258,18 +255,35 @@ def _track_eloss(particle, Ki_grid, T, Y, eta, fallback=None):
     # Perform an interpolation of Kf(C)
     Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
     # -->
-    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=np.nan)
+    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=0.)
+    # Use fill_value=0. for Kf < egrid[0]
+    # This avoids adding the particle to the spectrum
 
-    # Calculate the final energies
-    for i, Ki in enumerate(Ki_grid):
+    spectra, raw = [], []
+    for i in range(N):
+        Ki = Ki_grid[i]
+
+        # Calculate the final energy ################################
         if _decays_before_scattering(particle, Ki, T, Y, eta):
-            continue # Use fallback
-
-        val = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
+            # Use the fallback
+            remnant, Kf = fallback[i]
+        else:
+            # Calculate from scratch
+            val = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
+            # -->
+            remnant, Kf = particle, exp( Cf_log(val) )
+        
         # -->
-        Kf_grid[i], pv_grid[i] = exp( Cf_log(val) ), particle.value
-    
-    return Kf_grid, pv_grid
+        raw.append( (remnant, Kf) )
+        
+        # Create and fill the spectrum ##############################
+        spectra.append( ParticleSpectrum(egrid) )
+
+        # -->
+        spectra[i].add(remnant ,  1., Kf)
+        spectra[i].add(particle, -1.)
+
+    return spectra, raw
 
 
 # CONSTRUCT THE TRANSFER MATRIX #####################################
@@ -343,16 +357,16 @@ class EnergyGrid(object):
 def _get_etransfer_matrix(egrid, T, Y, eta):
     bg = (T, Y, eta)
 
-    # Extract the number of energy bins
+    # Extract the number of bins
     N = egrid.nbins()
 
-    # Extract the number of nucleons
-    Na = sum(is_projectile(particle) for particle in Particles)
-    # Extract the number of nuclei
-    Nb = sum(is_nucleus(particle) for particle in Particles)
+    # Calculate the dimension of the matrix
+    d = Np*N + Nn
 
     # Initialize the matrix
-    matrix = np.identity( Na*N + Nb )
+    matrix = np.zeros( (d, d) )
+    for i in range(Nn):
+        matrix[-(i+1),-(i+1)] = 1.
 
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
@@ -366,15 +380,43 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
             # Calculate the final-state spectrum
             spectrum = get_fs_spectrum(egrid, projectile, Ki, probs, *bg)
 
-            # -->
+            # DEBUG
             assert np.isclose(spectrum.baryon_number(), 0.)
 
+            k = N*projectile.value + i
             # Loop over the spectrum and fill the matrix
             for (j, val) in spectrum.non_zero():
-                matrix[j,i] = val
+                matrix[j,k] = val
     
     return matrix
 
 
 def _get_eloss_matrix(egrid, T, Y, eta):
-    pass
+    bg = (T, Y, eta)
+
+    # Extract the number of bins
+    N = egrid.nbins()
+
+    # Calculate the dimension of the matrix
+    d = Np*N + Nn
+
+    # Initialize the matrix
+    matrix = np.zeros( (d, d) )
+    for i in range(Nn):
+        matrix[-(i+1),-(i+1)] = 1.
+
+    fallback = None
+    # Loop over all possible projectiles
+    for projectile in [Particles.PROTON, Particles.NEUTRON]:
+        spectra, fallback = _track_eloss(egrid, projectile, *bg, fallback)
+
+        for i, spectrum in enumerate(spectra):
+            # DEBUG
+            assert np.isclose(spectrum.baryon_number(), 0.)
+
+            k = N*projectile.value + i
+            # Loop over the spectrum and fill the matrix
+            for (j, val) in spectrum.non_zero():
+                matrix[j,k] = val
+    
+    return matrix
