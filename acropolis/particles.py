@@ -136,6 +136,9 @@ def _nuceq(nucleon):
         return Particles._NEUTRON
 
 
+Np = sum(is_projectile(particle) for particle in Particles)
+Nn = sum(is_nucleus(particle)    for particle in Particles)
+
 # All masses in MeV
 mass = {
     Particles.PROTON : mp,
