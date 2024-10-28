@@ -9,6 +9,7 @@ from acropolis.params import gp, gn, hbar, tau_n
 from acropolis.params import sp_acc
 
 
+# TODO: Implement anti-nucleons
 # NOTE: _NEUTRON and _PROTON are 
 # not meant to be used directly
 class Particles(Enum):
