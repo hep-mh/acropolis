@@ -29,8 +29,6 @@ NR = 14
 # K ≘ kinetic energy, E ≘ total energy
 
 
-# READ REACTION DATA AND EVALUATE RATES #############################
-
 def _nH(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
@@ -39,6 +37,7 @@ def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 
+# Functions to read the reaction data ###############################
 
 _reaction_labels = [
     "pp_pp",
@@ -76,6 +75,8 @@ _log_reaction_data = {
     label: _load_log_reaction_data(label) for label in _reaction_labels
 }
 
+
+# Functions to evaluate the reaction rates ##########################
 
 def _interp_reaction_data(label, K):
     logK = log(K)
@@ -204,7 +205,7 @@ def _get_mean_free_path(particle, Ki, T, Y, eta):
     return 1./rate
 
 
-# TRACK THE ENERGLY LOSS ############################################
+# Functions to track the energy loss ################################
 
 def _get_eloss_kernel(particle, Ki, T, Y, eta):
     # Calculate the mean free path of the particle
@@ -286,7 +287,7 @@ def _track_eloss(egrid, particle, T, Y, eta, fallback=None):
     return spectra, raw
 
 
-# CONSTRUCT THE TRANSFER MATRIX #####################################
+# Functions to construct the transfer matrix ########################
 
 class EnergyGrid(object):
 
