@@ -421,3 +421,8 @@ def _get_eloss_matrix(egrid, T, Y, eta):
                 matrix[j,k] = val
     
     return matrix
+
+
+def get_transition_matrix(egrid, T, Y, eta, n):
+    pass
+    

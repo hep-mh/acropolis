@@ -155,4 +155,5 @@ NT_pd = 50
 # The accuracy that is used for the
 # projectile spectrum entering the
 # hadronic cascade
+# Default: 1e-5
 sp_acc = 1e-5
