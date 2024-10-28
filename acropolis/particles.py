@@ -316,7 +316,7 @@ class ParticleSpectrum(object):
         str_repr = ""
 
         for i in range(self._sN):
-            str_repr += f"      {self._sEnergyGrid[i]:.3e} |"
+            str_repr += f"{i:03}   {self._sEnergyGrid[i]:.3e} |"
 
             for j in range(0, 2): # nucleons
                 str_repr += f" {self.at(j*self._sN + i):.3e}"
