@@ -23,6 +23,9 @@ from acropolis.params import mb_to_iMeV2
 from acropolis.params import approx_zero
 
 
+# TODO Split into two files: hmatrix.px and hreac.py
+
+
 # TODO: Move
 NR = 14
 
@@ -92,9 +95,6 @@ def _interp_reaction_data(label, K):
 
 
 # Threshold energies for two pion production
-# r4:
-# p + p(bg) -> n* + [n + 2pi+]
-# n + p(bg) -> p* + [n + 2pi0]
 _Kth_r4 = {
     Particles.PROTON : 605.7509051898966,
     Particles.NEUTRON: 579.1139640875533

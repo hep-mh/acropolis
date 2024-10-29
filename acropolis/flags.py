@@ -39,6 +39,7 @@ universal = False
 # the reactions driving the
 # hadronic cascade
 # Default: False
+# TODO: Fix error
 A3_is_spectator = False
 
 # If this flag is set to 'True',
