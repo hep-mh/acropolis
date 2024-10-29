@@ -8,20 +8,20 @@ from scipy.interpolate import interp1d
 
 # cosmo
 from acropolis.cosmo import nee
-# jit
-from acropolis.jit import jit
 # hrates
 from acropolis.hrates import get_mean_free_path
-# particles
-from acropolis.particles import ParticleSpectrum
-from acropolis.particles import is_projectile, is_nucleus, is_unstable
-from acropolis.particles import mass, lifetime, charge, dipole
+# jit
+from acropolis.jit import jit
 # util
 from acropolis.utils import flipped_cumsimp
 # params
 from acropolis.params import pi, pi2
 from acropolis.params import alpha, me, me2
 from acropolis.params import Ephb_T_max, eps, approx_zero
+# particles
+from acropolis.particles import ParticleSpectrum
+from acropolis.particles import is_projectile, is_nucleus, is_unstable
+from acropolis.particles import mass, lifetime, charge, dipole
 # -->
 E_T_max = Ephb_T_max
 

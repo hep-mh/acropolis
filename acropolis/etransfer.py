@@ -11,6 +11,10 @@ from enum import Enum
 
 # flags
 import acropolis.flags as flags
+# params
+from acropolis.params import pi
+from acropolis.params import mb_to_iMeV2
+from acropolis.params import Kt, mn, mp, mpi0
 # particles
 from acropolis.particles import Particles, ParticleSpectrum
 from acropolis.particles import mass, za
@@ -18,10 +22,6 @@ from acropolis.particles import is_projectile, is_pion, is_spectator, is_nucleus
 from acropolis.particles import convert
 # pprint
 from acropolis.pprint import print_error
-# params
-from acropolis.params import pi
-from acropolis.params import mb_to_iMeV2
-from acropolis.params import Kt, mn, mp, mpi0
 
 
 class _Actions(Enum):
