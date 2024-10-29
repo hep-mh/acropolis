@@ -2,22 +2,15 @@
 from math import sqrt, log, exp
 # numpy
 import numpy as np
-# scipy
-from scipy.interpolate import interp1d
 
-# eloss
-from acropolis.eloss import dEdt
 # input
 from acropolis.input import locate_data_file
 # particles
-from acropolis.particles import Particles, ParticleSpectrum, mass, lifetime, label
-from acropolis.particles import is_projectile, is_unstable
-# utils
-from acropolis.utils import flipped_cumsimp
+from acropolis.particles import Particles, mass, label
+from acropolis.particles import is_projectile
 # params
 from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import approx_zero
 
 
 # TODO: Move
@@ -197,88 +190,3 @@ def get_mean_free_path(particle, Ki, T, Y, eta):
         rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
 
     return 1./rate
-
-
-
-
-# TODO: Move
-
-def _get_eloss_kernel(particle, Ki, T, Y, eta):
-    # Calculate the mean free path of the particle
-    _lN = get_mean_free_path(particle, Ki, T, Y, eta)
-
-    # Calculate the energy loss of the particle
-    _dEdt = dEdt(particle, Ki, T, Y, eta)
-
-    # -->
-    return 1./( _lN * _dEdt )
-
-
-def _decays_before_scattering(particle, Ki, T, Y, eta):
-    if not is_unstable(particle):
-        return False
-    
-    # Extract the mass and the lifetime of the particle
-    m, tau = mass[particle], lifetime[particle]
-
-    # Calculate the reaction rates for scattering and decay
-    Rs = 1. / get_mean_free_path(particle, Ki, T, Y, eta)
-    Rd = m / ( (Ki+m) * tau )
-
-    return (Rd > Rs)
-
-
-def _track_eloss(egrid, particle, T, Y, eta, fallback=None):
-    N = egrid.nbins()
-
-    # Extract the central energy values
-    Ki_grid = egrid.central_values()
-
-    # Handle the special case of unstable particles
-    if is_unstable(particle) and (fallback is None):
-        raise ValueError("Unstable particles require a fallback")
-
-    # Calculate the integral kernel
-    Ik_grid = np.array([
-        -_get_eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
-    ])
-    
-    # Perform a cummulative Simpson integration
-    # over the given integral kernel
-    C_grid = flipped_cumsimp(Ki_grid, Ik_grid)
-    # -->
-    C_grid[C_grid < approx_zero] = approx_zero
-
-    # Perform an interpolation of Kf(C)
-    Ki_grid_log, C_grid_log = np.log(Ki_grid), np.log(C_grid)
-    # -->
-    Cf_log = interp1d(C_grid_log, Ki_grid_log, kind="linear", bounds_error=False, fill_value=-np.inf)
-    # Use fill_value=-np.inf (Kf = 0) for Kf < egrid[0]
-    # This avoids adding the particle to the spectrum
-
-    spectra, raw = [], []
-    for i in range(N):
-        Ki = Ki_grid[i]
-
-        # Calculate the final energy ################################
-        if _decays_before_scattering(particle, Ki, T, Y, eta):
-            # Use the fallback
-            remnant, Kf = fallback[i]
-        else:
-            # Calculate from scratch
-            val = log(1. + C_grid[i]) # C(Kf) - C(Ki) = R = 1
-            # -->
-            remnant, Kf = particle, exp( Cf_log(val) )
-        
-        # -->
-        raw.append( (remnant, Kf) )
-        
-        # Create and fill the spectrum ##############################
-        spectra.append( ParticleSpectrum(egrid) )
-
-        # -->
-        spectra[i].add(remnant ,  1., Kf)
-        spectra[i].add(particle, -1.)
-
-    return spectra, raw
-    

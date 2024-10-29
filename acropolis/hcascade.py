@@ -3,10 +3,12 @@ from math import log10, sqrt
 # numpy
 import numpy as np
 
+# eloss
+from acropolis.eloss import track_eloss
 # etransfer
 from acropolis.etransfer import get_fs_spectrum
 # hrates
-from acropolis.hrates import get_all_probs, _track_eloss
+from acropolis.hrates import get_all_probs
 # particles
 from acropolis.particles import Particles
 from acropolis.particles import Np, Nn
@@ -132,7 +134,7 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     fallback = None
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
-        spectra, fallback = _track_eloss(egrid, projectile, *bg, fallback)
+        spectra, fallback = track_eloss(egrid, projectile, *bg, fallback)
 
         for i, spectrum in enumerate(spectra):
             # DEBUG
