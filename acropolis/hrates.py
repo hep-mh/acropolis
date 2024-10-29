@@ -176,7 +176,7 @@ def get_all_probs(projectile, Ki, T, Y, eta):
 
 def get_mean_free_path(particle, Ki, T, Y, eta):
     if not ( is_projectile(particle) or is_nucleus(particle) ):
-        raise NotImplementedError("Calculation of lN is not supported for the given particle")
+        raise ValueError("The given particle must be a projectile or a nucleus")
     
     # Initialize the rate
     rate = 0.

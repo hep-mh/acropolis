@@ -257,9 +257,7 @@ def _decays(particle, Ki, T, Y, eta):
 # TODO: Change name
 def track_eloss(egrid, particle, T, Y, eta, fallback=None):
     if not ( is_projectile(particle) or is_nucleus(particle) ):
-        raise NotImplementedError(
-            "Energy-loss tracking is not supported for the given particle"
-        )
+        raise ValueError("The given particle must be a projectile or a nucleus")
 
     N = egrid.nbins()
 
