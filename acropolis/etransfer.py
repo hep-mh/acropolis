@@ -699,6 +699,7 @@ def _update_spectrum(spectrum, rid, projectile, Ki, prob, bg):
         _r8_alpha(*params, bg)
 
 
+# TODO: Change name
 def get_fs_spectrum(egrid, projectile, Ki, probs, T, Y, eta):
     if not is_projectile(projectile):
         print_error(

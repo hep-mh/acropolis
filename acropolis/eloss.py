@@ -199,12 +199,7 @@ def _dEdt_nucleon_pion(T, E, M):
 
 
 # All reactions
-def dEdt(particle, K, T, Y, eta): # = dKdt
-    if not ( is_projectile(particle) or is_nucleus(particle) ):
-        raise NotImplementedError(
-            "The calculation of dEdt is not supported for the given particle"
-        )
-    
+def _dEdt(particle, K, T, Y, eta): # = dKdt
     # Extract the mass of the particle
     M = mass[particle]
 
@@ -234,18 +229,18 @@ def dEdt(particle, K, T, Y, eta): # = dKdt
 
 # TRACKING FUNCTIONS ################################################
 
-def _get_eloss_kernel(particle, Ki, T, Y, eta):
+def _eloss_kernel(particle, Ki, T, Y, eta):
     # Calculate the mean free path of the particle
-    _lN = get_mean_free_path(particle, Ki, T, Y, eta)
+    lN = get_mean_free_path(particle, Ki, T, Y, eta)
 
     # Calculate the energy loss of the particle
-    _dEdt = dEdt(particle, Ki, T, Y, eta)
+    dEdt = _dEdt(particle, Ki, T, Y, eta)
 
     # -->
-    return 1./( _lN * _dEdt )
+    return -1./( lN * dEdt )
 
 
-def _decays_before_scattering(particle, Ki, T, Y, eta):
+def _decays(particle, Ki, T, Y, eta):
     if not is_unstable(particle):
         return False
     
@@ -259,7 +254,13 @@ def _decays_before_scattering(particle, Ki, T, Y, eta):
     return (Rd > Rs)
 
 
+# TODO: Change name
 def track_eloss(egrid, particle, T, Y, eta, fallback=None):
+    if not ( is_projectile(particle) or is_nucleus(particle) ):
+        raise NotImplementedError(
+            "Energy-loss tracking is not supported for the given particle"
+        )
+
     N = egrid.nbins()
 
     # Extract the central energy values
@@ -271,7 +272,7 @@ def track_eloss(egrid, particle, T, Y, eta, fallback=None):
 
     # Calculate the integral kernel
     Ik_grid = np.array([
-        -_get_eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
+        _eloss_kernel(particle, Ki, T, Y, eta) for Ki in Ki_grid
     ])
     
     # Perform a cummulative Simpson integration
@@ -292,7 +293,7 @@ def track_eloss(egrid, particle, T, Y, eta, fallback=None):
         Ki = Ki_grid[i]
 
         # Calculate the final energy ################################
-        if _decays_before_scattering(particle, Ki, T, Y, eta):
+        if _decays(particle, Ki, T, Y, eta):
             # Use the fallback
             remnant, Kf = fallback[i]
         else:
