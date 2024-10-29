@@ -227,7 +227,7 @@ def _dEdt(particle, K, T, Y, eta): # = dKdt
     return dEdt
 
 
-# TRACKING FUNCTIONS ################################################
+# MAIN FUNCTIONS ####################################################
 
 def _eloss_kernel(particle, Ki, T, Y, eta):
     # Calculate the mean free path of the particle
