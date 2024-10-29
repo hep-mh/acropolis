@@ -21,7 +21,7 @@ from acropolis.pprint import print_error
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
-from acropolis.params import Kt, mn, mp
+from acropolis.params import Kt, mn, mp, mpi0
 
 
 class _Actions(Enum):
@@ -60,7 +60,7 @@ def _gcm(projectile, target, K):
     return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
 
-def _survives(nucleus, Ki, bg):
+def _survives(egrid, nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return True
 
@@ -80,8 +80,8 @@ def _survives(nucleus, Ki, bg):
     return True
 
 
-def _fragments(particle, Ki, bg):
-    if _survives(particle, Ki, bg):
+def _fragments(egrid, particle, Ki, bg):
+    if _survives(egrid, particle, Ki, bg):
         return [(particle, Ki)]
     
     if not flags.reinject_fragments:
@@ -274,7 +274,7 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
         spectrum.add(projectile, prob*Fi, Ki_p)
 
         # Handle the scattered TARGET particle
-        for fragment, Kj_f in _fragments(target, Kj_p, bg):
+        for fragment, Kj_f in _fragments(egrid, target, Kj_p, bg):
             spectrum.add(fragment, prob*Fj, Kj_f)
         
     # Account for (1) the destruction of the
@@ -290,6 +290,9 @@ def _elastic(spectrum, projectile, Ki, prob, bg, target):
 # n + X(bg) -> Y
 # with X = p, He4 and arbitrary Y
 def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile_action):
+    # Extract the energy grid
+    egrid = spectrum.egrid()
+    
     # Calculate the COM energy
     Ecm = _Ecm(projectile, target, Ki)
 
@@ -368,7 +371,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     # NOTE:
     # In the '>' case, we assume that the remaining
     # energy is carried away by additional pions
-    if Ki + dM < Ki_p + sum(Kj_p_L): # Outgoing energy too large
+    if Ki + dM < Ki_p + sum(Kj_p_L) + gcm*mpi0: # Outgoing energy too large
         # Assume equipartition of momenta
         pe = _equip(particles_equip, Ecm_equip)
 
@@ -403,7 +406,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         if is_pion(daughter):
             continue # ignore pions
 
-        for fragment, Kj_f in _fragments(daughter, Kj_p_L[i], bg):
+        for fragment, Kj_f in _fragments(egrid, daughter, Kj_p_L[i], bg):
             spectrum.add(fragment, prob, Kj_f)
     
     # Account for the destruction of the
