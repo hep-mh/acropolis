@@ -19,6 +19,7 @@ NR = 14
 # K ≘ kinetic energy, E ≘ total energy
 
 
+# TODO: Move?
 def _nH(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
 
@@ -27,7 +28,14 @@ def _nHe4(T, Y, eta):
     return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
 
 
-# READ REACTION DATA ################################################
+# Threshold energies for two pion production
+_Kth_r4 = {
+    Particles.PROTON : 605.7509051898966,
+    Particles.NEUTRON: 579.1139640875533
+} # MeV
+
+
+# I/O FUNCTIONS #####################################################
 
 _reaction_labels = [
     "pp_pp",
@@ -66,7 +74,7 @@ _log_reaction_data = {
 }
 
 
-# EVALUATE REACTION RATES ###########################################
+# INTERPOLATION FUNCTIONS ###########################################
 
 def _interp_reaction_data(label, K):
     logK = log(K)
@@ -81,13 +89,10 @@ def _interp_reaction_data(label, K):
     )
 
 
-# Threshold energies for two pion production
-_Kth_r4 = {
-    Particles.PROTON : 605.7509051898966,
-    Particles.NEUTRON: 579.1139640875533
-} # MeV
+# MAIN FUNCTIONS ####################################################
 
 
+# TODO: Check for projectile
 def get_all_rates(projectile, Ki, T, Y, eta):
     # PREPARE #######################################################
 
