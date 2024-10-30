@@ -132,7 +132,7 @@ def _nuceq(nucleon):
 
 
 Np = sum(is_projectile(particle) for particle in Particles)
-Nn = sum(is_nucleus(particle)    for particle in Particles)
+Nn = sum(is_nucleus   (particle) for particle in Particles)
 
 
 # All energies in MeV
@@ -274,11 +274,6 @@ class ParticleSpectrum(object):
             return self._sEntries[index]
         
         return 0.
-
-
-    def rescale(self, factor):
-        for index in self._sEntries:
-            self._sEntries[index] *= factor
 
 
     def egrid(self):
