@@ -34,13 +34,7 @@ class Particles(Enum):
 
 
 def _is_particle(particle):
-    if particle not in Particles:
-        return False
-    
-    if particle == Particles.NULL:
-        return False
-    
-    return True
+    return (particle != Particles.NULL)
 
 
 # _NEUTRON, _PROTON, DEUTRIUM, TRITIUM, HELIUM3, HELIUM4
@@ -140,6 +134,16 @@ def _nuceq(nucleon):
 Np = sum(is_projectile(particle) for particle in Particles)
 Nn = sum(is_nucleus(particle)    for particle in Particles)
 
+
+# All energies in MeV
+eth = {
+    Particles.DEUTERIUM:  2.25,
+    Particles.TRITIUM  :  6.26,
+    Particles.HELIUM3  :  5.50,
+    Particles.HELIUM4  : 20.00 
+}
+
+
 # All masses in MeV
 mass = {
     Particles.PROTON : mp,
@@ -235,9 +239,6 @@ class ParticleSpectrum(object):
         if K > self._sEnergyGrid.upper_edge():
             raise ValueError("The given value of K lies outside the energy range")
         
-        if not is_projectile(projectile):
-            raise ValueError("The given particle is not a projectile")
-        
         index = projectile.value*self._sN + self._sEnergyGrid.index_of(K)
         # -->
         self._increment(index, increment, acc)
@@ -247,15 +248,15 @@ class ParticleSpectrum(object):
         if _has_nuceq(nucleus):
             nucleus = _nuceq(nucleus)
         
-        if not is_nucleus(nucleus):
-            raise ValueError("The given particle is not a nucleus")
-        
         index = nucleus.value
         # -->
         self._increment(index, increment)
 
 
     def add(self, particle, increment, K=0):
+        if increment == 0.:
+            return
+
         if is_projectile(particle):
             self._add_projectile(particle, increment, K, acc=sp_acc)
         
