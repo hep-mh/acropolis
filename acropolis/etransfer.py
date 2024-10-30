@@ -724,7 +724,7 @@ def _process_single_energy(egrid, projectile, Ki, T, Y, eta):
 
 
 def process(egrid, projectile, T, Y, eta):
-    if not is_projectile(particle):
+    if not is_projectile(projectile):
         raise ValueError("The given particle must be a projectile")
 
     spectra = []
