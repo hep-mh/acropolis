@@ -7,8 +7,6 @@ import numpy as np
 from acropolis.eloss import track_eloss
 # etransfer
 from acropolis.etransfer import get_fs_spectrum
-# hrates
-from acropolis.hrates import get_all_probs
 # particles
 from acropolis.particles import Particles
 from acropolis.particles import Np, Nn
@@ -100,11 +98,8 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
         for i in range(N):
             Ki = egrid[i]
 
-            # Calculate the scattering probabilities
-            probs = get_all_probs(projectile, Ki, *bg)
-
             # Calculate the final-state spectrum
-            spectrum = get_fs_spectrum(egrid, projectile, Ki, probs, *bg)
+            spectrum = get_fs_spectrum(egrid, projectile, Ki, *bg)
 
             # DEBUG
             assert np.isclose(spectrum.baryon_number(), 0.)

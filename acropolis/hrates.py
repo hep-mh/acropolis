@@ -3,29 +3,23 @@ from math import sqrt, log, exp
 # numpy
 import numpy as np
 
+import acropolis.cosmo as bg
 # input
 from acropolis.input import locate_data_file
 # params
-from acropolis.params import zeta3, pi2
 from acropolis.params import mb_to_iMeV2
 # particles
 from acropolis.particles import Particles, mass, label
-from acropolis.particles import is_projectile
+from acropolis.particles import is_projectile, is_nucleus
 
 
-# TODO: Move
-NR = 14
-
+# NOTE:
+# In this file:
 # K ≘ kinetic energy, E ≘ total energy
 
 
-# TODO: Move?
-def _nH(T, Y, eta):
-    return 2. * zeta3 * (T**3.) * eta * (1.-Y) / pi2
-
-
-def _nHe4(T, Y, eta):
-    return 2. * zeta3 * (T**3.) * eta * (Y/4.) / pi2
+# Define the number of reactions
+Nr = 14
 
 
 # Threshold energies for two pion production
@@ -91,7 +85,6 @@ def _interp_reaction_data(label, K):
 
 # MAIN FUNCTIONS ####################################################
 
-
 def get_all_rates(projectile, Ki, T, Y, eta):
     if not is_projectile(projectile):
         raise ValueError("The given particle must be a projectile")
@@ -99,7 +92,7 @@ def get_all_rates(projectile, Ki, T, Y, eta):
     # PREPARE #######################################################
 
     # Initialize an array for storing the rates
-    rates = np.zeros(NR)
+    rates = np.zeros(Nr)
     
     # Extract the projectile label
     x = label[projectile]
@@ -111,7 +104,7 @@ def get_all_rates(projectile, Ki, T, Y, eta):
     v = sqrt( Ki * (Ki + 2.*m) ) / ( Ki + m ) # = p/E
 
     # Calculate the target densities
-    nH, nHe4 = _nH(T, Y, eta), _nHe4(T, Y, eta)
+    nH, nHe4 = bg.nH(T, Y, eta), bg.nHe4(T, Y, eta)
 
     # Determine how many channels contribute to
     # inelastic projectile-proton scattering
@@ -194,10 +187,10 @@ def get_mean_free_path(particle, Ki, T, Y, eta):
     v = sqrt(1. - 1./ga**2.)
 
     # Handle scattering on protons
-    rate += _nH(T, Y, eta) * _interp_reaction_data(f"p{x}_tot", Ki) * v
+    rate += bg.nH(T, Y, eta) * _interp_reaction_data(f"p{x}_tot", Ki) * v
 
     # Handle scattering on helium-4
     if is_projectile(particle): # p ~ n in this case
-        rate += _nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
+        rate += bg.nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
 
     return 1./rate

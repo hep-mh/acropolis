@@ -29,3 +29,11 @@ def nee(T, Y, eta):
     nee_2 = ( 1. - Y/2. ) * eta * na(T)
 
     return max(nee_1, nee_2)
+
+
+def nH(T, Y, eta):
+    return na(T) * eta * (1.-Y) 
+
+
+def nHe4(T, Y, eta):
+    return na(T) * eta * (Y/4.)

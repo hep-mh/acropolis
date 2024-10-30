@@ -11,6 +11,8 @@ from enum import Enum
 
 # flags
 import acropolis.flags as flags
+# hrates
+from acropolis.hrates import get_all_probs
 # params
 from acropolis.params import pi
 from acropolis.params import mb_to_iMeV2
@@ -700,19 +702,22 @@ def _update_spectrum(spectrum, rid, projectile, Ki, prob, bg):
 
 
 # TODO: Change name
-def get_fs_spectrum(egrid, projectile, Ki, probs, T, Y, eta):
+def get_fs_spectrum(egrid, projectile, Ki, T, Y, eta):
     if not is_projectile(projectile):
         print_error(
             "The given particle is not a valid projectile",
             "acropolis.etransfer.get_fs_spectrum"
         )
 
-    # Intialize the background properties
-    bg = _Background(T, Y, eta)
-
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
+    # Calculate the scattering probabilities
+    probs = get_all_probs(projectile, Ki, T, Y, eta)
+
+    # Initialize the background object
+    bg = _Background(T, Y, eta)
+    
     # Loop over all reactions and update the
     # spectrum based on the given probability
     for rid, prob in enumerate(probs):
