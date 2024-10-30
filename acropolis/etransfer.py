@@ -9,6 +9,8 @@ from scipy.optimize import root
 # enum
 from enum import Enum
 
+# eloss
+import acropolis.eloss as eloss
 # flags
 import acropolis.flags as flags
 # hrates
@@ -19,11 +21,9 @@ from acropolis.params import mb_to_iMeV2
 from acropolis.params import Kt, mn, mp, mpi0
 # particles
 from acropolis.particles import Particles, ParticleSpectrum
-from acropolis.particles import mass, za
+from acropolis.particles import eth, mass, za
 from acropolis.particles import is_projectile, is_pion, is_spectator, is_nucleus
 from acropolis.particles import convert
-# pprint
-from acropolis.pprint import print_error
 
 
 class _Actions(Enum):
@@ -66,18 +66,39 @@ def _survives(egrid, nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return True
 
+    # PHOTODISINTEGRATION VIA CMB PHOTONS ###########################
+
     Z, A = za[nucleus]
 
     # Calculate the threshold energy for
     # photodisintegration
     Eth_pdi = Z*mp + (A-Z)*mn - mass[nucleus]
 
-    # Photodisintegration via CMB photons
+    # -->
     if sqrt( 3*Ki*bg.T ) > Eth_pdi:
         return False
+
     
-    # Hadrodisintegration via background protons
-    # TODO
+    # HADRODISINTEGRATION VIA BACKGROUND PROTONS ####################
+    
+    """
+    _, raw = eloss.process(egrid, nucleus, bg.T, bg.Y, bg.eta)
+
+    Ki_grid = egrid.central_values()
+    Kf_grid = np.array([Kf for _, Kf in raw])
+    # -->
+    Ki_grid = Ki_grid[Kf_grid != 0.]
+    Kf_grid = Kf_grid[Kf_grid != 0.]
+
+    Kf = 0
+    if Ki > Ki_grid[0]:
+        Kf = exp(
+            np.interp(log(Ki), np.log(Ki_grid), np.log(Kf_grid), left=np.nan, right=np.nan)
+        )
+    
+    if Kf > eth[nucleus]:
+        return False
+    """
 
     return True
 
