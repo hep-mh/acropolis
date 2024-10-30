@@ -254,8 +254,7 @@ def _decays(particle, Ki, T, Y, eta):
     return (Rd > Rs)
 
 
-# TODO: Change name
-def track_eloss(egrid, particle, T, Y, eta, fallback=None):
+def process(egrid, particle, T, Y, eta, fallback=None):
     if not ( is_projectile(particle) or is_nucleus(particle) ):
         raise ValueError("The given particle must be a projectile or a nucleus")
 

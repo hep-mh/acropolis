@@ -701,14 +701,7 @@ def _update_spectrum(spectrum, rid, projectile, Ki, prob, bg):
         _r8_alpha(*params, bg)
 
 
-# TODO: Change name
-def get_fs_spectrum(egrid, projectile, Ki, T, Y, eta):
-    if not is_projectile(projectile):
-        print_error(
-            "The given particle is not a valid projectile",
-            "acropolis.etransfer.get_fs_spectrum"
-        )
-
+def _process_single_energy(egrid, projectile, Ki, T, Y, eta):
     # Initialize the spectrum
     spectrum = ParticleSpectrum(egrid)
 
@@ -717,7 +710,7 @@ def get_fs_spectrum(egrid, projectile, Ki, T, Y, eta):
 
     # Initialize the background object
     bg = _Background(T, Y, eta)
-    
+
     # Loop over all reactions and update the
     # spectrum based on the given probability
     for rid, prob in enumerate(probs):
@@ -728,3 +721,16 @@ def get_fs_spectrum(egrid, projectile, Ki, T, Y, eta):
     
     # Return the final spectrum
     return spectrum
+
+
+def process(egrid, projectile, T, Y, eta):
+    if not is_projectile(particle):
+        raise ValueError("The given particle must be a projectile")
+
+    spectra = []
+    for i in range(egrid.nbins()):
+        spectra.append(
+            _process_single_energy(egrid, projectile, egrid[i], T, Y, eta)
+        )
+    
+    return spectra

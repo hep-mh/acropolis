@@ -4,9 +4,9 @@ from math import log10, sqrt
 import numpy as np
 
 # eloss
-from acropolis.eloss import track_eloss
+import acropolis.eloss as eloss
 # etransfer
-from acropolis.etransfer import get_fs_spectrum
+import acropolis.etransfer as etransfer
 # particles
 from acropolis.particles import Particles
 from acropolis.particles import Np, Nn
@@ -79,8 +79,6 @@ class EnergyGrid(object):
 
 
 def _get_etransfer_matrix(egrid, T, Y, eta):
-    bg = (T, Y, eta)
-
     # Extract the number of bins
     N = egrid.nbins()
 
@@ -94,13 +92,9 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
 
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
-        # Loop over all possible energies
-        for i in range(N):
-            Ki = egrid[i]
+        spectra = etransfer.process(egrid, projectile, T, Y, eta)
 
-            # Calculate the final-state spectrum
-            spectrum = get_fs_spectrum(egrid, projectile, Ki, *bg)
-
+        for i, spectrum in enumerate(spectra):
             # DEBUG
             assert np.isclose(spectrum.baryon_number(), 0.)
 
@@ -113,8 +107,6 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
 
 
 def _get_eloss_matrix(egrid, T, Y, eta):
-    bg = (T, Y, eta)
-
     # Extract the number of bins
     N = egrid.nbins()
 
@@ -129,7 +121,7 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     fallback = None
     # Loop over all possible projectiles
     for projectile in [Particles.PROTON, Particles.NEUTRON]:
-        spectra, fallback = track_eloss(egrid, projectile, *bg, fallback)
+        spectra, fallback = eloss.process(egrid, projectile, T, Y, eta, fallback)
 
         for i, spectrum in enumerate(spectra):
             # DEBUG
