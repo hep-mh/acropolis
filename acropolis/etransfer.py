@@ -362,7 +362,7 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
     if projectile_remnant != Particles.NULL:
         particles_equip.append(projectile_remnant)
 
-    Kj_p_L= []
+    Kj_p_L = []
     # Loop over the various daughter particles
     for i, daughter in enumerate(daughters):
         md = mass[daughter]
@@ -386,6 +386,18 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         # Update the mass difference
         dM -= md
     
+    # DEBUG
+    if False:
+        print("Final-state particles :")
+        _l1 = [Ki_p, *Kj_p_L]
+        _l2 = [projectile_remnant, *daughters]
+        for _K, _d in zip(_l1, _l2):
+            print(f"  • {_d.name:<12}   {_K:.3e}MeV")
+        print(f"Gamma factor          :  {gcm:.5e}")
+        print(f"Mass difference       : {dM:+.5e}MeV")
+        print(f"Energy balance        :  {Ki:.5e}MeV (in)")
+        print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
+    
     # Check if the reaction is kinematically allowed
     M_equip = sum(mass[peq] for peq in particles_equip)
     # -->
@@ -393,17 +405,6 @@ def _inelastic(spectrum, projectile, Ki, prob, bg, target, daughters, projectile
         raise ValueError(
             "Insufficient energy to create final-state particles"
         )
-
-    # DEBUG
-    # print("Final-state particles :")
-    # _l1 = [Ki_p, *Kj_p_L]
-    # _l2 = [projectile_remnant, *daughters]
-    # for _K, _d in zip(_l1, _l2):
-    #     print(f"  • {_d.name:<12}   {_K:.3e}MeV")
-    # print(f"Gamma factor          :  {gcm:.5e}")
-    # print(f"Mass difference       : {dM:+.5e}MeV")
-    # print(f"Energy balance        :  {Ki:.5e}MeV (in)")
-    # print(f"                         {Ki_p+sum(Kj_p_L)-dM:.5e}MeV (out)")
 
     # Ensure energy conservation
     # NOTE:
