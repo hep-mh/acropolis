@@ -119,13 +119,13 @@ def _survives(egrid, nucleus, Ki, bg):
 def _fragments(egrid, particle, Ki, bg):
     if _survives(egrid, particle, Ki, bg):
         return [(particle, Ki)]
-    
-    if not flags.reinject_fragments:
-        return []
-    
+
     # Extract the mass number and the
     # atomic number of the particle
     Z, A = za[particle]
+    
+    if not flags.reinject_fragments:
+        return [(Particles.PROTON, 0.)]*Z + [(Particles.NEUTRON, 0.)]*(A-Z)
 
     # Extract the mass of the particle
     m = mass[particle]
