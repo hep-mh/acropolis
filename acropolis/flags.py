@@ -50,6 +50,13 @@ A3_is_spectator = False
 # Default: True
 reinject_fragments = True
 
+# If this flag is set to 'True',
+# the neutron decay is handled
+# during eloss. Othweriwse it is
+# handled during etransfer
+# Default: False
+decay_during_eloss = False
+
 
 # FUNCTIONS #########################################################
 

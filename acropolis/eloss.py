@@ -8,6 +8,8 @@ from scipy.interpolate import interp1d
 
 # cosmo
 from acropolis.cosmo import nee
+# flags
+import acropolis.flags as flags
 # hrates
 from acropolis.hrates import get_mean_free_path
 # jit
@@ -264,7 +266,7 @@ def process(egrid, particle, T, Y, eta, fallback=None):
     Ki_grid = egrid.central_values()
 
     # Handle the special case of unstable particles
-    if is_unstable(particle) and (fallback is None):
+    if is_unstable(particle) and (fallback is None) and flags.decay_during_eloss:
         raise ValueError("Unstable particles require a fallback")
 
     # Calculate the integral kernel
@@ -290,7 +292,7 @@ def process(egrid, particle, T, Y, eta, fallback=None):
         Ki = Ki_grid[i]
 
         # Calculate the final energy ################################
-        if _decays(particle, Ki, T, Y, eta):
+        if flags.decay_during_eloss and _decays(particle, Ki, T, Y, eta):
             # Use the fallback
             remnant, Kf = fallback[i]
         else:

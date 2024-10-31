@@ -5,12 +5,14 @@ import numpy as np
 
 # cosmo
 import acropolis.cosmo as bg
+# flags
+import acropolis.flags as flags
 # input
 from acropolis.input import locate_data_file
 # params
 from acropolis.params import mb_to_iMeV2
 # particles
-from acropolis.particles import Particles, mass, label
+from acropolis.particles import Particles, mass, lifetime, label
 from acropolis.particles import is_projectile, is_nucleus
 
 
@@ -114,8 +116,8 @@ def get_all_rates(projectile, Ki, T, Y, eta):
     # FILL ##########################################################
 
     # rid = 0
-    # if projectile == Particles.NEUTRON:
-    #     rates[0] = sqrt(1. - v**2.) * hbar / tau_n
+    if (projectile == Particles.NEUTRON) and (not flags.decay_during_eloss):
+        rates[0] = sqrt(1. - v**2.) / lifetime[projectile]
     
     # rid = 1
     rates[1]  = nH * _interp_reaction_data(f"p{x}_p{x}", Ki) * v
