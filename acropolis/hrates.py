@@ -13,7 +13,7 @@ from acropolis.input import locate_data_file
 from acropolis.params import mb_to_iMeV2
 # particles
 from acropolis.particles import Particles, mass, lifetime, label
-from acropolis.particles import is_projectile, is_nucleus
+from acropolis.particles import is_projectile, is_nucleus, is_unstable
 
 
 # NOTE:
@@ -195,5 +195,9 @@ def get_mean_free_path(particle, Ki, T, Y, eta):
     # Handle scattering on helium-4
     if is_projectile(particle): # p ~ n in this case
         rate += bg.nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
+    
+    # Handle decays
+    if is_unstable(particle) and (not flags.decay_during_eloss):
+        rate += 1./ ( ga * lifetime[particle] )
 
     return 1./rate
