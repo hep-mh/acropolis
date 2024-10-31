@@ -19,11 +19,11 @@ from acropolis.particles import is_projectile, is_nucleus
 # K ≘ kinetic energy, E ≘ total energy
 
 
-# Define the number of reactions
+# The number of nuclear reactions
 Nr = 14
 
 
-# Threshold energies for two pion production
+# The threshold energies for two-pion production
 _Kth_r4 = {
     Particles.PROTON : 605.7509051898966,
     Particles.NEUTRON: 579.1139640875533

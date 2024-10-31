@@ -238,7 +238,7 @@ def _decay(spectrum, projectile, Ki, prob):
     spectrum.add(projectile_remnant, prob, Ki_p)
 
     # Account for the destruction of the
-    # initial state projectile
+    # initial-state projectile
     spectrum.add(projectile, -prob)
 
 
