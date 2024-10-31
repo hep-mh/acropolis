@@ -135,5 +135,42 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     return matrix
 
 
-def get_transition_matrix(egrid, T, Y, eta, n):
-    pass
+def get_transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
+    M1 = _get_eloss_matrix(egrid, T, Y, eta)
+    M2 = _get_etransfer_matrix(egrid, T, Y, eta)
+
+    A = M2 @ M1
+    B = A
+
+    # Break after a maximum of
+    # 2^max_iter iteration steps
+    for n in range(max_iter):
+        # Square the previous matrix
+        # After n iterations, we have
+        # done 2^n cascade steps
+        A = A @ A
+
+        # Check for convergence
+        Sa, Sb = A[-Nn:,:-Nn], B[-Nn:,:-Nn]
+
+        diff = 1
+        if np.array_equal(Sa == 0, Sb == 0):
+            Sa = Sa[Sb != 0]
+            Sb = Sb[Sb != 0]
+
+            # -->
+            diff = np.max( np.abs(Sa - Sb)/Sa )
+
+        # DEBUG
+        print(n, diff)
+
+        # Break if convergence has been
+        # archieved
+        if diff < eps:
+            break
+
+        # Store the current matrix for
+        # comparison in the next step
+        B = A
+    
+    return A, n
