@@ -44,7 +44,7 @@ class LogInterp(object):
             if type(self._sFillValue) is int:
                 return self._sFillValue
             
-            if type(self._sFillValue) is list and len(self._sFillValue) == 2:
+            if type(self._sFillValue) in [list, tuple] and len(self._sFillValue) == 2:
                 if x_log < self._sXminLog:
                     return self._sFillValue[0]
                 

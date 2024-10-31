@@ -24,6 +24,8 @@ from acropolis.particles import Particles, ParticleSpectrum
 from acropolis.particles import eth, mass, za
 from acropolis.particles import is_projectile, is_pion, is_spectator, is_nucleus
 from acropolis.particles import convert
+# utils
+from acropolis.utils import LogInterp
 
 
 class _Actions(Enum):
@@ -37,6 +39,9 @@ class _Background(object):
         self.T   = T
         self.Y   = Y
         self.eta = eta
+    
+    def get(self):
+        return (self.T, self.Y, self.eta)
 
 
 # HELPER FUNCTIONS ##################################################
@@ -62,7 +67,10 @@ def _gcm(projectile, target, K):
     return ( (mN + mA) + K ) / sqrt( (mN + mA)**2. + 2.*mA*K )
 
 
+_interp_cache = {}
 def _survives(egrid, nucleus, Ki, bg):
+    global _interp_cache
+
     if not is_nucleus(nucleus):
         return True
 
@@ -81,25 +89,30 @@ def _survives(egrid, nucleus, Ki, bg):
     
     # HADRODISINTEGRATION VIA BACKGROUND PROTONS ####################
     
-    """
-    _, raw = eloss.process(egrid, nucleus, bg.T, bg.Y, bg.eta)
+    if nucleus.value not in _interp_cache:
+        _, raw = eloss.process(egrid, nucleus, *bg.get())
 
-    Ki_grid = egrid.central_values()
-    Kf_grid = np.array([Kf for _, Kf in raw])
+        # Extract the grids for the initial and final energies
+        Ki_grid = egrid.central_values()
+        Kf_grid = np.array([Kf for _, Kf in raw])
+        # -->
+        Ki_grid = Ki_grid[Kf_grid != 0.]
+        Kf_grid = Kf_grid[Kf_grid != 0.]
+
+        # Create and store the interpolation function
+        _interp_cache[nucleus.value] = LogInterp(Ki_grid, Kf_grid, fill_value=(0.,np.nan))
+
+    # Calculate the energy before scattering
+    Kf = _interp_cache[nucleus.value](Ki)
+
+    # Calculate the theshold energy for hadrodisintegration
+    Eth_hdi = eth[nucleus]
+
     # -->
-    Ki_grid = Ki_grid[Kf_grid != 0.]
-    Kf_grid = Kf_grid[Kf_grid != 0.]
-
-    Kf = 0
-    if Ki > Ki_grid[0]:
-        Kf = exp(
-            np.interp(log(Ki), np.log(Ki_grid), np.log(Kf_grid), left=np.nan, right=np.nan)
-        )
-    
-    if Kf > eth[nucleus]:
+    if Kf > Eth_hdi:
         return False
-    """
 
+    # Otherwise (no pdi or hdi)
     return True
 
 

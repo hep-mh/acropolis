@@ -12,7 +12,7 @@ from acropolis.params import me
 
 _f_data = np.loadtxt( locate_data_file("f.dat") )
 # -->
-_f = LogInterp(_f_data[:,0], _f_data[:,1], fill_value=[3.*zeta3/2., 0.])
+_f = LogInterp(_f_data[:,0], _f_data[:,1], fill_value=(3.*zeta3/2., 0.))
 
 
 def na(T):
