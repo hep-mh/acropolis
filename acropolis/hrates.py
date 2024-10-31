@@ -197,7 +197,7 @@ def get_mean_free_path(particle, Ki, T, Y, eta):
         rate += bg.nHe4(T, Y, eta) * _interp_reaction_data("pHe4_tot", Ki) * v
     
     # Handle decays
-    if is_unstable(particle) and (not flags.decay_during_eloss):
+    if (not flags.decay_during_eloss) and is_unstable(particle):
         rate += 1./ ( ga * lifetime[particle] )
 
     return 1./rate
