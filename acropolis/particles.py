@@ -136,11 +136,13 @@ Nn = sum(is_nucleus   (particle) for particle in Particles)
 
 
 # All energies in MeV
+# These are estimates based on the
+# pX_inel cross-sections
 eth = {
-    Particles.DEUTERIUM:  2.25,
-    Particles.TRITIUM  :  6.26,
-    Particles.HELIUM3  :  5.50,
-    Particles.HELIUM4  : 20.00 
+    Particles.DEUTERIUM:  3.67,
+    Particles.TRITIUM  :  7.34,
+    Particles.HELIUM3  :  7.34,
+    Particles.HELIUM4  : 23.01 
 }
 
 
