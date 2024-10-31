@@ -72,7 +72,7 @@ def _survives(egrid, nucleus, Ki, bg):
     global _interp_cache
 
     if not is_nucleus(nucleus):
-        return True
+        return (True, Ki)
 
     # PHOTODISINTEGRATION VIA CMB PHOTONS ###########################
 
@@ -84,7 +84,7 @@ def _survives(egrid, nucleus, Ki, bg):
 
     # -->
     if sqrt( 3*Ki*bg.T ) > Eth_pdi:
-        return False
+        return (False, Ki)
 
     
     # HADRODISINTEGRATION VIA BACKGROUND PROTONS ####################
@@ -110,15 +110,17 @@ def _survives(egrid, nucleus, Ki, bg):
 
     # -->
     if Kf > Eth_hdi:
-        return False
+        return (False, Kf)
 
     # Otherwise (no pdi or hdi)
-    return True
+    return (True, Ki)
 
 
 def _fragments(egrid, particle, Ki, bg):
-    if _survives(egrid, particle, Ki, bg):
-        return [(particle, Ki)]
+    survives, Kf = _survives(egrid, particle, Ki, bg)
+
+    if survives:
+        return [(particle, Kf)]
 
     # Extract the mass number and the
     # atomic number of the particle
@@ -132,8 +134,8 @@ def _fragments(egrid, particle, Ki, bg):
 
     # Calculate the kinetic energy of the
     # resulting protons and neutrons
-    Kp_p = (Ki + m)/A - mp
-    Kn_p = (Ki + m)/A - mn
+    Kp_p = (Kf + m)/A - mp
+    Kn_p = (Kf + m)/A - mn
     
     # -->
     return [(Particles.PROTON, Kp_p)]*Z + [(Particles.NEUTRON, Kn_p)]*(A-Z)
