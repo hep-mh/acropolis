@@ -19,6 +19,10 @@ def na(T):
     return 2. * zeta3 * (T**3.) / pi2
 
 
+def nb(T, eta):
+    return eta * na(T)
+
+
 def nee(T, Y, eta):
     xe = me/T
 
@@ -26,14 +30,14 @@ def nee(T, Y, eta):
     nee_1 = 4. * _f(xe) * (T**3.) / ( 2. * pi2 )
 
     # 2. EQUILIBRIUM WITH NON-VANISHING CHEM. POTENTIAL
-    nee_2 = ( 1. - Y/2. ) * eta * na(T)
+    nee_2 = ( Y[1] + 2.*Y[5] ) * nb(T, eta)
 
     return max(nee_1, nee_2)
 
 
 def nH(T, Y, eta):
-    return na(T) * eta * (1.-Y) 
+    return Y[1] * nb(T, eta) 
 
 
 def nHe4(T, Y, eta):
-    return na(T) * eta * (Y/4.)
+    return Y[5] * nb(T, eta)
