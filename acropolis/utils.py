@@ -1,5 +1,5 @@
 # math
-from math import log, pow
+from math import log, pow, exp
 # numpy
 import numpy as np
 # scipy
