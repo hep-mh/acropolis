@@ -8,6 +8,7 @@ from scipy.integrate import cumulative_simpson
 # jit
 from acropolis.jit import jit
 
+
 class LogInterp(object):
 
     def __init__(self, x_grid, y_grid, base=np.e, fill_value=None):
@@ -81,6 +82,7 @@ class LogInterp(object):
 def cumsimp(x_grid, y_grid):
     return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)
 
+
 @jit
 def _cumsimp(x_grid, y_grid):
     n = len(x_grid)
@@ -102,6 +104,47 @@ def _cumsimp(x_grid, y_grid):
 
     return i_grid
 
+
 @jit
 def flipped_cumsimp(x_grid, y_grid):
      return -np.flip(_cumsimp(np.flip(x_grid), np.flip(y_grid)))
+
+
+def mavg(x_grid, n, use_log=False):
+    if n <= 3:
+        return x_grid
+
+    N = len(x_grid)
+
+    z_grid = np.log(x_grid) if use_log else x_grid
+
+    # Initialize the return array
+    xa_grid = np.zeros(N)
+
+    # -->
+    xa_grid[ 0] = x_grid[ 0]
+    xa_grid[-1] = x_grid[-1]
+
+    # Loop over all elements
+    for i in range(1, N-1):
+        l = i - n
+        h = i + n
+
+        d = 0
+        # Handle the edge cases
+        if l < 0:
+            d = abs(l)
+        elif h > N - 1:
+            d = abs(N - 1 - h)
+        
+        # Adjust the window size
+        h -= d
+        l += d
+        
+        # Calculate the mean of the symmetric window
+        mean = np.mean(z_grid[l:h])
+
+        # -->
+        xa_grid[i] = exp(mean) if use_log else mean
+
+    return xa_grid
