@@ -630,6 +630,7 @@ class MatrixGenerator(object):
         return (mpdi, mdcy)
 
 
+    """
     def get_all_matp(self):
         NT = len(self._sTemp)
 
@@ -660,6 +661,7 @@ class MatrixGenerator(object):
         )
 
         return self._sTemp, (all_mpdi, all_mdcy)
+    """
 
 
     def get_final_matp(self):
