@@ -23,24 +23,26 @@ from acropolis.pprint import print_info, print_warning
 
 class AbstractModel(ABC):
 
-    def __init__(self, e0, ii):
+    def __init__(self, E0, ii):
         # Initialize the input interface
         self._sII  = ii
 
         # The injection energy
-        self._sE0 = e0
+        self._sE0 = E0
 
         # The temperature range that is used for the calculation
         self._sTrg = self._temperature_range()
 
         # The relevant source terms
-        (self._sS0, self._sSc) = self.get_source_terms()
+        (self._sS0, self._sSc) = self._source_terms()
 
         # A buffer for high-performance scans
         self._sMatpBuffer = None
 
 
     def run_disintegration(self):
+        Y0 = self._sII.bbn_abundances()
+
         # Print a warning if the injection energy
         # is larger than 1GeV, as this might lead
         # to wrong results
@@ -68,7 +70,8 @@ class AbstractModel(ABC):
                 "acropolis.models.AbstractModel.run_disintegration",
                 verbose_level=1
             )
-            return self._squeeze_decays( self._sII.bbn_abundances() )
+
+            return self._handle_final_decays(Y0)
 
         # Calculate the different transfer matrices
         ###########################################
@@ -77,21 +80,18 @@ class AbstractModel(ABC):
         pred_mat   = self._pred_matrix()
         # 2. photodisintegration
         pdi_mat    = self._pdi_matrix()
-        # 3. post-decay
-        postd_mat  = self._postd_matrix()
 
         # Combine
-        transf_mat = postd_mat.dot( pdi_mat.dot( pred_mat ) )
+        transf_mat = pdi_mat @ pred_mat
 
         # Calculate the final abundances
-        Yf = np.column_stack(
-            list( transf_mat.dot( Y0i ) for Y0i in self._sII.bbn_abundances().transpose() )
-        )
+        Yf = transf_mat @ Y0
 
-        return Yf
+        # -->
+        return self._handle_final_decays(Yf)
 
 
-    def get_source_terms(self):
+    def _source_terms(self):
         # Collect the different source terms, i.e. ...
         # ...the 'delta' source terms and...
         s0 = [
@@ -147,22 +147,22 @@ class AbstractModel(ABC):
         return dmat
 
 
-    def _postd_matrix(self):
-        dmat = np.identity(NY)
+    def _handle_final_decays(self, Yf):
+        Yd = Yf.copy()
 
-        dmat[0,0], dmat[1,0] = 0., 1. # n   > p
-        dmat[3,3], dmat[4,3] = 0., 1. # t   > He3
-        dmat[8,8], dmat[7,8] = 0., 1. # Be7 > Li7
+        # n > p
+        Yd[1,:] += Yf[0,:]
+        Yd[0,:]  = 0.
 
-        return dmat
+        # t > He3
+        Yd[4,:] += Yf[3,:]
+        Yd[3,:]  = 0.
 
+        # Be7 > Li7
+        Yd[7,:] += Yf[8,:]
+        Yd[8,:]  = 0.
 
-    def _squeeze_decays(self, Yf):
-        dmat = self._postd_matrix()
-
-        return np.column_stack(
-            list( dmat.dot( Yi ) for Yi in Yf.transpose() )
-        )
+        return Yd
 
 
     def get_matp_buffer(self):
