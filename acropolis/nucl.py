@@ -560,24 +560,28 @@ class MatrixGenerator(object):
         return 0.
 
 
-    def _pdi_kernel_ij(self, i, j, T):
-        matij = 0.
-
+    def _pdi_rate_ij(self, i, j, T):
+        rate = 0.
         for rid in _lrid:
-            matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiRatesIp[rid](T)
+            rate += self._pref_ij(_rsig[rid], i, j) * self._sPdiRatesIp[rid](T)
 
-        # Incorporate the time-temperature relation and return
-        return matij/( self._sII.dTdt(T) )
+        # -->
+        return rate
 
 
-    def _dcy_kernel_ij(self, i, j, T):
-        matij = 0.
-
+    def _dcy_rate_ij(self, i, j, T):
+        rate = 0.
         for did in _ldid:
-            matij += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
+            rate += self._pref_ij(_dsig[did], i, j) * hbar/_tau[did]
 
-        # Incorporate the time-temperature relation and return
-        return matij/( self._sII.dTdt(T) )
+        # -->
+        return rate
+
+
+    def _rate_matrix(self, T):
+        mat = np.zeros( (_nnuc, _nnuc) )
+
+        # TODO
 
 
     def get_matp(self, T):
@@ -607,12 +611,20 @@ class MatrixGenerator(object):
                 )
 
                 # Define the kernels for the integration in log-log space
-                Ik_pdi = lambda y: self._pdi_kernel_ij( nr, nc, exp(y) ) * exp(y)
-                Ik_dcy = lambda y: self._dcy_kernel_ij( nr, nc, exp(y) ) * exp(y)
+                def _pdi_kernel(logT):
+                    T = exp(logT)
 
+                    return T * self._pdi_rate_ij(nr, nc, T) / self._sII.dTdt(T)
+                
+                def _dcy_kernel(logT):
+                    T = exp(logT)
+
+                    return T * self._dcy_rate_ij(nr, nc, T) / self._sII.dTdt(T)
+
+                Tmax_log, T_log = log(self._sTmax), log(T)
                 # Perform the integration (in log-log space)
-                mpdi[nr, nc] = quad(Ik_pdi, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
-                mdcy[nr, nc] = quad(Ik_dcy, log(self._sTmax), log(T), epsrel=eps, epsabs=0, limit=100)[0]
+                mpdi[nr, nc] = quad(_pdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
+                mdcy[nr, nc] = quad(_dcy_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
 
         end_time = time()
         print_info(
