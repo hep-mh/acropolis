@@ -514,28 +514,28 @@ class NuclearReactor(object):
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp_grid, pdi_grids, ii):
+    def __init__(self, temp_grid, rate_grids, ii):
         self._sII = ii
 
         # Save the thermal rates
-        self._sTempGrid = temp_grid
-        self._sPdiGrids = pdi_grids
+        self._sTemps    = temp_grid
+        self._sPdiRates = rate_grids
 
         # Save the appropriate temperature range
         (self._sTmin, self._sTmax) = temp_grid[0], temp_grid[-1]
 
         # Interpolate the thermal rates
-        self._sPdiIp = self._interp_pdi_grids()
+        self._sPdiRatesIp = self._interp_pdi_rates()
 
 
-    def _interp_pdi_grids(self):
+    def _interp_pdi_rates(self):
         # A dict containing all interp. rates; key = reaction_id (from _sReactions)
         interp_grids = {}
         for rid in _lrid:
             # Interpolate the rates between
             # Tmin and Tmax in log-log space
             interp_grids[rid] = LogInterp(
-                self._sTempGrid, self._sPdiGrids[rid], base=10. # fill_value=0.
+                self._sTemps, self._sPdiRates[rid], base=10.
             )
 
         return interp_grids
@@ -564,7 +564,7 @@ class MatrixGenerator(object):
         matij = 0.
 
         for rid in _lrid:
-            matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiIp[rid](T)
+            matij += self._pref_ij(_rsig[rid], i, j) * self._sPdiRatesIp[rid](T)
 
         # Incorporate the time-temperature relation and return
         return matij/( self._sII.dTdt(T) )
