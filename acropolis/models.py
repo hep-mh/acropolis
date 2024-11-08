@@ -71,24 +71,23 @@ class AbstractModel(ABC):
                 verbose_level=1
             )
 
-            return self._handle_final_decays(Y0)
+            return self._postd_matrix() @ Y0
 
         # Calculate the different transfer matrices
         ###########################################
 
-        # 1. pre-decay
-        pred_mat   = self._pred_matrix()
-        # 2. photodisintegration
-        pdi_mat    = self._pdi_matrix()
+        # 1. Decays before Tmax
+        pred_mat  = self._pred_matrix()
+        # 2. Photodisintegration + Decay
+        pdi_mat   = self._pdi_matrix()
+        # 3. Decays after Tmin
+        postd_mat = self._postd_matrix()
 
-        # Combine
-        transf_mat = pdi_mat @ pred_mat
-
-        # Calculate the final abundances
-        Yf = transf_mat @ Y0
+        # Calculate the total transfer matrix
+        transf_mat = postd_mat @ pdi_mat @ pred_mat
 
         # -->
-        return self._handle_final_decays(Yf)
+        return transf_mat @ Y0
 
 
     def _source_terms(self):
@@ -131,38 +130,34 @@ class AbstractModel(ABC):
 
 
     def _pred_matrix(self):
+        # NOTE:
+        # Until disintegration reactions become
+        # relevant at t ~ 1e4s, all neutrons have
+        # decayed, while tritium remains unchanged
+
         dmat = np.identity(NY)
 
-        # n   > p
+        # n > p
         dmat[0,0], dmat[1,0] = 0., 1.
 
         # t > He3
-        Tmax = max( self._sTrg )
-        tmax = self._sII.time( Tmax )
-
+        tmax = self._sII.time( max(self._sTrg) )
+        # -->
         expf = exp( -tmax/tau_t )
-
-        dmat[3,3], dmat[4, 3] = expf, 1. - expf
+        # -->
+        dmat[3,3], dmat[4,3] = expf, 1. - expf
 
         return dmat
 
 
-    def _handle_final_decays(self, Yf):
-        Yd = Yf.copy()
+    def _postd_matrix(self):
+        dmat = np.identity(NY)
 
-        # n > p
-        Yd[1,:] += Yf[0,:]
-        Yd[0,:]  = 0.
+        dmat[0,0], dmat[1,0] = 0., 1. # n   > p
+        dmat[3,3], dmat[4,3] = 0., 1. # t   > He3
+        dmat[8,8], dmat[7,8] = 0., 1. # Be7 > Li7
 
-        # t > He3
-        Yd[4,:] += Yf[3,:]
-        Yd[3,:]  = 0.
-
-        # Be7 > Li7
-        Yd[7,:] += Yf[8,:]
-        Yd[8,:]  = 0.
-
-        return Yd
+        return dmat
 
 
     def get_matp_buffer(self):

@@ -578,12 +578,6 @@ class MatrixGenerator(object):
         return rate
 
 
-    def _rate_matrix(self, T):
-        mat = np.zeros( (_nnuc, _nnuc) )
-
-        # TODO
-
-
     def get_matp(self, T):
         # Generate empty matrices
         mpdi = np.zeros( (_nnuc, _nnuc) )
