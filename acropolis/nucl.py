@@ -514,15 +514,15 @@ class NuclearReactor(object):
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp, pdi_grids, ii):
+    def __init__(self, temp_grid, pdi_grids, ii):
         self._sII = ii
 
         # Save the thermal rates
-        self._sTemp     = temp
+        self._sTempGrid = temp_grid
         self._sPdiGrids = pdi_grids
 
         # Save the appropriate temperature range
-        (self._sTmin, self._sTmax) = temp[0], temp[-1]
+        (self._sTmin, self._sTmax) = temp_grid[0], temp_grid[-1]
 
         # Interpolate the thermal rates
         self._sPdiIp = self._interp_pdi_grids()
@@ -535,7 +535,7 @@ class MatrixGenerator(object):
             # Interpolate the rates between
             # Tmin and Tmax in log-log space
             interp_grids[rid] = LogInterp(
-                self._sTemp, self._sPdiGrids[rid], base=10. # fill_value=0.
+                self._sTempGrid, self._sPdiGrids[rid], base=10. # fill_value=0.
             )
 
         return interp_grids
@@ -582,7 +582,8 @@ class MatrixGenerator(object):
 
     def get_matp(self, T):
         # Generate empty matrices
-        mpdi, mdcy = np.zeros( (_nnuc, _nnuc) ), np.zeros( (_nnuc, _nnuc) )
+        mpdi = np.zeros( (_nnuc, _nnuc) )
+        mdcy = np.zeros( (_nnuc, _nnuc) )
 
         start_time = time()
         print_info(
