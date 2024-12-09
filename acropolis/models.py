@@ -13,7 +13,7 @@ from acropolis.input import InputInterface, locate_sm_file
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
-from acropolis.params import hbar, c_si, me2, alpha, tau_t
+from acropolis.params import hbar, c_si, me2, alpha, tau_t, mp, mn
 from acropolis.params import Emin, NY
 # flags
 import acropolis.flags as flags
@@ -42,6 +42,9 @@ class AbstractModel(ABC):
 
     def run_disintegration(self):
         Y0 = self._sII.bbn_abundances()
+
+        # DEBUG
+        assert np.all( Y0[0,:]/Y0[1,:] < 1e-3 )
 
         # Print a warning if the injection energy
         # is larger than 1GeV, as this might lead
@@ -132,8 +135,8 @@ class AbstractModel(ABC):
     def _pred_matrix(self):
         # NOTE:
         # Until disintegration reactions become
-        # relevant at t ~ 1e4s, all neutrons have
-        # decayed, while tritium remains unchanged
+        # relevant at t ~ 1e4s, most neutrons
+        # have already decayed
 
         dmat = np.identity(NY)
 
@@ -175,14 +178,12 @@ class AbstractModel(ABC):
         pass
 
 
-    @abstractmethod
     def _source_photon_0(self, T):
-        pass
+        return 0.
 
 
-    @abstractmethod
     def _source_electron_0(self, T):
-        pass
+        return 0.
 
 
     def _source_positron_0(self, T):
@@ -199,6 +200,22 @@ class AbstractModel(ABC):
 
     def _source_positron_c(self, E, T):
         return self._source_electron_c(E, T)
+
+
+    def _dndt_proton(self, T):
+        return 0.
+    
+
+    def _dndt_neutron(self, T):
+        return self._dndt_proton(T)
+    
+
+    def _K0_proton(self, T):
+        return self._sE0 - mp
+
+    
+    def _K0_neutron(self, T):
+        return self._sE0 - mn
 
 
 class DecayModel(AbstractModel):
