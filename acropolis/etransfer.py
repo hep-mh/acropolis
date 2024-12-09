@@ -95,6 +95,7 @@ def _survives(egrid, nucleus, Ki, bg):
         # Extract the grids for the initial and final energies
         Ki_grid = egrid.central_values()
         Kf_grid = np.array([Kf for _, Kf in raw])
+        # TODO: Check case of small n: cumsimp problem?
         # -->
         Ki_grid = Ki_grid[Kf_grid != 0.]
         Kf_grid = Kf_grid[Kf_grid != 0.]
