@@ -2,14 +2,18 @@
 from math import log10, sqrt
 # numpy
 import numpy as np
+# scipy
+from scipy.interpolate import interp1d
 
 # eloss
 import acropolis.eloss as eloss
 # etransfer
 import acropolis.etransfer as etransfer
 # particles
-from acropolis.particles import Particles
+from acropolis.particles import Particles, _nuceq, is_nucleus, is_projectile
 from acropolis.particles import Np, Nn
+# utils
+from acropolis.utils import mavg
 
 
 class EnergyGrid(object):
@@ -161,9 +165,6 @@ def get_transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
             # -->
             diff = np.max( np.abs(Sa - Sb)/Sa )
 
-        # DEBUG
-        print(n, diff)
-
         # Break if convergence has been
         # archieved
         if diff < eps:
@@ -174,3 +175,44 @@ def get_transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
         B = A
     
     return A, n
+
+
+def get_xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
+    # Extract the number of bins
+    N = egrid.nbins()
+
+    # -->
+    window_size = N//20
+
+    # Calculate the transition matrix
+    M, _ = get_transition_matrix(egrid, T, Y, eta, eps, max_iter)
+
+    # Extract the grid of kinetic energies
+    logKi = np.log( egrid.central_values() )
+    # -->
+    logKi_avg = mavg(logKi, window_size)
+
+    xi_ip_log = {}
+    # Loop over all projectiles and nuclei
+    for projectile in Particles:
+        for nucleus in Particles:
+            if not is_projectile(projectile) or not is_nucleus(nucleus):
+                continue
+
+            # Extract the grid of xi parameters
+            xi = np.array([
+                M[nucleus.value, projectile.value*N + i] for i in range(N)
+            ]) + ( 1. if nucleus == _nuceq(projectile) else 0. )
+            # -->
+            xi_avg = mavg(xi, window_size)
+
+            # Perform the interpolation
+            key = (projectile.value, nucleus.value)
+            # -->
+            xi_ip_log[key] = interp1d(
+                logKi_avg, xi_avg, kind="linear"
+            )
+    
+    return xi_ip_log
+            
+
