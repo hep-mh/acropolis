@@ -82,7 +82,7 @@ class EnergyGrid(object):
         return self._sKcent[i]
 
 
-def _get_etransfer_matrix(egrid, T, Y, eta):
+def _etransfer_matrix(egrid, T, Y, eta):
     # Extract the number of bins
     N = egrid.nbins()
 
@@ -110,7 +110,7 @@ def _get_etransfer_matrix(egrid, T, Y, eta):
     return matrix
 
 
-def _get_eloss_matrix(egrid, T, Y, eta):
+def _eloss_matrix(egrid, T, Y, eta):
     # Extract the number of bins
     N = egrid.nbins()
 
@@ -139,9 +139,9 @@ def _get_eloss_matrix(egrid, T, Y, eta):
     return matrix
 
 
-def get_transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
-    M1 = _get_eloss_matrix(egrid, T, Y, eta)
-    M2 = _get_etransfer_matrix(egrid, T, Y, eta)
+def _transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
+    M1 = _eloss_matrix    (egrid, T, Y, eta)
+    M2 = _etransfer_matrix(egrid, T, Y, eta)
 
     A = M2 @ M1
     B = A
@@ -177,7 +177,7 @@ def get_transition_matrix(egrid, T, Y, eta, eps=1e-5, max_iter=30):
     return A, n
 
 
-def get_xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
+def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
     # Extract the number of bins
     N = egrid.nbins()
 
@@ -185,7 +185,7 @@ def get_xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
     window_size = N//20
 
     # Calculate the transition matrix
-    M, _ = get_transition_matrix(egrid, T, Y, eta, eps, max_iter)
+    M, _ = _transition_matrix(egrid, T, Y, eta, eps, max_iter)
 
     # Extract the grid of kinetic energies
     logKi = np.log( egrid.central_values() )
