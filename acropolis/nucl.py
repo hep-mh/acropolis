@@ -1,7 +1,7 @@
 # functools
 from functools import wraps
 # math
-from math import sqrt, log10, log, exp
+from math import sqrt, log, exp
 # numpy
 import numpy as np
 # scipy
@@ -19,7 +19,6 @@ from acropolis.pprint import print_error, print_warning, print_info
 # params
 from acropolis.params import me2, hbar, tau_n, tau_t
 from acropolis.params import approx_zero, eps, E_EC_max
-from acropolis.params import NT_pd, NY
 # flags
 import acropolis.flags as flags
 # cascade
@@ -185,7 +184,7 @@ def _convert_mb_to_iMeV2(f_in_mb):
 
 class NuclearReactor(object):
 
-    def __init__(self, s0, sc, temp_rg, e0, ii):
+    def __init__(self, s0, sc, temp_grid, e0, ii):
         self._sII = ii
 
         # The injection energy
@@ -197,8 +196,8 @@ class NuclearReactor(object):
         # The continouos source terms
         self._sSC = sc
 
-        # The approximate decay temperature of the mediator
-        self._sTrg  = temp_rg
+        # The temperature grid
+        self._sT  = temp_grid
 
         # An instance of 'Spectrum_Generator' in order to calculate
         # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
@@ -468,17 +467,11 @@ class NuclearReactor(object):
 
 
     def get_pdi_grids(self):
-        (Tmin, Tmax) = self._sTrg
-
-        NT = int(log10(Tmax/Tmin)*NT_pd)
-
-        # Create an array containing all
-        # temperature points ('log spacing')
-        Tr = np.logspace( log10(Tmin), log10(Tmax), NT )
+        NT = len(self._sT)
 
         # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        pdi_grids = {rid:np.zeros(NT) for rid in _lrid}
+        Gpdi_grids = {rid:np.zeros(NT) for rid in _lrid}
 
         start_time = time()
         print_info(
@@ -489,7 +482,7 @@ class NuclearReactor(object):
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
-        for i, Ti in enumerate(Tr):
+        for i, Ti in enumerate(self._sT):
             progress = 100*i/NT
             print_info(
                 "Progress: {:.1f}%".format(progress),
@@ -499,7 +492,7 @@ class NuclearReactor(object):
             rates_at_i = self._pdi_rates(Ti)
             # Loop over the different reactions
             for rid in _lrid:
-                pdi_grids[rid][i] = rates_at_i[rid]
+                Gpdi_grids[rid][i] = rates_at_i[rid]
 
         end_time = time()
         print_info(
@@ -508,8 +501,7 @@ class NuclearReactor(object):
             verbose_level=1
         )
 
-        # Go get some sun
-        return (Tr, pdi_grids)
+        return Gpdi_grids
 
 
 class MatrixGenerator(object):
@@ -518,14 +510,14 @@ class MatrixGenerator(object):
         self._sII = ii
 
         # Save the thermal rates
-        self._sTemps    = temp_grid
-        self._sPdiRates = rate_grids
+        self._sT    = temp_grid
+        self._sGpdi = rate_grids
 
         # Save the appropriate temperature range
         (self._sTmin, self._sTmax) = temp_grid[0], temp_grid[-1]
 
         # Interpolate the thermal rates
-        self._sPdiRatesIp = self._interp_pdi_rates()
+        self._sGpdiIp = self._interp_pdi_rates()
 
 
     def _interp_pdi_rates(self):
@@ -535,7 +527,7 @@ class MatrixGenerator(object):
             # Interpolate the rates between
             # Tmin and Tmax in log-log space
             interp_grids[rid] = LogInterp(
-                self._sTemps, self._sPdiRates[rid], base=10.
+                self._sT, self._sGpdi[rid], base=10.
             )
 
         return interp_grids
@@ -563,7 +555,7 @@ class MatrixGenerator(object):
     def _pdi_rate_ij(self, i, j, T):
         rate = 0.
         for rid in _lrid:
-            rate += self._pref_ij(_rsig[rid], i, j) * self._sPdiRatesIp[rid](T)
+            rate += self._pref_ij(_rsig[rid], i, j) * self._sGpdiIp[rid](T)
 
         # -->
         return rate

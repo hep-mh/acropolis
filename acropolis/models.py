@@ -14,7 +14,7 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t, mp, mn
-from acropolis.params import Emin, NY
+from acropolis.params import Emin, NY, NT_pd
 # flags
 import acropolis.flags as flags
 # pprint
@@ -113,17 +113,26 @@ class AbstractModel(ABC):
 
     def _pdi_matrix(self):
         if self._sMatpBuffer is None:
-            # Initialize the NuclearReactor
-            nr = NuclearReactor(self._sS0, self._sSc, self._sTrg, self._sE0, self._sII)
+            # TODO Move to constructor
+            # Extract the temperature range
+            (Tmin, Tmax) = self._temperature_range()
+            
+            # Generate a temperature grid in log-space
+            NT = int( log10(Tmax/Tmin)*NT_pd )
+            # -->
+            T_grid = np.logspace( log10(Tmin), log10(Tmax), NT )
 
-            # Calculate the thermal rates
-            (temp, pdi_grids) = nr.get_pdi_grids()
-
-            # Initialize the MatrixGenerator
-            mg = MatrixGenerator(temp, pdi_grids, self._sII)
+            # Calculate the thermal photodisintegration
+            # rates
+            Gpdi_grids = NuclearReactor(
+                self._sS0, self._sSc, T_grid, self._sE0, self._sII
+            ).get_pdi_grids()
+            # One grid for each reaction
 
             # Calculate the final matrices and set the buffer
-            self._sMatpBuffer = mg.get_final_matp()
+            self._sMatpBuffer = MatrixGenerator(
+                T_grid, Gpdi_grids, self._sII
+            ).get_final_matp()
 
         # Calculate the final matrices
         matp = self._sMatpBuffer
