@@ -1,5 +1,5 @@
 # math
-from math import log10, sqrt
+from math import log, log10, sqrt
 # numpy
 import numpy as np
 # scipy
@@ -10,10 +10,13 @@ import acropolis.eloss as eloss
 # etransfer
 import acropolis.etransfer as etransfer
 # particles
-from acropolis.particles import Particles, _nuceq, is_nucleus, is_projectile
-from acropolis.particles import Np, Nn
+from acropolis.particles import Particles, _nuceq
+from acropolis.particles import Np, Nn, projectiles, nuclei
 # utils
 from acropolis.utils import mavg
+# params
+from acropolis.params import NY
+from acropolis.params import approx_zero
 
 
 class EnergyGrid(object):
@@ -185,7 +188,10 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
     window_size = N//20
 
     # Calculate the transition matrix
-    M, _ = _transition_matrix(egrid, T, Y, eta, eps, max_iter)
+    M, n = _transition_matrix(egrid, T, Y, eta, eps, max_iter)
+
+    # DEBUG
+    assert (n <= max_iter - 1)
 
     # Extract the grid of kinetic energies
     logKi = np.log( egrid.central_values() )
@@ -194,17 +200,17 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
     xi_ip_log = {}
     # Loop over all projectiles and nuclei
-    for projectile in Particles:
-        for nucleus in Particles:
-            if not is_projectile(projectile) or not is_nucleus(nucleus):
-                continue
-
-            # Extract the grid of xi parameters
+    for projectile in projectiles:
+        for nucleus in nuclei:
+            # Extract the xi grid
             xi = np.array([
                 M[nucleus.value, projectile.value*N + i] for i in range(N)
             ]) + ( 1. if nucleus == _nuceq(projectile) else 0. )
             # -->
             xi_avg = mavg(xi, window_size)
+
+            # DEBUG (check lowest energy bin)
+            assert np.isclose(M[nucleus.value, projectile.value*N], 0.)
 
             # Perform the interpolation
             key = (projectile.value, nucleus.value)
@@ -216,3 +222,40 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
     return xi_ip_log
             
 
+# TEMP
+def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
+    logK0 = log(K0)
+
+    # TODO: Move this to params.py?
+    NK_pd, Kmin = 50, 3
+
+    # Extract the size of the temperature grid
+    NT = len(temp_grid)
+
+    # Calculate the size of the energy grid
+    Kmax = E0
+    # -->
+    NK = int( NK_pd * log10(Kmax/Kmin) )
+    
+    # Construct the energy grid
+    egrid = EnergyGrid(Kmin, Kmax, NK)
+
+    Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
+    # Loop over all temperatures
+    for i, T in enumerate(temp_grid):
+        # Construct the xi interpolators
+        xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
+
+        # Loop over all nuclei
+        for nucleus in nuclei:
+            nid = nucleus.value + 6 # adapt to the values in nucl.py
+
+            # Loop over all projectiles (sum)
+            for projectile in projectiles:
+                key = (projectile.value, nucleus.value)
+
+                Xhdi_grids[nid][i] += xi_ip_log[key]( logK0 )
+        
+    return Xhdi_grids # one grid for each nucleus
+
+        
