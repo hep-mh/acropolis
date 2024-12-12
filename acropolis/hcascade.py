@@ -224,16 +224,17 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 # TEMP
 def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
-    logK0 = log(K0)
-
     # TODO: Move this to params.py?
     NK_pd, Kmin = 50, 3
+    
+    logK0 = log( max(K0, Kmin) )
+    # Use K0 = Kmin for K0 < Kmin
 
     # Extract the size of the temperature grid
     NT = len(temp_grid)
 
     # Calculate the size of the energy grid
-    Kmax = E0
+    Kmax = 2.*E0
     # -->
     NK = int( NK_pd * log10(Kmax/Kmin) )
     
@@ -258,4 +259,3 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
         
     return Xhdi_grids # one grid for each nucleus
 
-        
