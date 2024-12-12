@@ -131,9 +131,11 @@ def _nuceq(nucleon):
         return Particles._NEUTRON
 
 
-Np = sum(is_projectile(particle) for particle in Particles)
-Nn = sum(is_nucleus   (particle) for particle in Particles)
-
+projectiles = [particle for particle in Particles if is_projectile(particle)]
+nuclei      = [particle for particle in Particles if is_nucleus   (particle)]
+# -->
+Np = len(projectiles)
+Nn = len(nuclei     )
 
 # All energies in MeV
 # These are estimates based on the
@@ -163,7 +165,7 @@ mass = {
 }
 
 
-# All lfetimes in 1/MeV
+# All lifetimes in 1/MeV
 lifetime = {
     Particles.NEUTRON: tau_n / hbar
 }
