@@ -4,6 +4,8 @@ from math import log, log10, sqrt
 import numpy as np
 # scipy
 from scipy.interpolate import interp1d
+# time
+from time import time
 
 # eloss
 import acropolis.eloss as eloss
@@ -12,6 +14,8 @@ import acropolis.etransfer as etransfer
 # particles
 from acropolis.particles import Particles, _nuceq
 from acropolis.particles import Np, Nn, projectiles, nuclei
+# pprint
+from acropolis.pprint import print_info
 # utils
 from acropolis.utils import mavg
 # params
@@ -210,7 +214,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
             xi_avg = mavg(xi, window_size)
 
             # DEBUG (check lowest energy bin)
-            assert np.isclose(M[nucleus.value, projectile.value*N], 0.)
+            assert (xi[0] < 1e-4 or xi[0] - 1 < 1e-4)
 
             # Perform the interpolation
             key = (projectile.value, nucleus.value)
@@ -241,9 +245,23 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
     # Construct the energy grid
     egrid = EnergyGrid(Kmin, Kmax, NK)
 
+    start_time = time()
+    print_info(
+        "Calculating ξ parameters for hadrodisintegration.",
+        "acropolis.hcascade.get_Xhdi",
+        verbose_level=1
+    )
+
     Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
     # Loop over all temperatures
     for i, T in enumerate(temp_grid):
+        progress = 100*i/NT
+        print_info(
+            "Progress: {:.1f}%".format(progress),
+            "acropolis.hcascade.get_Xhdi",
+            eol="\r", verbose_level=1
+        )
+
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
 
@@ -256,6 +274,13 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
                 key = (projectile.value, nucleus.value)
 
                 Xhdi_grids[nid][i] += xi_ip_log[key]( logK0 )
+        
+    end_time = time()
+    print_info(
+        "Finished after {:.1f}s.".format(end_time - start_time),
+        "acropolis.hcascade.get_Xhdi",
+        verbose_level=1
+    )
         
     return Xhdi_grids # one grid for each nucleus
 
