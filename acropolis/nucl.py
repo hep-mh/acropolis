@@ -184,22 +184,22 @@ def _convert_mb_to_iMeV2(f_in_mb):
 
 class NuclearReactor(object):
 
-    def __init__(self, s0, sc, temp_grid, e0, ii):
+    def __init__(self, S0, SC, temp_grid, E0, Y0, eta):
         # The injection energy
-        self._sE0 = e0
+        self._sE0 = E0
 
         # The prefactor of the delta source term
-        self._sS0 = s0
+        self._sS0 = S0
 
         # The continouos source terms
-        self._sSC = sc
+        self._sSC = SC
 
         # The temperature grid
         self._sT  = temp_grid
 
         # An instance of 'Spectrum_Generator' in order to calculate
         # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
-        self._sGen = SpectrumGenerator(ii)
+        self._sGen = SpectrumGenerator(Y0, eta)
 
     # BEGIN REACTIONS ###############################################
 

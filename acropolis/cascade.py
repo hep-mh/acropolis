@@ -244,11 +244,9 @@ def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
 
 class _ReactionWrapperScaffold(object):
 
-    def __init__(self, ii, db):
-        self._sII = ii
-
-        self._sY0     = self._sII.bbn_abundances_0()
-        self._sEta    = self._sII.parameter("eta")
+    def __init__(self, Y0, eta, db):
+        self._sY0     = Y0
+        self._sEta    = eta
 
         self._sRateDb = db
 
@@ -273,8 +271,8 @@ class _ReactionWrapperScaffold(object):
 
 class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
-    def __init__(self, ii, db):
-        super(_PhotonReactionWrapper, self).__init__(ii, db)
+    def __init__(self, Y0, eta, db):
+        super(_PhotonReactionWrapper, self).__init__(Y0, eta, db)
 
 
     # RATES ###################################################################
@@ -457,8 +455,8 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMeta):
 
-    def __init__(self, ii, db):
-        super(_AbstractElectronReactionWrapper, self).__init__(ii, db)
+    def __init__(self, Y0, eta, db):
+        super(_AbstractElectronReactionWrapper, self).__init__(Y0, eta, db)
 
 
     # RATES ###################################################################
@@ -606,8 +604,8 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 class _ElectronReactionWrapper(_AbstractElectronReactionWrapper):
 
-    def __init__(self, ii, db):
-        super(_ElectronReactionWrapper, self).__init__(ii, db)
+    def __init__(self, Y0, eta, db):
+        super(_ElectronReactionWrapper, self).__init__(Y0, eta, db)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -662,8 +660,8 @@ class _ElectronReactionWrapper(_AbstractElectronReactionWrapper):
 
 class _PositronReactionWrapper(_AbstractElectronReactionWrapper):
 
-    def __init__(self, ii, db):
-        super(_PositronReactionWrapper, self).__init__(ii, db)
+    def __init__(self, Y0, eta, db):
+        super(_PositronReactionWrapper, self).__init__(Y0, eta, db)
 
 
     # INTEGRAL KERNELS ########################################################
@@ -702,16 +700,16 @@ class _PositronReactionWrapper(_AbstractElectronReactionWrapper):
 
 class SpectrumGenerator(object):
 
-    def __init__(self, ii):
+    def __init__(self, Y0, eta):
         # Extract the data from the databases; If there is
         # no data in the folder 'data/', db = (None, None)
         db = import_data_from_db()
 
         # Define a dictionary containing all reaction wrappers
         self._sRW = {
-            0: _PhotonReactionWrapper  (ii, db),
-            1: _ElectronReactionWrapper(ii, db),
-            2: _PositronReactionWrapper(ii, db)
+            0: _PhotonReactionWrapper  (Y0, eta, db),
+            1: _ElectronReactionWrapper(Y0, eta, db),
+            2: _PositronReactionWrapper(Y0, eta, db)
         }
 
          # Set the number of particle species (in the cascade)
