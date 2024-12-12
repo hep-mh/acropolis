@@ -100,11 +100,19 @@ def _survives(egrid, nucleus, Ki, bg):
         Ki_grid = Ki_grid[Kf_grid != 0.]
         Kf_grid = Kf_grid[Kf_grid != 0.]
 
+        data_valid = (len(Kf_grid) >= 2)
         # Create and store the interpolation function
-        _interp_cache[nucleus.value] = LogInterp(Ki_grid, Kf_grid, fill_value=(0.,np.nan))
+        _interp_cache[nucleus.value] = LogInterp(
+            Ki_grid, Kf_grid, fill_value=(0.,np.nan)
+        ) if data_valid else None
 
     # Calculate the energy before scattering
-    Kf = _interp_cache[nucleus.value](Ki)
+    Kf = 0.
+    if _interp_cache[nucleus.value] is not None:
+        Kf = _interp_cache[nucleus.value](Ki)
+
+    # DEBUG
+    assert (not np.isnan(Kf))
 
     # Calculate the theshold energy for hadrodisintegration
     Eth_hdi = eth[nucleus]
