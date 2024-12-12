@@ -185,8 +185,6 @@ def _convert_mb_to_iMeV2(f_in_mb):
 class NuclearReactor(object):
 
     def __init__(self, s0, sc, temp_grid, e0, ii):
-        self._sII = ii
-
         # The injection energy
         self._sE0 = e0
 
@@ -201,7 +199,7 @@ class NuclearReactor(object):
 
         # An instance of 'Spectrum_Generator' in order to calculate
         # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
-        self._sGen = SpectrumGenerator(self._sII)
+        self._sGen = SpectrumGenerator(ii)
 
     # BEGIN REACTIONS ###############################################
 
@@ -507,7 +505,7 @@ class NuclearReactor(object):
 class MatrixGenerator(object):
 
     def __init__(self, temp_grid, rate_grids, ii):
-        self._sII = ii
+        self._sII = ii # only for time-temp relation
 
         # Save the thermal rates
         self._sT    = temp_grid
