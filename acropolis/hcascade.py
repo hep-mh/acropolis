@@ -220,7 +220,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
             )
     
     return xi_ip_log
-            
+
 
 # TEMP
 def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
