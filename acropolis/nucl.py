@@ -504,8 +504,8 @@ class NuclearReactor(object):
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp_grid, rate_grids, ii):
-        self._sII = ii # only for time-temp relation
+    def __init__(self, temp_grid, rate_grids, dTdt):
+        self._sdTdt = dTdt
 
         # Save the thermal rates
         self._sT    = temp_grid
@@ -598,12 +598,12 @@ class MatrixGenerator(object):
                 def _pdi_kernel(logT):
                     T = exp(logT)
 
-                    return T * self._pdi_rate_ij(nr, nc, T) / self._sII.dTdt(T)
+                    return T * self._pdi_rate_ij(nr, nc, T) / self._sdTdt(T)
                 
                 def _dcy_kernel(logT):
                     T = exp(logT)
 
-                    return T * self._dcy_rate_ij(nr, nc, T) / self._sII.dTdt(T)
+                    return T * self._dcy_rate_ij(nr, nc, T) / self._sdTdt(T)
 
                 Tmax_log, T_log = log(self._sTmax), log(T)
                 # Perform the integration (in log-log space)
