@@ -507,18 +507,22 @@ class NuclearReactor(object):
 
 class MatrixGenerator(object):
 
-    def __init__(self, temp_grid, rate_grids, dTdt):
+    def __init__(self, temp_grid, gpdi_grids, xhdi_grids, dTdt):
         self._sdTdt = dTdt
 
         # Save the thermal rates
         self._sT    = temp_grid
-        self._sGpdi = rate_grids
+        self._sGpdi = gpdi_grids
+        self._sXhdi = xhdi_grids
 
         # Save the appropriate temperature range
         (self._sTmin, self._sTmax) = temp_grid[0], temp_grid[-1]
 
-        # Interpolate the thermal rates
+        # Interpolate the thermal rates for photodisintegration
         self._sGpdiIp = self._interp_pdi_rates()
+
+        # Interpolate the factors for hadrodisintegration
+        self._sXhdiIp = self._interp_hdi_factors()
 
 
     def _interp_pdi_rates(self):
@@ -532,6 +536,11 @@ class MatrixGenerator(object):
             )
 
         return interp_grids
+
+
+    # TODO
+    def _interp_hdi_factors(self):
+        return None
 
 
     def _pref_ij(self, state, i, j):

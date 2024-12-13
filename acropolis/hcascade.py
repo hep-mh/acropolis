@@ -229,12 +229,9 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 
 # TEMP
-def get_Xhdi(E0, K0, temp_grid, Y, eta, dndt, eps=1e-5, max_iter=30):
-    # TODO: Move this to params.py?
+def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
+    # TODO: Move this to params.py
     NK_pd, Kmin = 50, 3
-    
-    logK0 = log( max(K0, Kmin) )
-    # Use K0 = Kmin for K0 < Kmin
 
     # Extract the size of the temperature grid
     NT = len(temp_grid)
@@ -268,12 +265,17 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, dndt, eps=1e-5, max_iter=30):
             eol="\r", verbose_level=1
         )
 
+        # Calculate dndt and K0
+        dndt, K0 = dndt_grid[i], k0_grid[i]
+
+        # -->
+        logK0 = log( max(K0, Kmin) )
+        # Use K0 = Kmin for K0 < Kmin
+
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
 
-        # Calculate the baryon-to-photon ratio
-        _nb = nb(T, eta)
-
+        pref = dndt / nb(T, eta)
         # Loop over all nuclei
         for nucleus in nuclei:
             nid = nucleus.value + 6 # adapt to the values in nucl.py
@@ -281,14 +283,11 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, dndt, eps=1e-5, max_iter=30):
             # TODO: Generalize
             Yref = Y[1] if nid in [0, 1] else Y[5]
 
-            # -->
-            pref = dndt / ( Yref * _nb )
-
             # Loop over all projectiles (sum)
             for projectile in projectiles:
                 key = (projectile.value, nucleus.value)
 
-                Xhdi_grids[nid][i] += pref * xi_ip_log[key]( logK0 )
+                Xhdi_grids[nid][i] += pref * xi_ip_log[key]( logK0 ) / Yref
         
     end_time = time()
     print_info(
