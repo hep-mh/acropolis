@@ -528,19 +528,18 @@ class MatrixGenerator(object):
     def _interp_pdi_rates(self):
         # A dict containing all interp. rates; key = reaction_id (from _sReactions)
         interp_grids = {}
-        for rid in _lrid:
-            # Interpolate the rates between
-            # Tmin and Tmax in log-log space
-            interp_grids[rid] = LogInterp(
-                self._sT, self._sGpdi[rid], base=10.
-            )
+        for rid in self._sGpdi:
+            interp_grids[rid] = LogInterp(self._sT, self._sGpdi[rid])
 
         return interp_grids
 
 
-    # TODO
     def _interp_hdi_factors(self):
-        return None
+        interp_grids = {}
+        for nid in self._sXhdi:
+            interp_grids[nid] = LogInterp(self._sT, self._sXhdi[nid])
+
+        return interp_grids
 
 
     def _pref_ij(self, state, i, j):
