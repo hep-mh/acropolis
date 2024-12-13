@@ -43,10 +43,10 @@ class AbstractModel(ABC):
 
         # TEMP
         self._sdndt = np.array([
-            self._dndt_proton(T) for T in self._sT
+            self._dndt_hadron(T) for T in self._sT
         ])
         self._sK0 = np.array([
-            self._K0_proton(T) for T in self._sT
+            self._K0_hadron(T) for T in self._sT
         ])
 
         # The relevant source terms
@@ -98,12 +98,12 @@ class AbstractModel(ABC):
         # 1. Decays before Tmax
         pred_mat  = self._pred_matrix()
         # 2. Photodisintegration + Decay
-        pdi_mat   = self._pdi_matrix()
+        desi_mat  = self._desi_matrix()
         # 3. Decays after Tmin
         postd_mat = self._postd_matrix()
 
         # Calculate the total transfer matrix
-        transf_mat = postd_mat @ pdi_mat @ pred_mat
+        transf_mat = postd_mat @ desi_mat @ pred_mat
 
         # -->
         return transf_mat @ Y0
@@ -138,8 +138,7 @@ class AbstractModel(ABC):
         return np.logspace( log10(Tmin), log10(Tmax), NT )
 
 
-    def _pdi_matrix(self):
-        # TODO: Use as an argument
+    def _desi_matrix(self):
         Y0 = self._sII.bbn_abundances_0()
 
         if self._sMatpBuffer is None:
@@ -153,6 +152,7 @@ class AbstractModel(ABC):
             Xhdi_grids = get_Xhdi(
                 self._sT, self._sK0, self._sdndt, self._sE0, Y0, self._sEta
             )
+            # One grid for each nucleus
 
             # Calculate the final matrices and set the buffer
             self._sMatpBuffer = MatrixGenerator(
@@ -236,20 +236,14 @@ class AbstractModel(ABC):
         return self._source_electron_c(E, T)
 
 
-    def _dndt_proton(self, T):
+    # TEMP
+    def _dndt_hadron(self, T):
         return 0.
-    
 
-    def _dndt_neutron(self, T):
-        return self._dndt_proton(T)
-    
 
-    def _K0_proton(self, T):
+    # TEMP
+    def _K0_hadron(self, T):
         return self._sE0 - mp
-
-    
-    def _K0_neutron(self, T):
-        return self._sE0 - mn
 
 
 class DecayModel(AbstractModel):
