@@ -253,6 +253,10 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
     )
 
     Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
+
+    # Without hdi
+    #return Xhdi_grids
+
     # Loop over all temperatures
     for i, T in enumerate(temp_grid):
         progress = 100*i/NT
