@@ -243,7 +243,7 @@ class AbstractModel(ABC):
 
     # TEMP
     def _K0_hadron(self, T):
-        return self._sE0 - mp
+        return None #self._sE0 - mp
 
 
 class DecayModel(AbstractModel):
