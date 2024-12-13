@@ -27,7 +27,13 @@ setup(
         'acropolis/ext'
     ],
     package_data={
-        'acropolis': ['data/rates.db.gz', 'data/sm.tar.gz', 'data/parthenope_v3_0.tar.gz']
+        'acropolis': [
+            'data/rates.db.gz',
+            'data/sm.tar.gz',
+            'data/parthenope_v3_0.tar.gz',
+            'data/f.dat',
+            'data/cross_sections/*.dat'
+        ]
     },
     include_package_data=True,
     scripts=[

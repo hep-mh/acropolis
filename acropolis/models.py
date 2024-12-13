@@ -43,10 +43,10 @@ class AbstractModel(ABC):
 
         # TEMP
         self._sdndt = np.array([
-            self._dndt_hadron(T) for T in self._sT
+            self._dndt_nucleon(T) for T in self._sT
         ])
         self._sK0 = np.array([
-            self._K0_hadron(T) for T in self._sT
+            self._K0_nucleon(T) for T in self._sT
         ])
 
         # The relevant source terms
@@ -237,12 +237,12 @@ class AbstractModel(ABC):
 
 
     # TEMP
-    def _dndt_hadron(self, T):
+    def _dndt_nucleon(self, T):
         return 0.
 
 
     # TEMP
-    def _K0_hadron(self, T):
+    def _K0_nucleon(self, T):
         return None #self._sE0 - mp
 
 
