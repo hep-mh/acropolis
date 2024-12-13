@@ -537,7 +537,7 @@ class MatrixGenerator(object):
     def _interp_hdi_factors(self):
         interp_grids = {}
         for nid in self._sXhdi:
-            interp_grids[nid] = LogInterp(self._sT, self._sXhdi[nid])
+            interp_grids[nid] = LogInterp(self._sT, np.exp(self._sXhdi[nid]))
 
         return interp_grids
 

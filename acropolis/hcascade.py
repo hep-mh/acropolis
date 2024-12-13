@@ -222,7 +222,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
             key = (projectile.value, nucleus.value)
             # -->
             xi_ip_log[key] = interp1d(
-                logKi_avg, xi_avg, kind="linear"
+                logKi_avg, xi_avg, kind="linear", bounds_error=False, fill_value=(xi_avg[0], np.nan)
             )
     
     return xi_ip_log
@@ -267,13 +267,11 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
 
         # Calculate dndt and K0
         dndt, K0 = dndt_grid[i], k0_grid[i]
+        # -->
+        logK0 = log(K0)
 
         if dndt == 0:
             continue
-
-        # -->
-        logK0 = log( max(K0, Kmin) )
-        # Use K0 = Kmin for K0 < Kmin
 
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
@@ -292,7 +290,7 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
                 key = (projectile.value, nucleus.value)
 
                 Xhdi_grids[nid][i] += pref * xi_ip_log[key]( logK0 ) / Yref
-        
+
     end_time = time()
     print_info(
         "Finished after {:.1f}s.".format(end_time - start_time),
