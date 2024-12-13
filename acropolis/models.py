@@ -9,6 +9,8 @@ from abc import ABC, abstractmethod
 
 # input
 from acropolis.input import InputInterface, locate_sm_file
+# hcascade
+from acropolis.hcascade import get_Xhdi
 # nucl
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
@@ -30,8 +32,22 @@ class AbstractModel(ABC):
         # The injection energy
         self._sE0 = E0
 
+        # The baryon-to-photon ratio
+        self._sEta = ii.parameter("eta")
+
         # The temperature range that is used for the calculation
         self._sTrg = self._temperature_range()
+
+        # The temperature grid
+        self._sT = self._temperature_grid()
+
+        # TEMP
+        self._sdndt = np.array([
+            self._dndt_proton(T) for T in self._sT
+        ])
+        self._sK0 = np.array([
+            self._K0_proton(T) for T in self._sT
+        ])
 
         # The relevant source terms
         (self._sS0, self._sSc) = self._source_terms()
@@ -111,27 +127,36 @@ class AbstractModel(ABC):
         return (s0, sc)
 
 
-    def _pdi_matrix(self):
-        if self._sMatpBuffer is None:
-            # TODO Move to constructor
-            # Extract the temperature range
-            (Tmin, Tmax) = self._temperature_range()
-            
-            # Generate a temperature grid in log-space
-            NT = int( log10(Tmax/Tmin)*NT_pd )
-            # -->
-            T_grid = np.logspace( log10(Tmin), log10(Tmax), NT )
+    def _temperature_grid(self):
+        # Extract the temperature range
+        (Tmin, Tmax) = self._temperature_range()
+        
+        # Generate a temperature grid in log-space
+        NT = int( log10(Tmax/Tmin)*NT_pd )
 
-            # Calculate the thermal photodisintegration
-            # rates
+        # -->
+        return np.logspace( log10(Tmin), log10(Tmax), NT )
+
+
+    def _pdi_matrix(self):
+        # TODO: Use as an argument
+        Y0 = self._sII.bbn_abundances_0()
+
+        if self._sMatpBuffer is None:
+            # Calculate the thermal photodisintegration rates
             Gpdi_grids = NuclearReactor(
-                self._sS0, self._sSc, T_grid, self._sE0, self._sII
+                self._sS0, self._sSc, self._sT, self._sE0, Y0, self._sEta
             ).get_pdi_grids()
             # One grid for each reaction
 
+            # TEMP
+            Xhdi_grids = get_Xhdi(
+                self._sT, self._sK0, self._sdndt, self._sE0, Y0, self._sEta
+            )
+
             # Calculate the final matrices and set the buffer
             self._sMatpBuffer = MatrixGenerator(
-                T_grid, Gpdi_grids, self._sII
+                self._sT, Gpdi_grids, Xhdi_grids, self._sII.dTdt
             ).get_final_matp()
 
         # Calculate the final matrices
