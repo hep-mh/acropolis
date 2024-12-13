@@ -104,7 +104,7 @@ class BufferedScanner(object):
 
 
     def _rescale_matp_buffer(self, buffer, factor):
-        return (factor*buffer[0], buffer[1])
+        return (factor*buffer[0], buffer[1], buffer[2])
 
 
     def _run_single(self, scanp_set):

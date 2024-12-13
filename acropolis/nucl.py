@@ -570,6 +570,17 @@ class MatrixGenerator(object):
         return rate
 
 
+    # TEMP
+    def _hdi_rate_ij(self, i, j, T):
+        if i in [0, 1] and j == 1:
+            return self._sXhdiIp[i](T)
+        
+        if i == [2, 3, 4, 5] and j == 5:
+            return self._sXhdiIp[i](T)
+
+        return 0.
+
+
     def _dcy_rate_ij(self, i, j, T):
         rate = 0.
         for did in _ldid:
@@ -582,6 +593,7 @@ class MatrixGenerator(object):
     def get_matp(self, T):
         # Generate empty matrices
         mpdi = np.zeros( (_nnuc, _nnuc) )
+        mhdi = np.zeros( (_nnuc, _nnuc) )
         mdcy = np.zeros( (_nnuc, _nnuc) )
 
         start_time = time()
@@ -611,6 +623,11 @@ class MatrixGenerator(object):
 
                     return T * self._pdi_rate_ij(nr, nc, T) / self._sdTdt(T)
                 
+                def _hdi_kernel(logT):
+                    T = exp(logT)
+
+                    return T * self._hdi_rate_ij(nr, nc, T) / self._sdTdt(T)
+                
                 def _dcy_kernel(logT):
                     T = exp(logT)
 
@@ -619,6 +636,7 @@ class MatrixGenerator(object):
                 Tmax_log, T_log = log(self._sTmax), log(T)
                 # Perform the integration (in log-log space)
                 mpdi[nr, nc] = quad(_pdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
+                mpdi[nr, nc] = quad(_hdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
                 mdcy[nr, nc] = quad(_dcy_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
 
         end_time = time()
@@ -628,7 +646,7 @@ class MatrixGenerator(object):
             verbose_level=1
         )
 
-        return (mpdi, mdcy)
+        return (mpdi, mhdi, mdcy)
 
 
     """

@@ -268,6 +268,9 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
         # Calculate dndt and K0
         dndt, K0 = dndt_grid[i], k0_grid[i]
 
+        if dndt == 0:
+            continue
+
         # -->
         logK0 = log( max(K0, Kmin) )
         # Use K0 = Kmin for K0 < Kmin
@@ -280,7 +283,8 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
         for nucleus in nuclei:
             nid = nucleus.value + 6 # adapt to the values in nucl.py
 
-            # TODO: Generalize
+            # Calculate the normalization factor
+            # TODO: Find a more robust implementation
             Yref = Y[1] if nid in [0, 1] else Y[5]
 
             # Loop over all projectiles (sum)
