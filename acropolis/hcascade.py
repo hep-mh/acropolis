@@ -7,6 +7,8 @@ from scipy.interpolate import interp1d
 # time
 from time import time
 
+# cosmo
+from acropolis.cosmo import nb
 # eloss
 import acropolis.eloss as eloss
 # etransfer
@@ -227,7 +229,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 
 # TEMP
-def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
+def get_Xhdi(E0, K0, temp_grid, Y, eta, dndt, eps=1e-5, max_iter=30):
     # TODO: Move this to params.py?
     NK_pd, Kmin = 50, 3
     
@@ -254,7 +256,7 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
 
     Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
 
-    # Without hdi
+    # TEMP: Uncomment to run without hdi
     #return Xhdi_grids
 
     # Loop over all temperatures
@@ -269,15 +271,24 @@ def get_Xhdi(E0, K0, temp_grid, Y, eta, eps=1e-5, max_iter=30):
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
 
+        # Calculate the baryon-to-photon ratio
+        _nb = nb(T, eta)
+
         # Loop over all nuclei
         for nucleus in nuclei:
             nid = nucleus.value + 6 # adapt to the values in nucl.py
+
+            # TODO: Generalize
+            Yref = Y[1] if nid in [0, 1] else Y[5]
+
+            # -->
+            pref = dndt / ( Yref * _nb )
 
             # Loop over all projectiles (sum)
             for projectile in projectiles:
                 key = (projectile.value, nucleus.value)
 
-                Xhdi_grids[nid][i] += xi_ip_log[key]( logK0 )
+                Xhdi_grids[nid][i] += pref * xi_ip_log[key]( logK0 )
         
     end_time = time()
     print_info(
