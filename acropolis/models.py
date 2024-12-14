@@ -15,7 +15,7 @@ from acropolis.hcascade import get_Xhdi
 from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
-from acropolis.params import hbar, c_si, me2, alpha, tau_t, mp, mn
+from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin, NY, NT_pd
 # flags
 import acropolis.flags as flags
