@@ -13,7 +13,7 @@ from time import time
 import warnings
 
 # util
-from acropolis.utils import LogInterp
+from acropolis.utils import LogInterp, LinInterp
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
@@ -537,7 +537,7 @@ class MatrixGenerator(object):
     def _interp_hdi_factors(self):
         interp_grids = {}
         for nid in self._sXhdi:
-            interp_grids[nid] = LogInterp(self._sT, np.exp(self._sXhdi[nid]))
+            interp_grids[nid] = LinInterp(self._sT, self._sXhdi[nid])
 
         return interp_grids
 
@@ -636,7 +636,7 @@ class MatrixGenerator(object):
                 Tmax_log, T_log = log(self._sTmax), log(T)
                 # Perform the integration (in log-log space)
                 mpdi[nr, nc] = quad(_pdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
-                mpdi[nr, nc] = quad(_hdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
+                mhdi[nr, nc] = quad(_hdi_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
                 mdcy[nr, nc] = quad(_dcy_kernel, Tmax_log, T_log, epsrel=eps, epsabs=0, limit=100)[0]
 
         end_time = time()
