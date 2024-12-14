@@ -9,12 +9,105 @@ from scipy.integrate import cumulative_simpson
 from acropolis.jit import jit
 
 
+class LinInterp(object):
+
+    def __init__(self, x_grid, y_grid, fill_value=None):
+        if not np.all(x_grid > 0):
+            raise ValueError(
+                "The values in x_grid need to be all positive."
+            )
+
+        self._sFillValue = fill_value
+
+        self._sX = x_grid
+        self._sY = y_grid
+
+        self._sXLog = np.log( x_grid )
+        # -->
+        self._sXminLog = self._sXLog[ 0]
+        self._sXmaxLog = self._sXLog[-1]
+
+        xdiff = np.diff(self._sXLog)
+        if not np.all( xdiff >= 0 ):
+            raise ValueError(
+                "The values in x_grid need to be in ascending order."
+            )
+        if not np.allclose( xdiff, xdiff[0] ):
+            raise ValueError(
+                "The values in x_grid need to be equidistant in log space."
+            )
+
+        self._sN = len(self._sXLog)
+
+        self._sCache = {}
+
+
+    def _perform_interp(self, x):
+        x_log = log(x)
+
+        if not (self._sXminLog <= x_log <= self._sXmaxLog):
+            if type(self._sFillValue) is int:
+                return self._sFillValue
+            
+            if type(self._sFillValue) in [list, tuple] and len(self._sFillValue) == 2:
+                if x_log < self._sXminLog:
+                    return self._sFillValue[0]
+                
+                if x_log > self._sXmaxLog:
+                    return self._sFillValue[1]
+            
+            raise ValueError(
+                    "The given value does not lie within the interpolation range."
+                )
+
+        ix = int( ( x_log - self._sXminLog )*( self._sN - 1 )/( self._sXmaxLog - self._sXminLog ) )
+
+        # Handle the case for which ix+1 is out-of-bounds
+        if ix == self._sN - 1:
+            ix -= 1
+
+        x1_log, y1 = self._sXLog[ix  ], self._sY[ix  ]
+        x2_log, y2 = self._sXLog[ix+1], self._sY[ix+1]
+
+        m = ( y2 - y1 )/( x2_log - x1_log )
+        b = y2 - m*x2_log
+
+        return m*x_log + b
+
+
+    def __call__(self, x):
+        if x not in self._sCache:
+            self._sCache[x] = self._perform_interp(x)
+
+        return self._sCache[x]
+
+
+"""
+class LogInterp(object):
+    def __init__(self, x_grid, y_grid, fill_value=None):
+        if not np.all(y_grid > 0):
+            raise ValueError(
+                "The values in y_grid need to be all positive."
+            )
+
+        # TODO: Fix Fill Value
+
+        # -->
+        self._sLinInterp = LinInterp(
+            x_grid, np.log(y_grid), fill_value_log
+        )
+    
+    def __call__(self, x):
+        return exp( self._sLinInterp(x) )
+"""
+
+
 class LogInterp(object):
 
     def __init__(self, x_grid, y_grid, base=np.e, fill_value=None):
-        if not ( np.all(y_grid < 0) or np.all(y_grid > 0) ):
+        if not np.all(y_grid > 0) :
             raise ValueError(
-                "The values in y_grid need to be either all positive or all negative."
+                "The values in y_grid need to be all positive."
             )
         if not np.all(x_grid > 0):
             raise ValueError(
