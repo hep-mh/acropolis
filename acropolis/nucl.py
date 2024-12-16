@@ -575,7 +575,7 @@ class MatrixGenerator(object):
         if i in [0, 1] and j == 1:
             return self._sXhdiIp[i](T)
         
-        if i == [2, 3, 4, 5] and j == 5:
+        if i in [2, 3, 4, 5] and j == 5:
             return self._sXhdiIp[i](T)
 
         return 0.
