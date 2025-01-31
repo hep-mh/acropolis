@@ -1,3 +1,7 @@
+*.pdf
+*mavg*
+xi.dat
+
 # Reference paper
 /paper*
 

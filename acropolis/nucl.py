@@ -471,9 +471,6 @@ class NuclearReactor(object):
         # rates for all reactions and temperatures
         Gpdi_grids = {rid:np.zeros(NT) for rid in _lrid}
 
-        # TEMP: Uncomment to run without pdi
-        #return Gpdi_grids
-
         start_time = time()
         print_info(
             "Calculating non-thermal spectra and reaction rates.",

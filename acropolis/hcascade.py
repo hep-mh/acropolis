@@ -253,9 +253,6 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
 
     Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
 
-    # TEMP: Uncomment to run without hdi
-    #return Xhdi_grids
-
     # Loop over all temperatures
     for i, T in enumerate(temp_grid):
         progress = 100*i/NT
@@ -270,7 +267,7 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
         # -->
         logK0 = log(K0)
 
-        if dndt == 0:
+        if dndt <= (1+1e-6)*approx_zero: # account for floating-point errors
             continue
 
         # Construct the xi interpolators
