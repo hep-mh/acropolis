@@ -117,6 +117,9 @@ class AbstractModel(ABC):
         Y[:,3] = transf_mats[1] @ Y0[:,0]
         Y[:,4] = transf_mats[2] @ Y0[:,0]
 
+        # DEBUG
+        assert np.allclose(Y[:,0:3], transf_mats[0] @ Y0, rtol=1e-8)
+
         return Y
 
 

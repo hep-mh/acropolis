@@ -40,14 +40,19 @@ _95cl = 1.95996 # 95% C.L.
 def _get_abundance(data, i):
     cols = data.shape[1]
 
-    offset = cols - 3*NY
-    # Add + 2 for the two parameters in the first two columns
+    offset = cols - 5*NY
+    # Add an offset to skip the input parameters
     i0 = i + offset
 
     # Extract the different abundances...
-    mean, high, low = data[:,i0], data[:,i0+NY], data[:,i0+2*NY]
+    mean              = data[:,i0+0*NY]
+    high1, low1 = data[:,i0+1*NY], data[:,i0+2*NY]
+    high2, low2 = data[:,i0+3*NY], data[:,i0+4*NY]
     # ...and calculate an estimate for the error
-    diff = np.minimum( np.abs( mean - high ), np.abs( mean - low ) )
+    diff1 = np.minimum( np.abs( mean - high1 ), np.abs( mean - low1 ) )
+    diff2 = np.minimum( np.abs( mean - high2 ), np.abs( mean - low2 ) )
+    # -->
+    diff = np.sqrt( diff1**2. + diff2**2. )
 
     return mean, diff
 
