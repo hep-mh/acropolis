@@ -32,7 +32,7 @@ def print_version():
         stdout.write( f"{ctxt}ACROPOLIS {version_str} ({url}){cend}\n\n" )
 
 
-def print_Yf(Yf, header=["mean", "high", "low"]):
+def print_Yf(Yf, header=["mean", "high", "low", "", ""]):
     # If not verbose, simply print one line
     # including all abundances
     if not flags.verbose:
@@ -65,7 +65,7 @@ def print_Yf(Yf, header=["mean", "high", "low"]):
         header_str  += f" | {chdr}    {{:8}}{cend}"
 
     print( header_str.format("", *header) )
-    print("-------------------------------------------------")
+    print("-"*(4 + 15*len(header)))
 
     # Print the different abundances
     for j, label in enumerate(labels):

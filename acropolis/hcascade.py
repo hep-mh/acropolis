@@ -264,11 +264,12 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
 
         # Calculate dndt and K0
         dndt, K0 = dndt_grid[i], k0_grid[i]
-        # -->
-        logK0 = log(K0)
 
         if dndt <= (1+1e-6)*approx_zero: # account for floating-point errors
             continue
+
+        # -->
+        logK0 = log(K0)
 
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)

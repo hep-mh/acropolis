@@ -56,6 +56,7 @@ class AbstractModel(ABC):
         self._sMatpBuffer = None
 
 
+    # TEMP
     def run_disintegration(self):
         Y0 = self._sII.bbn_abundances()
 
@@ -97,16 +98,26 @@ class AbstractModel(ABC):
 
         # 1. Decays before Tmax
         pred_mat  = self._pred_matrix()
-        # 2. Photodisintegration + Decay
-        desi_mat  = self._desi_matrix()
+        # 2. Disintegration + Decay
+        desi_mats = self._desi_matrices()
         # 3. Decays after Tmin
         postd_mat = self._postd_matrix()
 
         # Calculate the total transfer matrix
-        transf_mat = postd_mat @ desi_mat @ pred_mat
+        transf_mats = [
+            (postd_mat @ desi_mat @ pred_mat) for desi_mat in desi_mats
+        ]
 
+        # Calculate the final abundances
+        Y = np.zeros( (NY, 5) )
         # -->
-        return transf_mat @ Y0
+        Y[:,0] = transf_mats[0] @ Y0[:,0]
+        Y[:,1] = transf_mats[0] @ Y0[:,1]
+        Y[:,2] = transf_mats[0] @ Y0[:,2]
+        Y[:,3] = transf_mats[1] @ Y0[:,0]
+        Y[:,4] = transf_mats[2] @ Y0[:,0]
+
+        return Y
 
 
     def _source_terms(self):
@@ -138,7 +149,8 @@ class AbstractModel(ABC):
         return np.logspace( log10(Tmin), log10(Tmax), NT )
 
 
-    def _desi_matrix(self):
+    # TEMP
+    def _desi_matrices(self):
         Y0 = self._sII.bbn_abundances_0()
 
         if self._sMatpBuffer is None:
@@ -160,10 +172,20 @@ class AbstractModel(ABC):
             ).get_final_matp()
 
         # Calculate the final matrices
-        matp = self._sMatpBuffer
+        (mpdi, mhdi, mdcy) = self._sMatpBuffer
+
+        e_xi = 0.2
+        # Account for the intrinsic error on xi (~20%)
+        matps = [
+            (mpdi,           mhdi, mdcy),
+            (mpdi, (1.+e_xi)*mhdi, mdcy),
+            (mpdi, (1.-e_xi)*mhdi, mdcy)
+        ]
 
         # Calculate the final matrix and return
-        return expm( sum(m for m in matp) )
+        return [
+            expm( sum(m for m in matp) ) for matp in matps
+        ]
 
 
     def _pred_matrix(self):
