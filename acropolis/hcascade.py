@@ -1,5 +1,5 @@
 # math
-from math import log, log10, sqrt
+from math import log10, sqrt
 # numpy
 import numpy as np
 # scipy
@@ -229,7 +229,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 
 # TEMP
-def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
+def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30):
     # TODO: Move this to params.py
     NK_pd, Kmin = 50, 3
 
@@ -262,19 +262,25 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
             eol="\r", verbose_level=1
         )
 
-        # Calculate dndt and K0
-        dndt, K0 = dndt_grid[i], k0_grid[i]
+        # Calculate the lits of dndt and K0
+        # corresponding to the current temperature
+        dndt_list, K0_list = dndt_grids[i,:], k0_grids[i,:]
 
-        if dndt <= (1+1e-6)*approx_zero: # account for floating-point errors
+        # DEBUG
+        assert len(dndt_list) == len(K0_list)
+        # -->
+        NL = len(dndt_list) # = len(K0_list)
+
+        if np.all(dndt_list <= (1+1e-6)*approx_zero): # account for floating-point errors
             continue
 
         # -->
-        logK0 = log(K0)
+        logK0_list = np.log(K0_list)
 
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
 
-        pref = dndt / nb(T, eta)
+        pref = 1. / nb(T, eta)
         # Loop over all nuclei
         for nucleus in nuclei:
             nid = nucleus.value + 6 # adapt to the values in nucl.py
@@ -287,7 +293,11 @@ def get_Xhdi(temp_grid, k0_grid, dndt_grid, E0, Y, eta, eps=1e-5, max_iter=30):
             for projectile in projectiles:
                 key = (projectile.value, nucleus.value)
 
-                Xhdi_grids[nid][i] += pref * xi_ip_log[key]( logK0 ) / Yref
+                # Loop over all values of dndt and K0
+                for l in range(NL):
+                    dndt, logK0 = dndt_list[l], logK0_list[l]
+                    # -->
+                    Xhdi_grids[nid][i] += pref * dndt * xi_ip_log[key]( logK0 ) / Yref
 
     end_time = time()
     print_info(

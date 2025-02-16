@@ -118,7 +118,11 @@ class AbstractModel(ABC):
         Y[:,4] = transf_mats[2] @ Y0[:,0]
 
         # DEBUG
-        assert np.allclose(Y[:,0:3], transf_mats[0] @ Y0, rtol=1e-8)
+        R1, R2 = Y[:,0:3], transf_mats[0] @ Y0
+        mask1, mask2 = np.isnan(R1), np.isnan(R2)
+        # -->
+        assert np.all(mask1 == mask2)
+        assert np.allclose(R1[~mask1], R2[~mask1], rtol=1e-8)
 
         return Y
 
@@ -187,7 +191,7 @@ class AbstractModel(ABC):
 
         # Calculate the final matrix and return
         return [
-            expm( sum(m for m in matp) ) for matp in matps
+            expm( matp[0] + matp[1] + matp[2] ) for matp in matps
         ]
 
 
@@ -263,12 +267,12 @@ class AbstractModel(ABC):
 
     # TEMP
     def _dndt_nucleon(self, T):
-        return 0.
+        return [0.,]
 
 
     # TEMP
     def _K0_nucleon(self, T):
-        return None #self._sE0 - mp
+        return [None,] #self._sE0 - mp
 
 
 class DecayModel(AbstractModel):
