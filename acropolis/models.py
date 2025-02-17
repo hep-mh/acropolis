@@ -91,7 +91,18 @@ class AbstractModel(ABC):
                 verbose_level=1
             )
 
-            return self._postd_matrix() @ Y0
+            # Calculate the (simplified) transfer matrix
+            transfer_mat = self._postd_matrix()
+
+            Y = np.zeros( (NY, 5) )
+            # -->
+            Y[:,0] = transfer_mat @ Y0[:,0]
+            Y[:,1] = transfer_mat @ Y0[:,1]
+            Y[:,2] = transfer_mat @ Y0[:,2]
+            Y[:,3] = Y[:,0]
+            Y[:,4] = Y[:,0]
+            
+            return Y
 
         # Calculate the different transfer matrices
         ###########################################

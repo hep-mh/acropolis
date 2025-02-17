@@ -32,7 +32,7 @@ def print_version():
         stdout.write( f"{ctxt}ACROPOLIS {version_str} ({url}){cend}\n\n" )
 
 
-def print_Yf(Yf, header=["mean", "high", "low", "", ""]):
+def print_Yf(Yf, header=["mean", "high Γ", "low Γ", "high ξ", "low ξ"]):
     # If not verbose, simply print one line
     # including all abundances
     if not flags.verbose:
@@ -49,7 +49,7 @@ def print_Yf(Yf, header=["mean", "high", "low", "", ""]):
         chdr = celm = cdcy = cend = ""
 
     # Fill potentially missing header entries
-    NYf = Yf.shape[1]
+    NYf = Yf.shape[1] # = len(header)
     header.extend( [""] * ( NYf - len(header) ) )
 
     # Set small values to zero to guarantee the same
@@ -62,7 +62,7 @@ def print_Yf(Yf, header=["mean", "high", "low", "", ""]):
     # Print the header
     header_str = "\n{:^4}"
     for i in range(NYf):
-        header_str  += f" | {chdr}    {{:8}}{cend}"
+        header_str  += f" | {chdr}{{:^12}}{cend}"
 
     print( header_str.format("", *header) )
     print("-"*(4 + 15*len(header)))
