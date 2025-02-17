@@ -4,7 +4,7 @@ from setuptools import setup
 from os import path
 
 # version
-from acropolis.info import version, description, url, authors
+from acropolis.info import version, dev_version, description, url, authors
 
 # Read the README.md file
 cwd = path.abspath( path.dirname(__file__) )
@@ -14,7 +14,7 @@ with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
 # Perform the actual setup
 setup(
     name='ACROPOLIS',
-    version=version,
+    version=dev_version if dev_version != version else version,
     python_requires='>=3.6',
     description=description,
     long_description=long_description,
