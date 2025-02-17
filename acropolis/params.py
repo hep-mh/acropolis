@@ -4,6 +4,11 @@ from math import pi
 from scipy.special import zeta
 
 
+# Only parameters that specify a default value are
+# meant to be changed by the user, i.e. everything
+# under ALGORITHM-SPECIFIC PARAMETERS
+
+
 # PHYSICAL CONSTANTS ################################################
 
 # The fine-structure constant

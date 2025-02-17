@@ -1,8 +1,3 @@
-# Only parameters that specify a default value are
-# meant to be changed by the user, i.e. everything
-# under FLAGS and ALGORITHM-SPECIFIC PARAMETERS
-
-
 # FLAGS #############################################################
 
 # If this flag is set to 'True',
