@@ -14,7 +14,7 @@ with open(path.join(cwd, 'README.md'), encoding='utf-8') as f:
 # Perform the actual setup
 setup(
     name='ACROPOLIS',
-    version=version if version == dev_version else f'{dev_version}-dev',
+    version=version if version == dev_version else f'{dev_version}.dev0',
     python_requires='>=3.6',
     description=description,
     long_description=long_description,
