@@ -198,8 +198,7 @@ label = {
     Particles.HELIUM4  : "He4"
 }
 
-# acropolis.etransfer (is nucleus)
-# acropolis.particles (is_nucleus)
+
 za = {
     Particles.DEUTERIUM: (1, 2),
     Particles.TRITIUM  : (1, 3),
