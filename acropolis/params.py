@@ -164,8 +164,8 @@ NT_pd = 50
 # the kinetic energy grid, which is used
 # during the calculation of the hadronic
 # cascade
-# Default: 20
-NK_pd = 20
+# Default: 25
+NK_pd = 25
 
 # The minimal kinetic energy (in MeV)
 # that is still considered active when
