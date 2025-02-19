@@ -23,6 +23,7 @@ from acropolis.utils import mavg
 # params
 from acropolis.params import NY
 from acropolis.params import approx_zero
+from acropolis.params import Kmin, NK_pd
 
 
 class EnergyGrid(object):
@@ -216,7 +217,9 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
             xi_avg = mavg(xi, window_size)
 
             # DEBUG (check lowest energy bin)
-            assert (xi[0] < 1e-4 or xi[0] - 1 < 1e-4)
+            tol = {"rtol": 1e-4, "atol": 0.}
+            # -->
+            assert np.any( np.isclose([xi[0], xi[0]+1], 1, **tol) )
 
             # Perform the interpolation
             key = (projectile.value, nucleus.value)
@@ -230,18 +233,15 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 # TEMP
 def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30):
-    # TODO: Move this to params.py
-    NK_pd, Kmin = 50, 3
-
     # Extract the size of the temperature grid
     NT = len(temp_grid)
 
-    # Calculate the size of the energy grid
-    Kmax = 2.*E0
-    # -->
-    NK = int( NK_pd * log10(Kmax/Kmin) )
+    # Calculate the maximal kinetic energy
+    Kmax = 2.*np.max(k0_grids)
     
     # Construct the energy grid
+    NK = int( NK_pd * log10(Kmax/Kmin) )
+    # -->
     egrid = EnergyGrid(Kmin, Kmax, NK)
 
     start_time = time()
@@ -262,16 +262,19 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
             eol="\r", verbose_level=1
         )
 
-        # Calculate the lits of dndt and K0
+        # Extract the lists of dndt and K0 values
         # corresponding to the current temperature
         dndt_list, K0_list = dndt_grids[i,:], k0_grids[i,:]
 
         # DEBUG
         assert len(dndt_list) == len(K0_list)
-        # -->
+        
+        # Extract the number of dndt / K0 values
         NL = len(dndt_list) # = len(K0_list)
 
-        if np.all(dndt_list <= (1+1e-6)*approx_zero): # account for floating-point errors
+        # Check if the current temperature can be skipped
+        # Here: Add 1e-6 to account for floating-point errors
+        if np.all(dndt_list <= (1+1e-6)*approx_zero) or np.all(K0_list <= Kmin):
             continue
 
         # -->
@@ -280,7 +283,9 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
         # Construct the xi interpolators
         xi_ip_log = _xi_interpolators(egrid, T, Y, eta, eps, max_iter)
 
+        # Calculate the common prefactor
         pref = 1. / nb(T, eta)
+
         # Loop over all nuclei
         for nucleus in nuclei:
             nid = nucleus.value + 6 # adapt to the values in nucl.py
@@ -294,9 +299,7 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
                 key = (projectile.value, nucleus.value)
 
                 # Loop over all values of dndt and K0
-                for l in range(NL):
-                    dndt, logK0 = dndt_list[l], logK0_list[l]
-                    # -->
+                for dndt, logK0 in zip(dndt_list, logK0_list):
                     Xhdi_grids[nid][i] += pref * dndt * xi_ip_log[key]( logK0 ) / Yref
 
     end_time = time()

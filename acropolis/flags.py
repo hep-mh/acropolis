@@ -22,9 +22,6 @@ debug = False
 # If this flag is set to 'True',
 # the universal spectrum is used
 # for all points in parameter space
-# ATTENTION:
-# Change with caution and only if
-# you know what you are doing.
 # Default: False
 universal = False
 
@@ -34,8 +31,16 @@ universal = False
 # the reactions driving the
 # hadronic cascade
 # Default: False
-# TODO: Fix error
 A3_is_spectator = False
+# TODO: Fix errors if set to 'True'
+
+# If this flag is set to 'True',
+# no survival check is performed
+# on any of the nuclei that are
+# injected during the hadronic
+# cascade
+# Default: False
+all_nuclei_survive = False
 
 # If this flag is set to 'True',
 # nucleons that result from
@@ -47,7 +52,7 @@ reinject_fragments = True
 
 # If this flag is set to 'True',
 # the neutron decay is handled
-# during eloss. Othweriwse it is
+# during eloss. Otherwise it is
 # handled during etransfer
 # Default: False
 decay_during_eloss = False

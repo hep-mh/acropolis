@@ -115,14 +115,17 @@ NY = 9
 # Default: 5
 NC = 5
 
-# The minimum energy for the different spectra (in MeV)
-# This value should not be larger than the minimal
-# nucleon-interaction threshold of 1.586627 MeV
+# The minimum energy for the different
+# spectra (in MeV) originating from the
+# electromagnetic cascade
+# This value should not be larger than
+# the minimal nucleon-interaction threshold
+# of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
 # Default: 1.5
 Emin = 1.5
 
-# The value that is used for 'approximately' zero
+# The value that is used for ~ 0.
 # Default: 1e-200
 approx_zero = 1e-200
 
@@ -145,8 +148,8 @@ E_EC_max = 10.
 # the solution of the cascade equation
 # Default: 150
 NE_pd  = 150
-# The minimal number of points for
-# the energy grid
+# The minimal number of points for the
+# energy grid
 # Default: 10
 NE_min = 10
 
@@ -156,6 +159,19 @@ NE_min = 10
 # nuclear rates
 # Default: 50
 NT_pd = 50
+
+# The number of points per decade for
+# the kinetic energy grid, which is used
+# during the calculation of the hadronic
+# cascade
+# Default: 20
+NK_pd = 20
+
+# The minimal kinetic energy (in MeV)
+# that is still considered active when
+# calculating the hadronic cascade
+# Default: 3
+Kmin = 3 # MeV
 
 # The accuracy that is used for the
 # projectile spectrum entering the

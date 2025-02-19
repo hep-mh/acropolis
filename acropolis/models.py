@@ -16,7 +16,7 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
-from acropolis.params import Emin, NY, NT_pd
+from acropolis.params import Emin, NY, NT_pd, approx_zero
 # flags
 import acropolis.flags as flags
 # pprint
@@ -130,10 +130,8 @@ class AbstractModel(ABC):
 
         # DEBUG
         R1, R2 = Y[:,0:3], transf_mats[0] @ Y0
-        mask1, mask2 = np.isnan(R1), np.isnan(R2)
         # -->
-        assert np.all(mask1 == mask2)
-        assert np.allclose(R1[~mask1], R2[~mask1], rtol=1e-8)
+        assert np.allclose(R1, R2, atol=0., rtol=1e-8, equal_nan=True)
 
         return Y
 
@@ -283,7 +281,7 @@ class AbstractModel(ABC):
 
     # TEMP
     def _K0_nucleon(self, T):
-        return [None,] #self._sE0 - mp
+        return [approx_zero,] #self._sE0 - mp
 
 
 class DecayModel(AbstractModel):

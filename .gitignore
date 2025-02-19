@@ -1,24 +1,20 @@
-*.pdf
+# Temporary files
+/CHANGES
+/TODO
+/_cmp/*
 *mavg*
-xi.dat
 
-# Reference paper
-/paper*
+# Example scan files
+/examples/_*
+
+# PDF files
+*.pdf
 
 # AlterBBN files
 /alterbbn/*
 
-# Temporary files
-CHANGES
-TODO
-_cmp/*
-
 # Project files
 /prj/*
-/acropolis/prj
-
-# Files for later versions
-/acropolis/v*
 
 # Backup files
 /acropolis/backup

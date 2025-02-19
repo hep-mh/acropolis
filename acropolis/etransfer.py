@@ -74,6 +74,12 @@ def _survives(egrid, nucleus, Ki, bg):
     if not is_nucleus(nucleus):
         return (True, Ki)
 
+    if flags.all_nuclei_survive:
+        return (True, Ki)
+
+    # Generate a unique dictionary key
+    key = nucleus.value
+
     # PHOTODISINTEGRATION VIA CMB PHOTONS ###########################
 
     Z, A = za[nucleus]
@@ -89,7 +95,7 @@ def _survives(egrid, nucleus, Ki, bg):
     
     # HADRODISINTEGRATION VIA BACKGROUND PROTONS ####################
     
-    if nucleus.value not in _interp_cache:
+    if key not in _interp_cache:
         _, raw = eloss.process(egrid, nucleus, *bg.get())
 
         # Extract the grids for the initial and final energies
@@ -102,17 +108,17 @@ def _survives(egrid, nucleus, Ki, bg):
 
         data_valid = (len(Kf_grid) >= 2)
         # Create and store the interpolation function
-        _interp_cache[nucleus.value] = LogInterp(
+        _interp_cache[key] = LogInterp(
             Ki_grid, Kf_grid, fill_value=(0.,np.nan)
         ) if data_valid else None
 
     # Calculate the energy before scattering
     Kf = 0.
-    if _interp_cache[nucleus.value] is not None:
-        Kf = _interp_cache[nucleus.value](Ki)
+    if _interp_cache[key] is not None:
+        Kf = _interp_cache[key](Ki)
 
     # DEBUG
-    assert (not np.isnan(Kf))
+    assert ( not np.isnan(Kf) )
 
     # Calculate the theshold energy for hadrodisintegration
     Eth_hdi = eth[nucleus]
