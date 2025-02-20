@@ -164,8 +164,8 @@ NT_pd = 50
 # the kinetic energy grid, which is used
 # during the calculation of the hadronic
 # cascade
-# Default: 25
-NK_pd = 25
+# Default: 20
+NK_pd = 20
 
 # The minimal kinetic energy (in MeV)
 # that is still considered active when
@@ -178,3 +178,10 @@ Kmin = 3 # MeV
 # hadronic cascade
 # Default: 1e-3
 sp_acc = 1e-3
+
+# The approximate relative error that
+# is expected during the calculation
+# of the different xi describing the
+# hadronic cascade
+# Default: 0.2
+e_xi = 0.2

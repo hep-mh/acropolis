@@ -16,7 +16,7 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
-from acropolis.params import Emin, NY, NT_pd, approx_zero
+from acropolis.params import Emin, NY, NT_pd, approx_zero, e_xi
 # flags
 import acropolis.flags as flags
 # pprint
@@ -190,7 +190,6 @@ class AbstractModel(ABC):
         # Calculate the final matrices
         (mpdi, mhdi, mdcy) = self._sMatpBuffer
 
-        e_xi = 0.2
         # Account for the intrinsic error on xi (~20%)
         matps = [
             (mpdi,           mhdi, mdcy),
