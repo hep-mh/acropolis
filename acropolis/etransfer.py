@@ -168,11 +168,18 @@ def _equip(particles, Ecm):
     
     # Run the optimizer (start with non-rel limit)
     p0 = sqrt( 2. * ( Ecm - np.sum(masses) ) / np.sum(1./masses) )
+    
     # -->
-    res = root(_root_fct, p0)
+    success = False
+    for method in ["lm"]: # NOTE: Edit to add fallback methods
+        res = root(_root_fct, p0, method=method)
+
+        if res.success and len(res.x) == 1:
+            success = True
+            break
 
     # Check if the optimizer was successful
-    if not res.success or len(res.x) != 1:
+    if not success:
         return np.nan
     
     return res.x[0] # MeV
