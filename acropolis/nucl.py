@@ -215,7 +215,7 @@ class NuclearReactor(object):
             return # self._sE = self._sS0 = self._sSC = None
         
         # Construct the energy grid
-        NE = max( int( log10(E0/Emin )*NE_pd), NE_min ) # E0 > Emin
+        NE = max( int( log10(E0/Emin)*NE_pd ), NE_min ) # E0 > Emin
         # -->
         self._sE = np.logspace(log10(Emin), log10(E0), NE)
 
