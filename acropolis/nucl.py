@@ -503,7 +503,7 @@ class NuclearReactor(object):
     def get_pdi_grids(self):
         start_time = time()
         print_info(
-            "Calculating non-thermal spectra and reaction rates.",
+            "Calculating photodisintegration rates.",
             "acropolis.nucl.NuclearReactor.get_pdi_grids",
             verbose_level=1
         )

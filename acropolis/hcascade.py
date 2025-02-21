@@ -235,7 +235,7 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30):
     start_time = time()
     print_info(
-        "Calculating ξ parameters.",
+        "Calculating hadrodisintegration rates.",
         "acropolis.hcascade.get_Xhdi",
         verbose_level=1
     )
