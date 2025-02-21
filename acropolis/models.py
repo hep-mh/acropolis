@@ -20,7 +20,7 @@ from acropolis.params import Emin, NY, NT_pd, e_xi
 # flags
 import acropolis.flags as flags
 # pprint
-from acropolis.pprint import print_info, print_warning
+from acropolis.pprint import print_warning
 
 
 class AbstractModel(ABC):
@@ -81,28 +81,6 @@ class AbstractModel(ABC):
                 "Temperature range not covered by input data. Results cannot be trusted.",
                 "acropolis.models.AbstractMode.run_disintegration"
             )
-
-        # If the energy is below all thresholds,
-        # simply return the initial abundances
-        if self._sE0 <= Emin:
-            print_info(
-                "Injection energy is below all thresholds. No calculation required.",
-                "acropolis.models.AbstractModel.run_disintegration",
-                verbose_level=1
-            )
-
-            # Calculate the (simplified) transfer matrix
-            transfer_mat = self._postd_matrix()
-
-            Y = np.zeros( (NY, 5) )
-            # -->
-            Y[:,0] = transfer_mat @ Y0[:,0]
-            Y[:,1] = transfer_mat @ Y0[:,1]
-            Y[:,2] = transfer_mat @ Y0[:,2]
-            Y[:,3] = Y[:,0]
-            Y[:,4] = Y[:,0]
-            
-            return Y
 
         # Calculate the different transfer matrices
         ###########################################
@@ -172,7 +150,7 @@ class AbstractModel(ABC):
         if self._sMatpBuffer is None:
             # Calculate the thermal photodisintegration rates
             Gpdi_grids = NuclearReactor(
-                self._sS0, self._sSc, self._sT, self._sE0, Y0, self._sEta
+                self._sT, self._sS0, self._sSc, self._sE0, Y0, self._sEta
             ).get_pdi_grids()
             # One grid for each reaction
 

@@ -1,7 +1,7 @@
 # functools
 from functools import wraps
 # math
-from math import sqrt, log, exp
+from math import sqrt, log, exp, log10
 # numpy
 import numpy as np
 # scipy
@@ -18,7 +18,8 @@ from acropolis.utils import LogInterp, LinInterp
 from acropolis.pprint import print_error, print_warning, print_info
 # params
 from acropolis.params import me2, hbar, tau_n, tau_t
-from acropolis.params import approx_zero, eps, E_EC_max
+from acropolis.params import approx_zero, eps
+from acropolis.params import E_EC_max, Emin, NE_pd, NE_min
 # flags
 import acropolis.flags as flags
 # cascade
@@ -184,7 +185,7 @@ def _convert_mb_to_iMeV2(f_in_mb):
 
 class NuclearReactor(object):
 
-    def __init__(self, S0, SC, temp_grid, E0, Y0, eta):
+    def __init__(self, temp_grid, S0f, SCf, E0, Y0, eta):
         # The injection energy
         self._sE0  = E0
 
@@ -198,13 +199,29 @@ class NuclearReactor(object):
         self._sE  = None # set later
 
         # The prefactor of the delta source term
-        self._sS0  = S0
+        self._sS0 = None # set later
 
         # The continouos source terms
-        self._sSC  = SC
+        self._sSC = None # set later
 
-        # A flag to check if the reactor should run
+        # A flag to check if the reactor is active
         self._sDefused = False
+
+        # Defuse the reactor if the energy is below
+        # all relevant desintegration thresholds
+        if E0 <= Emin:
+            self._sDefused = True
+
+            return # self._sE = self._sS0 = self._sSC = None
+        
+        # Construct the energy grid
+        NE = max( int( log10(E0/Emin )*NE_pd), NE_min ) # E0 > Emin
+        # -->
+        self._sE = np.logspace(log10(Emin), log10(E0), NE)
+
+        # Construct the source-term grids
+        self._sS0 = S0f
+        self._sSC = SCf
 
     # BEGIN REACTIONS ###############################################
 
@@ -482,7 +499,7 @@ class NuclearReactor(object):
 
         # Create a dictionary to store the pdi
         # rates for all reactions and temperatures
-        Gpdi_grids = {rid:np.zeros(NT) for rid in _lrid}
+        Gpdi_grids = {rid:np.full(NT, approx_zero) for rid in _lrid}
 
         # Check if photodisintegration can be skipped
         if self._sDefused:
