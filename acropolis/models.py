@@ -16,7 +16,7 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 # params
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
-from acropolis.params import Emin, NY, NT_pd, approx_zero, e_xi
+from acropolis.params import Emin, NY, NT_pd, e_xi
 # flags
 import acropolis.flags as flags
 # pprint
@@ -280,7 +280,7 @@ class AbstractModel(ABC):
 
     # TEMP
     def _K0_nucleon(self, T):
-        return [approx_zero,] #self._sE0 - mp
+        return [0.,] #self._sE0 - mp
 
 
 class DecayModel(AbstractModel):

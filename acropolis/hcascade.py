@@ -19,7 +19,7 @@ from acropolis.particles import Np, Nn, projectiles, nuclei
 # pprint
 from acropolis.pprint import print_info
 # utils
-from acropolis.utils import mavg
+from acropolis.utils import mavg, all_zero
 # params
 from acropolis.params import NY
 from acropolis.params import approx_zero
@@ -233,15 +233,6 @@ def _xi_interpolators(egrid, T, Y, eta, eps=1e-5, max_iter=30):
 
 # TEMP
 def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30):
-    # Extract the size of the temperature grid
-    NT = len(temp_grid)
-
-    # Calculate the maximal kinetic energy
-    Kmax = 2.*np.max(k0_grids)
-
-    # Initialize the result dictionary
-    Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
-
     start_time = time()
     print_info(
         "Calculating ξ parameters.",
@@ -249,9 +240,24 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
         verbose_level=1
     )
 
-    # TODO: Unify with np.max(dndt_grids) <= (1+1e-6)*approx_zero
-    if Kmax <= Kmin:
+    # Extract the size of the temperature grid
+    NT = len(temp_grid)
+
+    # Initialize the result dictionary
+    Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
+    
+    # Check if hadrodisintegration can be skipped
+    if np.all(k0_grids <= Kmin) or all_zero(dndt_grids):
+        print_info(
+            "Skipped.",
+            "acropolis.hcascade.get_Xhdi",
+            verbose_level=1
+        )
+
         return Xhdi_grids
+
+    # Calculate the maximal kinetic energy
+    Kmax = 2.*np.max(k0_grids) # > Kmin, since np.max(k0_grids) > Kmin
 
     # Construct the energy grid
     NK = int( NK_pd * log10(Kmax/Kmin) )
@@ -276,7 +282,7 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
 
         # Check if the current temperature can be skipped
         # Here: Add 1e-6 to account for floating-point errors
-        if np.all(dndt_list <= (1+1e-6)*approx_zero) or np.all(K0_list <= Kmin):
+        if all_zero(dndt_list) or np.all(K0_list <= Kmin):
             continue
 
         # -->

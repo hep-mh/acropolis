@@ -7,6 +7,8 @@ from scipy.integrate import cumulative_simpson
 
 # jit
 from acropolis.jit import jit
+# params
+from acropolis.params import approx_zero
 
 
 class LinInterp(object):
@@ -180,6 +182,14 @@ class LogInterp(object):
             self._sCache[x] = self._perform_interp(x)
 
         return self._sCache[x]
+
+
+def all_zero(array, eps=1e-6):
+    return np.all( array <= (1. + eps)*approx_zero )
+
+
+def is_zero(value, eps=1e-6):
+    return value <= (1. + eps)*approx_zero
 
 
 # Cummulative numerical Simpson integration
