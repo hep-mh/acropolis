@@ -249,6 +249,7 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
         verbose_level=1
     )
 
+    # TODO: Unify with np.max(dndt_grids) <= (1+1e-6)*approx_zero
     if Kmax <= Kmin:
         return Xhdi_grids
 
