@@ -20,7 +20,6 @@ from acropolis.pprint import print_error
 from acropolis.params import me, me2, alpha, re
 from acropolis.params import zeta3, pi2
 from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
-from acropolis.params import NE_pd, NE_min
 
 
 # _ReactionWrapperScaffold ####################################################
@@ -728,48 +727,43 @@ class SpectrumGenerator(object):
         return self._rate_x(0, E, T)
 
 
-    def get_spectrum(self, E0, S0f, SCf, T, allX=False):
-        # Define the dimension of the grid
-        # from the params in 'params.py'...
-        NE = int(log10(E0/Emin)*NE_pd)
-        # ... but do not use less than NE_min
-        # points
-        NE = max(NE, NE_min)
-
+    def get_spectrum(self, E_grid, S0_grid, SC_grid, T, allX=False):
         # Save the dimension of the species grid
         NX = self._sNX
-
-        # Generate the grid for the energy
-        E_grid = np.logspace(log(Emin), log(E0), NE, base=np.e)
 
         # Generate the grid for the different species
         X_grid = np.arange(NX)
 
+        # DEBUG
+        assert len(X_grid) == len(S0_grid)
+
         # Generate the grid for the rates
-        G = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in X_grid])
+        G_grid = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in X_grid])
             # first index: X, second index according to energy E
 
         # Generate the grid for the kernels
-        K = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in X_grid] for X in X_grid])
+        K_grid = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in X_grid] for X in X_grid])
             # first index: X, second index: Xp
             # third index according to energy E
             # fourth index according to energy Ep;
             # For Ep < E, the kernel is simply 0.
 
-        # Generate the grids for the source terms
-        # monochromatic + continuous
-        S0 = np.array([ S0X(T)                     for S0X in S0f])
-        SC = np.array([[SCX(E, T) for E in E_grid] for SCX in SCf])
-
         # Calculate the spectra by solving
         # the cascade equation
-        sol = _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T)
+        sol = _JIT_solve_cascade_equation(
+            E_grid, G_grid, K_grid, S0_grid, SC_grid, T
+        )
 
         # 'sol' always has at least two columns
         return sol[0:2,:] if not allX else sol
 
 
-    def get_universal_spectrum(self, E0, S0f, SCf, T, offset=0.):
+    def get_universal_spectrum(self, E_grid, S0_grid, SC_grid, T, offset=0.):
+        E0 = E_grid[-1]
+
+        # Extract the size of the energy grid
+        NE = len(E_grid)
+
         # Define EC and EX as in 'astro-ph/0211258'
         EC = me2/(22.*T)
         EX = me2/(80.*T)
@@ -777,26 +771,18 @@ class SpectrumGenerator(object):
         # Define the normalization K0 as in 'astro-ph/0211258'
         K0 = E0/( (EX**2.) * ( 2. + log( EC/EX ) ) )
 
-        # Define the dimension of the grid
-        # as defined in 'params.py'...
-        NE = int(log10(E0/Emin)*NE_pd)
-        # ... but not less than NE_min points
-        NE = max(NE, NE_min)
-
-        # Generate the grid for the energy
-        E_grid = np.logspace(log(Emin), log(E0), NE, base=np.e)
         # Generate the grid for the photon spectrum
         F_grid = np.zeros(NE)
 
         # Calculate the spectrum for the different energies
         # TODO: Incoporate the continuous source terms in the
         #       normalization by integrating it over the energy
-        SN = lambda T: sum(S0X(T) for S0X in S0f) # Normalization
+        SN = sum(S0_grid) # Normalization
         for i, E in enumerate(E_grid):
             if E < EX:
-                F_grid[i] = SN(T) * K0 * (EX/E)**1.5/self.rate_photon(E, T)
+                F_grid[i] = SN * K0 * (EX/E)**1.5/self.rate_photon(E, T)
             elif E >= EX and E <= (1. + offset)*EC: # an offset enables better interpolation
-                F_grid[i] = SN(T) * K0 * (EX/E)**2.0/self.rate_photon(E, T)
+                F_grid[i] = SN * K0 * (EX/E)**2.0/self.rate_photon(E, T)
 
         # Remove potential zeros
         F_grid[F_grid < approx_zero] = approx_zero

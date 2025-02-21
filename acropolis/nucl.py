@@ -13,7 +13,7 @@ from time import time
 import warnings
 
 # util
-from acropolis.utils import LogInterp, LinInterp
+from acropolis.utils import LogInterp, LinInterp, all_zero
 # pprint
 from acropolis.pprint import print_error, print_warning, print_info
 # params
@@ -221,17 +221,18 @@ class NuclearReactor(object):
 
         # Construct the source-term grids
         NX, NT = len(S0f), len(self._sT)
-        self._sS0 = np.zeros( (NX, NT    ) )
-        self._sSC = np.zeros( (NX, NT, NE) )
+        # -->
+        self._sS0, self._sSC = np.zeros( (NX, NT) ), np.zeros( (NX, NT, NE) )
         for i in range(NX):
             for j, T in enumerate(self._sT):
                 self._sS0[i, j] = S0f[i](T)
 
                 for k, E in enumerate(self._sE):
                     self._sSC[i, j, k] = SCf[i](T, E)
-
-        self._sS0 = S0f
-        self._sSC = SCf
+        
+        # Defuse the reactor if all source-terms vanish
+        if all_zero(self._sS0) and all_zero(self._sSC):
+            self._sDefused = True
 
     # BEGIN REACTIONS ###############################################
 
@@ -443,11 +444,11 @@ class NuclearReactor(object):
         # Calculate the spectra for the given temperature
         if not flags.universal:
             xsp, ysp = self._sGen.get_spectrum(
-                                self._sE0, self._sS0, self._sSC, T
+                                self._sE, self._sS0[:,i], self._sSC[:,i,:], T
                             )
         else:
             xsp, ysp = self._sGen.get_universal_spectrum(
-                                self._sE0, self._sS0, self._sSC, T, offset=5e-2
+                                self._sE, self._sS0[:,i], self._sSC[:,i,:], T, offset=5e-2
                             )
             # For performance reasons, also
             # cut the energy at threshold
@@ -470,7 +471,7 @@ class NuclearReactor(object):
         # Calculate the different rates by looping over all available reaction_id's
         for rid in _lrid:
             # Calculate the 'delta-term'...
-            I_dt = self._sS0[0](T)*self.get_cross_section(rid, self._sE0)/rate_photon_E0
+            I_dt = self._sS0[0, i]*self.get_cross_section(rid, self._sE0)/rate_photon_E0
             # ... and use it as an initial value
             pdi_rates[rid] = I_dt # might be zero due to exp. suppression!
 
