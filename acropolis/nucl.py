@@ -220,6 +220,16 @@ class NuclearReactor(object):
         self._sE = np.logspace(log10(Emin), log10(E0), NE)
 
         # Construct the source-term grids
+        NX, NT = len(S0f), len(self._sT)
+        self._sS0 = np.zeros( (NX, NT    ) )
+        self._sSC = np.zeros( (NX, NT, NE) )
+        for i in range(NX):
+            for j, T in enumerate(self._sT):
+                self._sS0[i, j] = S0f[i](T)
+
+                for k, E in enumerate(self._sE):
+                    self._sSC[i, j, k] = SCf[i](T, E)
+
         self._sS0 = S0f
         self._sSC = SCf
 
@@ -414,7 +424,10 @@ class NuclearReactor(object):
         )
 
 
-    def _pdi_rates(self, T):
+    def _pdi_rates(self, i): # i ~ T
+        # Extract the temperature
+        T = self._sT[i]
+
         EC = me2/(22.*T)
         # Set the maximal energy, serving
         # as a cutoff for the integration
@@ -513,14 +526,14 @@ class NuclearReactor(object):
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
-        for i, Ti in enumerate(self._sT):
+        for i, _ in enumerate(self._sT):
             progress = 100*i/NT
             print_info(
                 "Progress: {:.1f}%".format(progress),
                 "acropolis.nucl.NuclearReactor.get_pdi_grids",
                 eol="\r", verbose_level=1
             )
-            rates_at_i = self._pdi_rates(Ti)
+            rates_at_i = self._pdi_rates(i)
             # Loop over the different reactions
             for rid in _lrid:
                 Gpdi_grids[rid][i] = rates_at_i[rid]
