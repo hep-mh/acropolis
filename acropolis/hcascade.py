@@ -281,7 +281,6 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
         assert len(dndt_list) == len(K0_list)
 
         # Check if the current temperature can be skipped
-        # Here: Add 1e-6 to account for floating-point errors
         if all_zero(dndt_list) or np.all(K0_list <= Kmin):
             continue
 

@@ -50,7 +50,7 @@ class AbstractModel(ABC):
         ])
 
         # The relevant source terms
-        (self._sS0, self._sSc) = self._source_terms()
+        (self._sS0f, self._sSCf) = self._source_terms()
 
         # A buffer for high-performance scans
         self._sMatpBuffer = None
@@ -148,13 +148,14 @@ class AbstractModel(ABC):
         Y0 = self._sII.bbn_abundances_0()
 
         if self._sMatpBuffer is None:
-            # Calculate the thermal photodisintegration rates
+            # Calculate the photodisintegration rates
             Gpdi_grids = NuclearReactor(
-                self._sT, self._sS0, self._sSc, self._sE0, Y0, self._sEta
+                self._sT, self._sS0f, self._sSCf, self._sE0, Y0, self._sEta
             ).get_pdi_grids()
             # One grid for each reaction
 
             # TEMP
+            # Calculate the hadrodisintegration rates
             Xhdi_grids = get_Xhdi(
                 self._sT, self._sK0, self._sdndt, self._sE0, Y0, self._sEta
             )
