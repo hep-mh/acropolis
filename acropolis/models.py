@@ -280,7 +280,7 @@ class AbstractModel(ABC):
 
     # TEMP
     def _K0_nucleon(self, T):
-        return [0.,] #self._sE0 - mp
+        return [0.,]
 
 
 class DecayModel(AbstractModel):
