@@ -186,20 +186,25 @@ class NuclearReactor(object):
 
     def __init__(self, S0, SC, temp_grid, E0, Y0, eta):
         # The injection energy
-        self._sE0 = E0
+        self._sE0  = E0
 
-        # The prefactor of the delta source term
-        self._sS0 = S0
-
-        # The continouos source terms
-        self._sSC = SC
+        # An instance of 'Spectrum_Generator'
+        self._sGen = SpectrumGenerator(Y0, eta)
 
         # The temperature grid
         self._sT  = temp_grid
 
-        # An instance of 'Spectrum_Generator' in order to calculate
-        # the photon spectrum in the function 'get_reaction_rate(reaction_id, T)'
-        self._sGen = SpectrumGenerator(Y0, eta)
+        # The energy grid
+        self._sE  = None # set later
+
+        # The prefactor of the delta source term
+        self._sS0  = S0
+
+        # The continouos source terms
+        self._sSC  = SC
+
+        # A flag to check if the reactor should run
+        self._sDefused = False
 
     # BEGIN REACTIONS ###############################################
 
@@ -465,18 +470,29 @@ class NuclearReactor(object):
 
 
     def get_pdi_grids(self):
-        NT = len(self._sT)
-
-        # Create a dictionary to store the pdi
-        # rates for all reactions and temperatures
-        Gpdi_grids = {rid:np.zeros(NT) for rid in _lrid}
-
         start_time = time()
         print_info(
             "Calculating non-thermal spectra and reaction rates.",
             "acropolis.nucl.NuclearReactor.get_pdi_grids",
             verbose_level=1
         )
+        
+        # Extract the size of the temperature grid
+        NT = len(self._sT)
+
+        # Create a dictionary to store the pdi
+        # rates for all reactions and temperatures
+        Gpdi_grids = {rid:np.zeros(NT) for rid in _lrid}
+
+        # Check if photodisintegration can be skipped
+        if self._sDefused:
+            print_info(
+                "Skipped.",
+                "acropolis.nucl.NuclearReactor.get_pdi_grids",
+                verbose_level=1
+            )
+
+            return Gpdi_grids
 
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
