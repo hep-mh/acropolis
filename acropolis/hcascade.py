@@ -239,15 +239,15 @@ def get_Xhdi(temp_grid, k0_grids, dndt_grids, E0, Y, eta, eps=1e-5, max_iter=30)
     # Calculate the maximal kinetic energy
     Kmax = 2.*np.max(k0_grids)
 
+    # Initialize the result dictionary
+    Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
+
     start_time = time()
     print_info(
         "Calculating ξ parameters.",
         "acropolis.hcascade.get_Xhdi",
         verbose_level=1
     )
-
-    # Initialize the result dictionary
-    Xhdi_grids = {nid: np.full(NT, approx_zero) for nid in range(NY)}
 
     if Kmax <= Kmin:
         return Xhdi_grids
