@@ -224,11 +224,13 @@ class NuclearReactor(object):
         # -->
         self._sS0, self._sSC = np.zeros( (NX, NT) ), np.zeros( (NX, NT, NE) )
         for i in range(NX):
+            S0f_i, SCf_i = S0f[i], SCf[i]
+
             for j, T in enumerate(self._sT):
-                self._sS0[i, j] = S0f[i](T)
+                self._sS0[i, j] = S0f_i(T)
 
                 for k, E in enumerate(self._sE):
-                    self._sSC[i, j, k] = SCf[i](E, T)
+                    self._sSC[i, j, k] = SCf_i(E, T)
         
         # Defuse the reactor if all source-terms vanish
         if all_zero(self._sS0) and all_zero(self._sSC):
