@@ -228,7 +228,7 @@ class NuclearReactor(object):
                 self._sS0[i, j] = S0f[i](T)
 
                 for k, E in enumerate(self._sE):
-                    self._sSC[i, j, k] = SCf[i](T, E)
+                    self._sSC[i, j, k] = SCf[i](E, T)
         
         # Defuse the reactor if all source-terms vanish
         if all_zero(self._sS0) and all_zero(self._sSC):
