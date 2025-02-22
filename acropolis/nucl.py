@@ -446,12 +446,12 @@ class NuclearReactor(object):
         # Calculate the spectra for the given temperature
         if not flags.universal:
             xsp, ysp = self._sGen.get_spectrum(
-                                self._sE, self._sS0[:,i], self._sSC[:,i,:], T
-                            )
+                self._sE, self._sS0[:,i], self._sSC[:,i,:], T
+            )
         else:
             xsp, ysp = self._sGen.get_universal_spectrum(
-                                self._sE, self._sS0[:,i], self._sSC[:,i,:], T, offset=5e-2
-                            )
+                self._sE, self._sS0[:,i], self._sSC[:,i,:], T, offset=5e-2
+            )
             # For performance reasons, also
             # cut the energy at threshold
             Emax = min(self._sE0, EC)
