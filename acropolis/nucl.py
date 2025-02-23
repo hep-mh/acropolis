@@ -527,6 +527,14 @@ class NuclearReactor(object):
 
             return Gpdi_grids
 
+        # Print a warning for E0 > 1 GeV in case the
+        # calculation of the non-universal spectrum is requested
+        if not flags.universal and int( self._sE0 ) > 1e3:
+            print_warning(
+                "Requesting non-universal spectra for E0 > 1 GeV: The results cannot be trusted.",
+                "acropolis.nucl.NuclearReactor.get_pdi_grids"
+            )
+
         # Loop over all the temperatures and
         # calculate the corresponding thermal rates
         for i, _ in enumerate(self._sT):

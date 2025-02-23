@@ -63,15 +63,6 @@ class AbstractModel(ABC):
         # DEBUG
         assert np.all( Y0[0,:]/Y0[1,:] < 1e-3 )
 
-        # Print a warning if the injection energy
-        # is larger than 1GeV, as this might lead
-        # to wrong results
-        if not flags.universal and int( self._sE0 ) > 1e3:
-            print_warning(
-                "Injection energy > 1 GeV. Results cannot be trusted.",
-                "acropolis.models.AbstractMode.run_disintegration"
-            )
-
         # Print a warning if the temperature range
         # of the model is not covered by the data
         # in cosmo_file.dat

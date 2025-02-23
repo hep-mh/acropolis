@@ -104,6 +104,17 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
+# NOTE: The default parameters below are
+# optimized for parameter scans that cover
+# several orders of magnitude, in which
+# case a precision > 0.1% is justified
+# To instead archieve < 0.1% precision,
+# we recommend setting, which comes at 
+#  a ~(2.3-3.5)x runtime penalty
+# NE_pd = 150
+# NT_pd =  30
+# NK_pd =  30
+
 # The number of nuclei that are
 # considered in the Boltzmann equation
 # for non-thermal nucleosynthesis
@@ -146,8 +157,8 @@ E_EC_max = 10.
 # The number of points per decade for
 # the energy grid, which is used within
 # the solution of the cascade equation
-# Default: 150
-NE_pd  = 150
+# Default: 120
+NE_pd  = 120
 # The minimal number of points for the
 # energy grid
 # Default: 10
@@ -157,8 +168,8 @@ NE_min = 10
 # the temperature grid, which us used
 # for the interpolation of the thermal
 # nuclear rates
-# Default: 50
-NT_pd = 50
+# Default: 20
+NT_pd = 20
 
 # The number of points per decade for
 # the kinetic energy grid, which is used
