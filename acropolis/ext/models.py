@@ -119,7 +119,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
 
 
 # This model has been created in collaboration with Pieter Braat (pbraat@nikhef.nl)
-# When using this model, please cite arXiv:2406:XXXX
+# When using this model, please cite arXiv:2409.14900
 class ResonanceModel(AnnihilationModel):
     def __init__(self, mchi, delta, gammad, gammav, nd, tempkd, S=1, omegah2=0.12):
 
