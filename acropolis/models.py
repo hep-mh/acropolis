@@ -17,8 +17,6 @@ from acropolis.nucl import NuclearReactor, MatrixGenerator
 from acropolis.params import zeta3
 from acropolis.params import hbar, c_si, me2, alpha, tau_t
 from acropolis.params import Emin, NY, NT_pd, e_xi
-# flags
-import acropolis.flags as flags
 # pprint
 from acropolis.pprint import print_warning
 

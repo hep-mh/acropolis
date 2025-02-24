@@ -1,9 +1,5 @@
 exclude = [
-    "~*",
-    "future",
-    "v1.3",
-    "prj/_backup",
-    
+    "backup",
 ]
 
 indent-width = 4

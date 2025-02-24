@@ -32,7 +32,7 @@ scan_result = BufferedScanner(  DecayModel,
                              ).perform_scan(cores=-1)
 
 # ...specify the output-file...
-results_file = 'decay_mphi_{:.0e}MeV_aa.dat'.format(mphi)
+results_file = 'data/decay_mphi_{:.0e}MeV_aa.dat'.format(mphi)
 # ...and save the results
 np.savetxt(results_file, scan_result)
 

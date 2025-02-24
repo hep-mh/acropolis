@@ -4,6 +4,10 @@
 /_cmp/*
 *mavg*
 
+# .gitkeep files
+!.gitkeep
+
+
 # Example scan files
 /examples/_*
 

@@ -165,9 +165,9 @@ NE_pd  = 120
 NE_min = 10
 
 # The number of points per decade for
-# the temperature grid, which us used
-# for the interpolation of the thermal
-# nuclear rates
+# the temperature grid, which is used
+# for the interpolation of the nuclear
+# reaction rates
 # Default: 20
 NT_pd = 20
 
