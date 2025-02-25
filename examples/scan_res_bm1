@@ -16,7 +16,7 @@ from acropolis.pprint import print_version, print_info
 print_version()
 
 # Define the number of points
-N = 100
+N = 50
 
 # Perform the scan...
 scan_result = BufferedScanner(  BenchmarkModel1,
