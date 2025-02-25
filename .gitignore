@@ -1,8 +1,9 @@
 # Temporary files
 /CHANGES
 /TODO
-/_cmp/*
+/tmp/*
 *mavg*
+
 
 # AlterBBN files
 /alterbbn.tar.xz
