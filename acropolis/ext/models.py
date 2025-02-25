@@ -32,6 +32,9 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
 
     # Extract the maximal temperature in the grid
     (Tmin, Tmax) = ii.temperature_range()
+    # -->
+    Tmin *= (1 + 1e-6)
+    Tmax *= (1 - 1e-6)
 
     # The integration kernel for calculating the
     # thermally averaged cross-section for
@@ -110,7 +113,7 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
         T = exp( logT )
 
         # Avoid interpolation errors by clipping
-        np.clip(T, Tmin, Tmax)
+        T = np.clip(T, Tmin, Tmax)
 
         # Define the average number of collisions
         Ncol = max(1., mchi/T)
