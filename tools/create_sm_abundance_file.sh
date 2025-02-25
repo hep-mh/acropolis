@@ -7,14 +7,14 @@ if [ ! -d "alteralterbbn" ]; then
 
     echo
 fi
-# -->
-cd alteralterbbn
 
 
 if [ ! -f "alteralterbbn/bin/alteralterbbn" ]; then
     echo -e "\x1B[38;5;69mBuilding AlterAlterBBN...\x1B[0m"
 
+    cd alteralterbbn
     ./build.sh
+    cd ..
 
     echo
 fi
@@ -22,4 +22,4 @@ fi
 
 echo -e "\x1B[38;5;69mRunning AlterAlterBBN...\x1B[0m"
 
-./bin/alteralterbbn
+./alteralterbbn/bin/alteralterbbn data/sm

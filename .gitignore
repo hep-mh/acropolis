@@ -8,6 +8,10 @@
 # AlterBBN files
 /alterbbn.tar.xz
 
+# AlterAlterBBN files
+/tools/data/sm/*~
+/tools/data/sm/abundance_file.dat
+
 # .gitkeep files
 !.gitkeep
 
@@ -17,9 +21,6 @@
 
 # PDF files
 *.pdf
-
-# AlterBBN files
-/alterbbn/*
 
 # Project files
 /prj/*
