@@ -30,7 +30,7 @@ setup(
         'acropolis': [
             'data/rates.db.gz',
             'data/sm.tar.gz',
-            'data/parthenope_v3_0.tar.gz',
+            'data/alteralterbbn_v2_0.tar.gz',
             'data/f.dat',
             'data/cross_sections/*.dat'
         ]
