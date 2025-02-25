@@ -30,6 +30,9 @@ def overrides(interface_class):
 def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
     fac = 200
 
+    # Extract the maximal temperature in the grid
+    Tmax = ii.temperature_range()[1] * ( 1. - 1e-6 )
+
     # The integration kernel for calculating the
     # thermally averaged cross-section for
     # \chi e^\pm -> \chi e^\pm scattering
@@ -104,18 +107,25 @@ def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
 
     # Ncol * H ~ sig_v * _nee
     def _tempkd_ee_root(logT):
-        T = exp( logT )
+        T = min( exp( logT ), Tmax )
+        # Avoid interpolation error by capping
+        # T at the maximal temperature
 
         Ncol = max(1., mchi/T)
 
         return log( _sigma_v_ee(T) * _nee(T) / ii.hubble_rate(T) / Ncol )
     
+
+    # Find the root
+    sol = root(_tempkd_ee_root, x0=log(mchi), method="lm")
+
     # -->
-    tempkd = exp( root(_tempkd_ee_root, 0.).x )
+    tempkd = exp( sol.x ) if sol.success else np.nan
     
     # Assume that kinetic decoupling happens at least
     # together with chemical decoupling at T ~ mchi/20
-    return min(tempkd, mchi/20.)
+    return np.nanmin([tempkd, mchi/20.])
+    # NOTE: If tempkd = np.nan, the return value is mchi/20
 
 
 # This model has been created in collaboration with Pieter Braat (pbraat@nikhef.nl)
