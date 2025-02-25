@@ -30,7 +30,7 @@ def overrides(interface_class):
 def estimate_tempkd_ee(mchi, delta, gammad, gammav, nd, S, ii, sigma_ee):
     fac = 200
 
-    # Extract the maximal temperature in the grid
+    # Extract the edges of the temperature grid
     (Tmin, Tmax) = ii.temperature_range()
     # -->
     Tmin *= (1 + 1e-6)
