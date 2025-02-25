@@ -53,7 +53,7 @@ for param in ['NE_pd', 'NT_pd']:
     # Loop over both data samples, i.e. 'decay' and 'annih'
     for run in ['annih', 'decay']:
 
-        data = np.loadtxt(f'../tools/data/{param}_{run}.dat')
+        data = np.loadtxt(f'../tools/data/NX_pd/{param}_{run}.dat')
         # -->
         N_pd     = data[:,0]
         Y2H_low  = data[:,1]
