@@ -4,6 +4,9 @@
 /_cmp/*
 *mavg*
 
+# AlterBBN files
+/alterbbn.tar.xz
+
 # .gitkeep files
 !.gitkeep
 
@@ -29,6 +32,7 @@
 
 # Plot data
 /plots/data/*
+/examples/data/*
 
 # Build files
 /build/*
