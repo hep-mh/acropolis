@@ -65,7 +65,7 @@ if [ "$dir" != "tools" ]; then
 fi
 
 # Define the data directory
-data="$dir/data"
+data="$dir/NX_pd/data"
 
 # Cleanup files from previous runs
 rm -f $data/NE_pd.dat $data/NT_pd.dat
