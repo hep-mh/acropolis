@@ -4,7 +4,6 @@
 /tmp/*
 *mavg*
 
-
 # AlterBBN files
 /alterbbn.tar.xz
 
@@ -14,7 +13,6 @@
 
 # .gitkeep files
 !.gitkeep
-
 
 # Example scan files
 /examples/_*
@@ -60,5 +58,5 @@ __pycache__
 *.blg
 *.synctex.gz
 
-# macOS stuff
+# macOS files
 .DS_Store
