@@ -22,6 +22,7 @@ setup(
     url=url,
     author=authors,
     license='GPL3',
+    license_files=['LICENSE',],
     packages=[
         'acropolis',
         'acropolis/ext'
