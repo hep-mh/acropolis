@@ -4,6 +4,11 @@ from math import pi
 from scipy.special import zeta
 
 
+# Only parameters that specify a default value are
+# meant to be changed by the user, i.e. everything
+# under ALGORITHM-SPECIFIC PARAMETERS
+
+
 # PHYSICAL CONSTANTS ################################################
 
 # The fine-structure constant
@@ -29,7 +34,7 @@ c_si = 2.99792458e10
 # The neutron lifetime (in s)
 tau_n = 8.794e2 # pre PDG2020: 8.802e2
 
-# The lifetime of tritium (in s)
+# The tritium lifetime (in s)
 # T_(1/2) = 3.885e8
 tau_t = 5.605e8
 
@@ -56,6 +61,16 @@ Tnum = (Tmax_log - Tmin_log)*num_pd
 
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
+# NOTE: The default parameters below are
+# optimized for parameter scans that cover
+# several orders of magnitude, in which
+# case a precision > 0.1% is justified
+# To instead archieve < 0.1% precision,
+# we recommend setting, which comes at 
+# a runtime penalty
+# NE_pd = 150
+# NT_pd =  30
+
 # The number of nuclei that are
 # considered in the Boltzmann equation
 # for non-thermal nucleosynthesis
@@ -67,14 +82,17 @@ NY = 9
 # Default: 5
 NC = 5
 
-# The minimum energy for the different spectra (in MeV)
-# This value should not be larger than the minimal
-# nucleon-interaction threshold of 1.586627 MeV
+# The minimum energy for the different
+# spectra (in MeV) originating from the
+# electromagnetic cascade
+# This value should not be larger than
+# the minimal nucleon-interaction threshold
+# of 1.586627 MeV
 # (reaction_id: 15 in 'astro-ph/0211258')
 # Default: 1.5
 Emin = 1.5
 
-# The value that is used for 'approximately' zero
+# The value that is used for ~ 0.
 # Default: 1e-200
 approx_zero = 1e-200
 
@@ -95,16 +113,16 @@ E_EC_max = 10.
 # The number of points per decade for
 # the energy grid, which is used within
 # the solution of the cascade equation
-# Default: 150
-NE_pd  = 150
-# The minimal number of points for
-# the energy grid
+# Default: 120
+NE_pd  = 120
+# The minimal number of points for the
+# energy grid
 # Default: 10
 NE_min = 10
 
 # The number of points per decade for
-# the temperature grid, which us used
-# for the interpolation of the thermal
-# nuclear rates
-# Default: 50
-NT_pd = 50
+# the temperature grid, which is used
+# for the interpolation of the nuclear
+# reaction rates
+# Default: 20
+NT_pd = 20
