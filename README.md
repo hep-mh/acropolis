@@ -8,6 +8,9 @@
 ![DevVersion: 2.0.0](https://img.shields.io/badge/Current_Dev_Version-2.0.0-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
+
+The (slightly outdated) manual can be found in the ``manual/`` directory on GitHub.
+
 When using this code for your own scientific publications, please cite
 
 - **ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS**\
