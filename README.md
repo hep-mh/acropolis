@@ -3,8 +3,8 @@
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
-![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.3.0](https://img.shields.io/badge/Current_Version-1.3.0-green.svg?style=flat-square)
+![Language: Python](https://img.shields.io/badge/Language-Python-blue.svg?style=flat-square)
+![Version: 1.3.1](https://img.shields.io/badge/Current_Version-1.3.1-green.svg?style=flat-square)
 ![DevVersion: 2.0.0](https://img.shields.io/badge/Current_Dev_Version-2.0.0-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
@@ -20,7 +20,12 @@ When using this code for your own scientific publications, please cite
   Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild\
   https://arxiv.org/abs/1808.09324
 
-*The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.*
+When using ``ResonanceModel`` specifically, please also cite
+
+- **Big Bang Nucleosynthesis constraints on resonant DM annihilations**\
+  Pieter Braat, Marco Hufnagel\
+  https://arxiv.org/abs/2409.14900
+
 
 # Abstract
 
@@ -29,10 +34,18 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 <details open>
+<summary>v1.3.1 (March 3, 2025) </summary>
+
+ - Fixed a bug that could lead to interpolation errors when using ``ResonanceModel``
+ - Added PDG2023 and PDG2024 values to ``acropolis.obs``
+ - Speed improvements by tuning the default parameters in ``acropolis.params`` for parameter scans
+
+</details><br/>
+
+<details open>
 <summary>v1.3.0 (September 17, 2024)</summary>
 
-- Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
-- Updated the initial abundances, which have now be calculated with ``PArthENoPE v3.0`` and hence include the updated deuterium reaction rates
+ - Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
  - Added PDG2021 and PDG2022 values to ``acropolis.obs``
  - Implemented the new package ``acropolis.jit`` to fixed warnings caused by new versions of ``numba``
  - Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space

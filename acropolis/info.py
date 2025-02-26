@@ -1,5 +1,5 @@
 # The current version of ACROPOLIS
-version     = "1.3.0"
+version     = "1.3.1"
 
 # The current dev version of ACROPOLIS
 dev_version = "2.0.0"
