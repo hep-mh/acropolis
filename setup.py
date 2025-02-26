@@ -22,12 +22,17 @@ setup(
     url=url,
     author=authors,
     license='GPL3',
+    license_files=['LICENSE',],
     packages=[
         'acropolis',
         'acropolis/ext'
     ],
     package_data={
-        'acropolis': ['data/rates.db.gz', 'data/sm.tar.gz', 'data/parthenope_v3_0.tar.gz']
+        'acropolis': [
+            'data/rates.db.gz',
+            'data/sm.tar.gz',
+            'data/alterbbn_v2_2_failsafe_12.tar.gz'
+        ]
     },
     include_package_data=True,
     scripts=[
