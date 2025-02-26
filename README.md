@@ -3,11 +3,14 @@
 **A** generi**C** f**R**amework f**O**r **P**hotodisintegration **O**f **LI**ght element**S**
 
 ![arXiv: 2011.06518](https://img.shields.io/badge/arXiv-2011.06518-red.svg?style=flat-square)
-![Language: Python3](https://img.shields.io/badge/Language-Python3-blue.svg?style=flat-square)
-![Version: 1.3.0](https://img.shields.io/badge/Current_Version-1.3.0-green.svg?style=flat-square)
+![Language: Python](https://img.shields.io/badge/Language-Python-blue.svg?style=flat-square)
+![Version: 1.3.1](https://img.shields.io/badge/Current_Version-1.3.1-green.svg?style=flat-square)
 ![DevVersion: 2.0.0](https://img.shields.io/badge/Current_Dev_Version-2.0.0-orange.svg?style=flat-square)
 
 <img src="https://acropolis.hepforge.org/ACROPOLIS.png" alt="logo" width="600"/><br />
+
+The (slightly outdated) manual can be found in the ``manual/`` directory on GitHub.
+
 When using this code for your own scientific publications, please cite
 
 - **ACROPOLIS: A generiC fRamework fOr Photodisintegration Of LIght elementS**\
@@ -20,7 +23,12 @@ When using this code for your own scientific publications, please cite
   Marco Hufnagel, Kai Schmidt-Hoberg, Sebastian Wild\
   https://arxiv.org/abs/1808.09324
 
-<!--*The most recent version of the manual can always be found on GitHub in the manual/ folder. The respective publication on arXiv might be out-of-date, especially when new versions of the code become available.*-->
+When using ``ResonanceModel`` specifically, please also cite
+
+- **Big Bang Nucleosynthesis constraints on resonant DM annihilations**\
+  Pieter Braat, Marco Hufnagel\
+  https://arxiv.org/abs/2409.14900
+
 
 # Abstract
 
@@ -29,22 +37,30 @@ The remarkable agreement between observations of the primordial light element ab
 # Changelog
 
 <details open>
+<summary>v1.3.1 (March 3, 2025) </summary>
+
+ - Fixed a bug that could lead to interpolation errors when using ``ResonanceModel``
+ - Added PDG2023 and PDG2024 values to ``acropolis.obs``
+ - Speed improvements by tuning the default parameters in ``acropolis.params`` for parameter scans
+
+</details><br/>
+
+<details open>
 <summary>v1.3.0 (September 17, 2024)</summary>
 
-- Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
-<!-- - Updated the initial abundances, which have now be calculated with ``PArthENoPE v3.0`` and hence include the updated deuterium reaction rates -->
+ - Implemented the model ``acropolis.ext.models.ResonanceModel``, which can be used to calculate PDI constraints for models with resonantly-enhanced DM annihilations
  - Added PDG2021 and PDG2022 values to ``acropolis.obs``
  - Implemented the new package ``acropolis.jit`` to fixed warnings caused by new versions of ``numba``
  - Removed the requirement for the data in ``cosmo_file.dat`` to be equidistant in log space
  - Improved the progress indicator when running parameter scans without a ``fast`` parameter
   - Unified the plotting script in ``plots/plot_scan_results.py`` by using the methods defined in ``acropolis.plots``
  - Added additional plotting functionality in ``acropolis.plots`` (extracting contours,  specifying the ``x`` and ``y`` data for the plot, ...)
-  
+
 </details><br />
 
 <details>
 <summary>v1.2.2 (April 6, 2022)</summary>
-  
+
  - Implemented fixes for the issues #10 and #11 on GitHub
  - Made some initial plotting functions available in ``acropolis.plots``, which can be used to easily plot the results of parameter scans
  - Improved the output that is printed to the screen (especially for parameter scans if ``verbose=True``)
@@ -53,30 +69,28 @@ The remarkable agreement between observations of the primordial light element ab
  - Included a new c-file ./tools/create_sm_abundance_file.c, which can be used with [``AlterBBN``](https://alterbbn.hepforge.org/) to generate the file ``abundance_file.dat`` for sm.tar.gz
  - Fixed a bug that prohibited running 2d parameter scans without 'fast' parameters
  - Fixed a bug that caused INFO messages to be printed even for ``verbose=False``
-  
 </details><br />
 
 <details>
 <summary>v1.2.1 (February 16, 2021)</summary>
-  
+
  - Fixed a bug in ``DecayModel``. Results that have been obtained with older versions can be corrected by multiplying the parameter ``n0a`` with an additional factor ``2.7012``. All results of our papers remain unchanged.
  - Updated the set of initial abundances to the most recent values returned by [``AlterBBN``](https://alterbbn.hepforge.org/) v2.2 (explicitly, we used ``failsafe=12``)
-  
 </details><br />
 
 <details>
 <summary>v1.2 (January 15, 2021)</summary>
-  
+
  - Speed improvements when running non-thermal nucleosynthesis (by a factor 7)
  - Modified the directory structure by moving ./data to ./acropolis/data to transform ``ACROPOLIS`` into a proper package, which can be installed via ``python3 -m pip install . --user`` (also putting the executables ``decay`` and ``annihilation`` into your ``PATH``)
  - Added the decay of neutrons and tritium to the calculation
  - For AnnihilationModel, it is now possible to freely choose the dark-matter density parameter (default is 0.12)
-  
 </details><br />
+
 
 <details>
 <summary>v1.1 (December 1, 2020)</summary>
-  
+
  - For the source terms it is now possible to specify arbitrary monochromatic and continuous contributions, meaning that the latter one is no longer limited to only final-state radiation of photons
  - By including additional JIT compilation steps, the runtime without database files was drastically decreased (by approximately a factor 15)
  - The previously mentioned performance improvements also allowed to drop the large database files alltogether, which results in a better user experience (all database files are now part of the git repo and no additional download is required) and a significantly reduced RAM usage (&#x223C;900MB &#x2192; &#x223C;20MB)
@@ -84,14 +98,12 @@ The remarkable agreement between observations of the primordial light element ab
  - Added a unified way to print the final abundances in order to declutter the wrapper scripts. This makes it easier to focus on the actual important parts when learning how to use ``ACROPOLIS``
  - Moved from bytecode to simple text files for the remaining database file, as the former leads to unexpected behaviour on some machines
  - Added additional info and warning messages for the user's convenience
-  
 </details><br />
 
 <details>
 <summary>v1.0 (November 12, 2020)</summary>
 
  - Initial release
-  
 </details><br />
 
 # Installation from PyPI
