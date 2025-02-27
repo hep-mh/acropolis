@@ -1,6 +1,4 @@
 # Temporary files
-/CHANGES
-/TODO
 /tmp/*
 *mavg*
 
@@ -8,7 +6,6 @@
 /alterbbn.tar.xz
 
 # AlterAlterBBN files
-/tools/data/sm/*~
 /tools/data/sm/abundance_file.dat
 
 # .gitkeep files
@@ -31,7 +28,6 @@
 /test.ipynb
 
 # Plot data
-/plots/data/*
 /examples/data/*
 
 # Build files
