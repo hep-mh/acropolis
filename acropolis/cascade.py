@@ -735,18 +735,16 @@ class SpectrumGenerator(object):
         X_grid = np.arange(NX)
 
         # DEBUG
-        assert len(X_grid) == len(S0_grid)
+        assert len(S0_grid) == NX
 
         # Generate the grid for the rates
+        # Indices: 1: X, 2: E
         G_grid = np.array([[self._rate_x(X, E, T) for E in E_grid] for X in X_grid])
-            # first index: X, second index according to energy E
 
         # Generate the grid for the kernels
+        # Indices: 1: X, 2: Xp, 3: E, 4: Ep
+        # For Ep < E, the kernel is simply 0.
         K_grid = np.array([[[[self._kernel_x_xp(X, Xp, E, Ep, T) if Ep >= E else 0. for Ep in E_grid] for E in E_grid] for Xp in X_grid] for X in X_grid])
-            # first index: X, second index: Xp
-            # third index according to energy E
-            # fourth index according to energy Ep;
-            # For Ep < E, the kernel is simply 0.
 
         # Calculate the spectra by solving
         # the cascade equation
