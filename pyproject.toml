@@ -1,0 +1,18 @@
+[tool.ruff]
+exclude = [
+    "acropolis/backup"
+
+]
+lint.ignore = [
+    "E731", "E741"
+]
+indent-width = 4
+
+[tool.mypy]
+exclude = [
+    "acropolis/backup"
+]
+disable_error_code = [
+    "import-untyped"
+]
+pretty = true
