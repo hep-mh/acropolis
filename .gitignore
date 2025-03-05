@@ -1,7 +1,3 @@
-# Temporary files
-/tmp/*
-*mavg*
-
 # AlterBBN files
 /alterbbn.tar.xz
 
@@ -17,18 +13,9 @@
 # PDF files
 *.pdf
 
-# Project files
-/prj/*
-
-# Backup files
-/acropolis/backup
-
 # Testing scripts
 /test.py
 /test.ipynb
-
-# Plot data
-/examples/data/*
 
 # Build files
 /build/*
