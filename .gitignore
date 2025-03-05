@@ -14,8 +14,7 @@
 *.pdf
 
 # Testing scripts
-/test.py
-/test.ipynb
+/test.*
 
 # Build files
 /build/*

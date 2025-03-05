@@ -2,28 +2,37 @@
 from functools import wraps
 
 
-def cached(f):
-    # Define the cache as a dictionary
-    cache = {}
-    Tc = {"_": -1.}
+def cached_member(clear_by_index=-1):
+    def decorator(f):
+        # Define the cache as a dictionary
+        cache = {}
 
-    # Define the wrapper function
-    @wraps(f)
-    def f_cached(*args):
-        T     = args[-1]
-        # Drop the first argument 'self'
-        # ! only for member functions !
-        pargs = args[1:]
+        xc = None
+        # Define the wrapper function
+        @wraps(f)
+        def wrapper(*args):
+            nonlocal xc
 
-        # For each new temperature,
-        # clear the cache and start over
-        if T != Tc["_"]:
-            Tc["_"] = T
-            cache.clear()
+            x     = args[clear_by_index]
+            # Drop the first argument 'self'
+            # ! only for member functions !
+            pargs = args[1:]
 
-        if pargs not in cache:
-            cache[pargs] = f(*args)
+            # Define a key for the cache
+            cache_key = (f.__name__, pargs)
 
-        return cache[pargs]
+            # For each new temperature,
+            # clear the cache and start over
+            if x != xc:
+                xc = x
+                # -->
+                cache.clear()
 
-    return f_cached
+            if cache_key not in cache:
+                cache[cache_key] = f(*args)
+
+            return cache[cache_key]
+
+        return wrapper
+    
+    return decorator

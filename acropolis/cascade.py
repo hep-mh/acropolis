@@ -13,7 +13,7 @@ from acropolis.jit import jit
 from acropolis.db import import_data_from_db
 from acropolis.db import in_rate_db, interp_rate_db
 # cache
-from acropolis.cache import cached
+from acropolis.cache import cached_member
 # pprint
 from acropolis.pprint import print_error
 # params
@@ -400,7 +400,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
 
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached
+    @cached_member()
     def _kernel_inverse_compton(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -463,7 +463,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
     # T is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached
+    @cached_member()
     def _rate_inverse_compton(self, E, T):
         # Define the upper limit for the integration over x
         ulim = min( E - me2/(4.*E), Ephb_T_max*T )
@@ -501,7 +501,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
     # T  is the temperature of the background photons
 
     # INVERSE COMPTON SCATTERING ##############################################
-    @cached
+    @cached_member()
     def _kernel_inverse_compton(self, E, Ep, T):
         # E == Ep leads to a divergence in
         # the Bose-Einstein distribution
@@ -544,7 +544,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 
     # BETHE_HEITLER PAIR CREATION #############################################
-    @cached
+    @cached_member()
     def _kernel_bethe_heitler(self, E, Ep, T):
         # Incorporate the non-generic integration limit as
         # the algorithm requires Ep > E and not Ep > E + me
@@ -556,7 +556,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
 
 
     # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
-    @cached
+    @cached_member()
     def _kernel_pair_creation_ae(self, E, Ep, T):
         # In general, the threshold is Ep >~ me^2/(22*T)
         # However, here we use a slighlty smaller threshold
