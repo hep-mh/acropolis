@@ -156,8 +156,6 @@ def dsdE_Z2(Ee, Eph, me, re, alpha):
 
 @cc.export("solve_cascade_equation", "f8[:,:](f8[:], f8[:,:], f8[:,:,:,:], f8[:], f8[:,:], f8, f8, f8)")
 def solve_cascade_equation(E_grid, G, K, S0, SC, T, Emin, approx_zero):
-    approx_zero = 1e-200
-    
     # Extract the number of particle species...
     NX = len(G)
     # ...and the number of energy points
