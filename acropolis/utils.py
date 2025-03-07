@@ -84,26 +84,6 @@ class LinInterp(object):
         return self._sCache[x]
 
 
-"""
-class LogInterp(object):
-    def __init__(self, x_grid, y_grid, fill_value=None):
-        if not np.all(y_grid > 0):
-            raise ValueError(
-                "The values in y_grid need to be all positive."
-            )
-
-        # TODO: Fix Fill Value
-
-        # -->
-        self._sLinInterp = LinInterp(
-            x_grid, np.log(y_grid), fill_value_log
-        )
-    
-    def __call__(self, x):
-        return exp( self._sLinInterp(x) )
-"""
-
-
 class LogInterp(object):
 
     def __init__(self, x_grid, y_grid, base=np.e, fill_value=None):
