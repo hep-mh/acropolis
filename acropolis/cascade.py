@@ -7,8 +7,6 @@ from scipy.integrate import quad, dblquad
 # abc
 from abc import ABCMeta, abstractmethod
 
-# jit
-from acropolis.jit import jit
 # db
 from acropolis.db import import_data_from_db
 from acropolis.db import in_rate_db, interp_rate_db
@@ -21,224 +19,10 @@ from acropolis.params import me, me2, alpha, re
 from acropolis.params import zeta3, pi2
 from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 
-
-# _ReactionWrapperScaffold ####################################################
-
-@jit
-def _JIT_F(Eph, Ee, Ephb):
-    # ATTENTION: Here we use the range given in '10.1103/PhysRev.167.1159',
-    # because the translation to 0 < q < 1 is questionable
-    if not ( Ephb <= Eph <= 4.*Ephb*Ee*Ee/( me2 + 4.*Ephb*Ee ) ):
-        # CHECKED to never happen, since the intergration
-        # limits are always chosen appropriately (below)
-        return 0.
-
-    G = 4.*Ephb*Ee/me2         # \Gamma_\epsilon
-    q = Eph/( G*(Ee - Eph) )   # q
-
-    # ATTENTION:
-    # If the last term is (2.-2.*G*q) , Kawasaki
-    # If the last term is (2.+2.*G*q) , correct
-    return 2.*q*log(q) + (1.+2.*q)*(1.-q) + (G*q)**2. * (1.-q)/(2.+2.*G*q)
-
-
-@jit
-def _JIT_G(Ee, Eph, Ephb):
-    # Define the energy of the positron
-    Eep = Eph + Ephb - Ee
-
-    # Calculate the valid range for Ee
-    # ATTENTION: This range is absent in 'astro-ph/9412055'
-    # Here we adopt the original result from
-    # 'link.springer.com/content/pdf/10.1007/BF01005624.pdf'
-    dE_sqrt  = (Eph - Ephb)*sqrt( 1. - me2/( Eph*Ephb ) )
-    Ee_lim_m = ( Eph + Ephb - dE_sqrt )/2.
-    Ee_lim_p = ( Eph + Ephb + dE_sqrt )/2.
-    # ATTENTION: White et al. impose the range in the soft
-    # photon limit, which is more difficult to handle but
-    # should lead to the same results, since the pair production
-    # kernel ensures that Ephb ~ T << Eph ~ O(MeV)
-
-    if not ( me < Ee_lim_m <= Ee <= Ee_lim_p ):
-        # CHECKED to never happen, since the intergration
-        # limits are always chosen appropriately (below)
-        return 0.
-
-    # Split the function into four summands
-    # and calculate all of them separately
-    # Ee + Eep = Eph + Ephb
-    sud  = 0.
-    sud += 4.*( (Ee + Eep)**2. )*log( (4.*Ephb*Ee*Eep)/( me2*(Ee + Eep) ) )/( Ee*Eep )
-    sud += ( me2/( Ephb*(Ee + Eep) ) - 1. ) * ( (Ee + Eep)**4. )/( (Ee**2.)*(Eep**2.) )
-    # ATTENTION: no additional minus sign in sud[2]
-    # It is unclear whether it is a typo or an artifact
-    # of scanning the original document
-    sud += 2.*( 2.*Ephb*(Ee + Eep) - me2 ) * ( (Ee + Eep)**2. )/( me2*Ee*Eep )
-    sud += -8.*Ephb*(Ee + Eep)/me2
-
-    return sud
-
-
-# _PhotonReactionWrapper ######################################################
-
-@jit
-def _JIT_ph_rate_pair_creation_ae(logy, logx, T):
-    # Return the integrand for the 2d integral in log-space
-    x, y = exp(logx), exp(logy)
-
-    # Define beta as a function of y
-    b = sqrt(1. - 4.*me2/y)
-
-    # Define the kernel for the 2d-integral; y = s, x = epsilon_bar
-    #                     f/E^2                              s   \sigma_DP
-    # ATTENTION: There is an error in 'astro-ph/9412055.pdf'
-    # In the integration for \bar{\epsilon}_\gamma the lower
-    # limit of integration should be me^2/\epsilon_\gamma
-    # (the written limit is unitless, which must be wrong)
-    # This limit is a consequence of the constraint on
-    # the center-of-mass energy
-    sig_pc = .5*pi*(re**2.)*(1.-b**2.)*( (3.-b**4.)*log( (1.+b)/(1.-b) ) - 2.*b*(2.-b**2.) )
-
-    return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * sig_pc * (x*y)
-
-
-@jit
-def _JIT_ph_kernel_inverse_compton(logx, E, Ep, T):
-    # Return the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(logx)
-
-    return _JIT_F(E, Ep, x)*x/( pi2*(exp(x/T) - 1.) ) * x
-
-
-# _ElectronReactionWrapper ####################################################
-
-@jit
-def _JIT_el_rate_inverse_compton(y, x, E, T):
-    # Return the integrand for the 2d-integral; y = Eph, x = Ephb
-    return _JIT_F(y, E, x)*x/( (pi**2.)*(exp(x/T) - 1.) )
-
-
-@jit
-def _JIT_el_kernel_inverse_compton(logx, E, Ep, T):
-    # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(logx)
-
-    return _JIT_F(Ep+x-E, Ep, x)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
-
-
-@jit
-def _JIT_el_kernel_pair_creation_ae(logx, E, Ep, T):
-    # Define the integrand for the 1d-integral in log-space; x = Ephb
-    x = exp(logx)
-
-    return _JIT_G(E, Ep, x)/( (pi**2.)*(exp(x/T) - 1.) ) * x
-
-
-@jit
-def _JIT_dsdE_Z2(Ee, Eph):
-    # Define the energies (here: nucleon is at rest)
-    Em = Ee                                                      # E_-
-    Ep = Eph - Ee                                                # E_+
-
-    # Define the various parameters that enter the cross-section
-    pm = sqrt(Em*Em - me2)                                       # p_-
-    pp = sqrt(Ep*Ep - me2)                                       # p_+
-
-    L  = log( (Ep*Em + pp*pm + me2)/(Ep*Em - pp*pm + me2) )      # L
-
-    lm = log( (Em + pm)/(Em - pm) )                              # l_-
-    lp = log( (Ep + pp)/(Ep - pp) )                              # l_+
-
-    # Define the prefactor
-    pref = alpha*(re**2.)*pp*pm/(Eph**3.)
-
-    # Calculate the infamous 'lengthy expression'
-    # Therefore, split the sum into four summands
-    sud  = 0.
-    sud += -4./3. - 2.*Ep*Em*(pp*pp + pm*pm)/( (pp**2.)*(pm**2.) )
-    sud += me2*( lm*Ep/(pm**3.) + lp*Em/(pp**3.) - lp*lm/(pp*pm) )
-    sud += L*( -8.*Ep*Em/(3.*pp*pm) + Eph*Eph*((Ep*Em)**2. + (pp*pm)**2. - me2*Ep*Em)/( (pp**3.)*(pm**3.) ) )
-    sud += -L*me2*Eph*( lp*(Ep*Em - pp*pp)/(pp**3.) + lm*(Ep*Em - pm*pm)/(pm**3.) )/(2.*pp*pm)
-
-    return pref * sud
-
-
-# SpectrumGenerator ###########################################################
-
-@jit
-def _JIT_set_spectra(F, i, Fi, cond=False):
-    F[:, i] = Fi
-    # In the strongly compressed regime, manually
-    # set the photon spectrum to zero in order to
-    # avoid floating-point errors
-    if cond:
-        F[0, i] = 0.
-
-
-@jit
-def _JIT_solve_cascade_equation(E_grid, G, K, S0, SC, T):
-    # Extract the number of particle species...
-    NX = len(G)
-    # ...and the number of energy points
-    NE = len(E_grid)
-
-    dy = log(E_grid[-1]/Emin)/(NE-1)
-
-    # Generate the grid for the different spectra
-    # 1. index: X = photon, electron, positron
-    # 2. index: Position in the energy grid
-    F_grid = np.zeros( (NX, NE) )
-
-    # Calculate F_X(E_0), last index NE-1
-    FX_E0 = np.array([
-        SC[X,-1]/G[X,-1] + np.sum(K[X,:,-1,-1]*S0[:]/(G[:,-1]*G[X,-1])) for X in range(NX)
-    ])
-    # -->
-    _JIT_set_spectra(F_grid, -1, FX_E0)
-
-    # Loop over all energies
-    i = (NE - 1) - 1 # start at the second to last index, NE-2
-    while i >= 0: # Counting down
-        B = np.zeros( (NX, NX) )
-        a = np.zeros( (NX,   ) )
-
-        I = np.identity(NX)
-        # Calculate the matrix B and the vector a
-        for X in range(NX):
-            # Calculate B, : <--> Xp
-            B[X,:] = -.5*dy*E_grid[i]*K[X,:,i,i] + G[X,i]*I[X,:]
-
-            # Calculate a
-            a[X] = SC[X,i]
-            for Xp in range(NX):
-                a[X] += K[X,Xp,i,-1]*S0[Xp]/G[Xp,-1] + .5*dy*E_grid[-1]*K[X,Xp,i,-1]*F_grid[Xp,-1]
-                for j in range(i+1, NE-1): # Goes from i+1 to NE-2
-                    a[X] += dy*E_grid[j]*K[X,Xp,i,j]*F_grid[Xp,j]
-
-        # Solve the system of linear equations of the form BF = a
-        _JIT_set_spectra(F_grid, i,
-            np.linalg.solve(B, a)
-        )
-
-        i -= 1
-
-    # Remove potential zeros
-    F_grid = F_grid.reshape( NX*NE )
-    for i, f in enumerate(F_grid):
-        if f < approx_zero:
-            F_grid[i] = approx_zero
-    F_grid = F_grid.reshape( (NX, NE) )
-
-    # Define the output array...
-    sol = np.zeros( (NX+1, NE) )
-    # ...and fill it
-    sol[0     , :] = E_grid
-    sol[1:NX+1, :] = F_grid
-
-    return sol
-
-
-###############################################################################
+# aot.cascade
+from acropolis.aot.cascade import ph_rate_pair_creation_ae, ph_kernel_inverse_compton
+from acropolis.aot.cascade import el_kernel_pair_creation_ae, el_rate_inverse_compton, el_kernel_inverse_compton
+from acropolis.aot.cascade import dsdE_Z2, solve_cascade_equation
 
 
 class _ReactionWrapperScaffold(object):
@@ -347,9 +131,9 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # Perform the integration in log-log space
         # The limits for s are always in ascending order,
         # i.e. 4*me2 < 4*E*x, since x > me2/E
-        I_fso_E2 = dblquad(_JIT_ph_rate_pair_creation_ae, log(llim), log(ulim), \
+        I_fso_E2 = dblquad(ph_rate_pair_creation_ae, log(llim), log(ulim), \
                              lambda logx: log(4.*me2), lambda logx: log(4.*E) + logx, \
-                             epsrel=eps, epsabs=0, args=(T,)
+                             epsrel=eps, epsabs=0, args=(T, me, re)
                           )
 
         return I_fso_E2[0]/( 8.*E**2. )
@@ -425,7 +209,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         # ATTENTION: Kawasaki considers a combined e^+/e^- spectrum
         # Therefore the factor 2 should not be there in our case
@@ -477,7 +261,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
         # ATTENTION:
         # The integral over \epsilon_\gamma should start at 0.
         # In fact, for \epsilon_\gamma > \epsilon_e, we have q < 0.
-        I_fF_E = dblquad(_JIT_el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T))
+        I_fF_E = dblquad(el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T, me))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(E**2.)
 
@@ -532,7 +316,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(_JIT_el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fF_E = quad(el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(Ep**2.)
 
@@ -552,7 +336,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Multiply by the nucleon density and return
-        return self._nNZ2(T)*_JIT_dsdE_Z2(E, Ep)
+        return self._nNZ2(T)*dsdE_Z2(E, Ep, me, re, alpha)
 
 
     # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
@@ -590,7 +374,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Perform the integration in log space
-        I_fG_E2 = quad(_JIT_el_kernel_pair_creation_ae, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T))
+        I_fG_E2 = quad(el_kernel_pair_creation_ae, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         return 0.25*pi*(alpha**2.)*me2*I_fG_E2[0]/(Ep**3.)
 
@@ -748,8 +532,8 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        sol = _JIT_solve_cascade_equation(
-            E_grid, G_grid, K_grid, S0_grid, SC_grid, T
+        sol = solve_cascade_equation(
+            E_grid, G_grid, K_grid, S0_grid, SC_grid, T, Emin, approx_zero
         )
 
         # 'sol' always has at least two columns
