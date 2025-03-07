@@ -1,3 +1,5 @@
+# importlib
+from importlib import import_module
 # math
 from math import pi, log, log10, exp, sqrt
 # numpy
@@ -20,9 +22,7 @@ from acropolis.params import zeta3, pi2
 from acropolis.params import Emin, approx_zero, eps, Ephb_T_max
 
 # aot.cascade
-from acropolis.aot.cascade import ph_rate_pair_creation_ae, ph_kernel_inverse_compton
-from acropolis.aot.cascade import el_kernel_pair_creation_ae, el_rate_inverse_compton, el_kernel_inverse_compton
-from acropolis.aot.cascade import dsdE_Z2, solve_cascade_equation
+_aot = import_module(".cascade", package="acropolis.aot")
 
 
 class _ReactionWrapperScaffold(object):
@@ -131,7 +131,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
         # Perform the integration in log-log space
         # The limits for s are always in ascending order,
         # i.e. 4*me2 < 4*E*x, since x > me2/E
-        I_fso_E2 = dblquad(ph_rate_pair_creation_ae, log(llim), log(ulim), \
+        I_fso_E2 = dblquad(_aot.ph_rate_pair_creation_ae, log(llim), log(ulim), \
                              lambda logx: log(4.*me2), lambda logx: log(4.*E) + logx, \
                              epsrel=eps, epsabs=0, args=(T, me, re)
                           )
@@ -209,7 +209,7 @@ class _PhotonReactionWrapper(_ReactionWrapperScaffold):
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
+        I_fF_E = quad(_aot.ph_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         # ATTENTION: Kawasaki considers a combined e^+/e^- spectrum
         # Therefore the factor 2 should not be there in our case
@@ -261,7 +261,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
         # ATTENTION:
         # The integral over \epsilon_\gamma should start at 0.
         # In fact, for \epsilon_\gamma > \epsilon_e, we have q < 0.
-        I_fF_E = dblquad(el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T, me))
+        I_fF_E = dblquad(_aot.el_rate_inverse_compton, 0., ulim, lambda x: x, lambda x: 4.*x*E*E/( me2 + 4.*x*E ), epsrel=eps, epsabs=0, args=(E, T, me))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(E**2.)
 
@@ -316,7 +316,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Perform the integration in log space
-        I_fF_E = quad(el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
+        I_fF_E = quad(_aot.el_kernel_inverse_compton, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         return 2.*pi*(alpha**2.)*I_fF_E[0]/(Ep**2.)
 
@@ -336,7 +336,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Multiply by the nucleon density and return
-        return self._nNZ2(T)*dsdE_Z2(E, Ep, me, re, alpha)
+        return self._nNZ2(T)*_aot.dsdE_Z2(E, Ep, me, re, alpha)
 
 
     # DOUBLE PHOTON TO ELECTRON POSITRON PAIR CREATION ########################
@@ -374,7 +374,7 @@ class _AbstractElectronReactionWrapper(_ReactionWrapperScaffold, metaclass=ABCMe
             return 0.
 
         # Perform the integration in log space
-        I_fG_E2 = quad(el_kernel_pair_creation_ae, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
+        I_fG_E2 = quad(_aot.el_kernel_pair_creation_ae, log(llim), log(ulim), epsrel=eps, epsabs=0, args=(E, Ep, T, me))
 
         return 0.25*pi*(alpha**2.)*me2*I_fG_E2[0]/(Ep**3.)
 
@@ -532,7 +532,7 @@ class SpectrumGenerator(object):
 
         # Calculate the spectra by solving
         # the cascade equation
-        sol = solve_cascade_equation(
+        sol = _aot.solve_cascade_equation(
             E_grid, G_grid, K_grid, S0_grid, SC_grid, T, Emin, approx_zero
         )
 

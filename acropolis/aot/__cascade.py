@@ -2,7 +2,7 @@
 from importlib import import_module
 
 # Load the compiled module dynamically
-_aot = import_module(".compiled", package="acropolis.aot")
+_aot = import_module(".cascade", package="acropolis.aot")
 
 # Expose the compiled functions
 ph_rate_pair_creation_ae   = _aot.ph_rate_pair_creation_ae

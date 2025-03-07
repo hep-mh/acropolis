@@ -7,7 +7,7 @@ from numba import njit
 import numpy as np
 
 
-cc = CC("compiled")
+cc = CC("cascade")
 
 # acropolis.aot.cascade #######################################################
 
