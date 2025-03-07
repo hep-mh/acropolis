@@ -20,6 +20,8 @@
 /build/*
 /dist/*
 /ACROPOLIS.egg-info
+*.so
+*.pyd
 
 # Byte-compiled / optimized / DLL files
 __pycache__
