@@ -172,7 +172,7 @@ def is_zero(value, eps=1e-6):
     return value <= (1. + eps)*approx_zero
 
 
-# Cummulative numerical Simpson integration
+# TODO: Completely replace by _cumsimp?
 def cumsimp(x_grid, y_grid):
     return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)
 
