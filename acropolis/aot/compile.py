@@ -6,6 +6,7 @@ from numba import njit
 # numpy
 import numpy as np
 
+
 # acropolis.aot.cascade #######################################################
 
 cascade = CC("cascade")
@@ -216,4 +217,5 @@ def solve_cascade_equation(E_grid, G, K, S0, SC, T, Emin, approx_zero):
 
 
 if __name__ == "__main__":
-    cascade.compile()
+    for module in [cascade]:
+        module.compile()
