@@ -1,3 +1,7 @@
+default: aot
+
+check: ruff mypy
+
 aot: acropolis/aot
 	python3 $^/compile.py
 
