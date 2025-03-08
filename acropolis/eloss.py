@@ -2,6 +2,8 @@
 from math import log, exp, sqrt, erf
 # numpy
 import numpy as np
+# numba
+from numba import njit
 # scipy
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
@@ -12,8 +14,6 @@ from acropolis.cosmo import nee
 import acropolis.flags as flags
 # hrates
 from acropolis.hrates import get_mean_free_path
-# jit
-from acropolis.jit import jit
 # util
 from acropolis.utils import flipped_cumsimp
 # params
@@ -30,7 +30,7 @@ E_T_max = Ephb_T_max
 
 # HELPER FUNCTIONS ##################################################
 
-@jit
+@njit(cache=True)
 def _JIT_phi(x):
     a = [
          0.8048,
@@ -67,7 +67,7 @@ def _JIT_phi(x):
     return x*bsum/( 1. - csum )
 
 
-@jit
+@njit(cache=True)
 def _JIT_eloss_bethe_heitler(logx, T, E, M):
     x = exp(logx) # kappa
 

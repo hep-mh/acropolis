@@ -6,11 +6,11 @@ import pickle
 from os import path
 # time
 from time import time
+# numba
+from numba import njit
 
 # input
 from acropolis.input import locate_data_file
-# jit
-from acropolis.jit import jit
 # pprint
 from acropolis.pprint import print_info
 # flags
@@ -72,17 +72,17 @@ def in_kernel_db(E_log, Ep_log, T_log):
     return False
 
 
-@jit
+@njit(cache=True)
 def _get_E_log(i):
     return Emin_log + (Emax_log - Emin_log)*i/(Enum - 1)
 
 
-@jit
+@njit(cache=True)
 def _get_T_log(i):
     return Tmin_log + (Tmax_log - Tmin_log)*i/(Tnum - 1)
 
 
-@jit
+@njit(cache=True)
 def _get_E_index(E_log):
     index = int( ( Enum - 1 ) * ( E_log - Emin_log ) / ( Emax_log - Emin_log ) )
 
@@ -90,7 +90,7 @@ def _get_E_index(E_log):
     return index if index != Enum - 1 else index - 1
 
 
-@jit
+@njit(cache=True)
 def _get_T_index(T_log):
     index = int( ( Tnum - 1 ) * ( T_log - Tmin_log ) / ( Tmax_log - Tmin_log ) )
 
@@ -98,7 +98,7 @@ def _get_T_index(T_log):
     return index if index != Tnum - 1 else index - 1
 
 
-@jit
+@njit(cache=True)
 def interp_rate_db(rate_db, id, E_log, T_log):
     # Extract the correct index for the datafile
     c = {
@@ -133,7 +133,7 @@ def interp_rate_db(rate_db, id, E_log, T_log):
     return 10.**( a0 + a1*x + a2*y + a3*x*y )
 
 
-@jit
+@njit(cache=True)
 def interp_kernel_db(kernel_db, id, E_log, Ep_log, T_log):
     raise NotImplementedError
 

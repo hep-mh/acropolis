@@ -2,11 +2,11 @@
 from math import log, pow, exp
 # numpy
 import numpy as np
+# numba
+from numba import njit
 # scipy
 from scipy.integrate import cumulative_simpson
 
-# jit
-from acropolis.jit import jit
 # params
 from acropolis.params import approx_zero
 
@@ -177,7 +177,7 @@ def cumsimp(x_grid, y_grid):
     return cumulative_simpson(x_grid*y_grid, x=np.log(x_grid), initial=0.)
 
 
-@jit
+@njit(cache=True)
 def _cumsimp(x_grid, y_grid):
     n = len(x_grid)
 
@@ -199,7 +199,7 @@ def _cumsimp(x_grid, y_grid):
     return i_grid
 
 
-@jit
+@njit(cache=True)
 def flipped_cumsimp(x_grid, y_grid):
      return -np.flip(_cumsimp(np.flip(x_grid), np.flip(y_grid)))
 
