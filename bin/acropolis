@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# argparse
+import argparse
 # os
 import os
 # subprocess
@@ -7,8 +9,8 @@ import subprocess
 # sys
 import sys
 
-# aot
-import acropolis.aot as aot
+# acropolis
+import acropolis
 # pprint
 from acropolis.pprint import print_info, print_error, print_version
 
@@ -20,28 +22,45 @@ def download_db():
 
 
 def compile_module(module):
-    aotdir = os.path.dirname( aot.__file__ )
+    package_dir = os.path.dirname( acropolis.__file__ )
 
     print_info(f"Compiling acropolis.aot.{module}")
     result = subprocess.run(
-        [sys.executable, f"{aotdir}/{module}.py"], text=True, capture_output=True
+        [sys.executable, f"{package_dir}/aot/{module}.py"], text=True, capture_output=True
     )
 
     if result.returncode != 0:
         print_error(f"Compilation failed:\n{result.stderr}")
 
 
-if __name__ == "__main__":
-    # Specify the list of available commands
-    commands = ["download", "compile"]
+def run_decay():
+    pass
+
+def run_annihilation():
+    pass
+
+
+def main():
+    parser = argparse.ArgumentParser(prog="acropolis")
+    # -->
+    subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands")
+    
+    # download-db
+    subparsers.add_parser("download-db", help="Download additional database files")
+    
+    # compile
+    subparsers.add_parser("compile", help="Compile performance-critical functions")
+
+    # -->
+    args = parser.parse_args()
 
     print_version()
 
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        print_error("Missing argument. Usage: acropolis <download|compile>.")
-
-    if sys.argv[1] == "download":
+    if args.command == "download-db":
         download_db()
-
-    elif sys.argv[1] == "compile":
+    elif args.command == "compile":
         compile_module("pycc_cascade")
+
+
+if __name__ == "__main__":
+    main()

@@ -14,18 +14,18 @@ upload:
 	twine check dist/*
 	twine upload --repository pypi dist/*
 
-upload_test:
+upload-test:
 	twine check dist/*
 	twine upload --repository testpypi dist/*
 
-clean: clean_pycc clean_cache clean_build
-
-clean_pycc:
+clean-pycc:
 	find . -type f -name *.so -delete
 	find . -type f -name *.pyd -delete
 
-clean_build:
+clean-build:
 	rm -rf dist/ build/ ACROPOLIS.egg-info/
 
-clean_cache:
+clean-cache:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
+
+clean: clean-pycc clean-cache clean-build
