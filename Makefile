@@ -1,8 +1,10 @@
-default: aot
+default: pycc
+
+all: ruff mypy pycc
 
 check: ruff mypy
 
-aot: acropolis/aot
+pycc: acropolis/aot
 	python3 $^/compile.py
 
 ruff: acropolis
@@ -10,3 +12,6 @@ ruff: acropolis
 
 mypy: acropolis
 	mypy $^
+
+clean: acropolis/aot/
+	rm $^/*.so

@@ -7,6 +7,8 @@ from os import path
 # time
 from time import time
 
+# input
+from acropolis.input import locate_data_file
 # jit
 from acropolis.jit import jit
 # pprint
@@ -19,8 +21,7 @@ from acropolis.params import Tmin_log, Tmax_log, Tnum
 
 
 def import_data_from_db():
-    pkg_dir, _ = path.split(__file__)
-    db_file    = path.join(pkg_dir, "data", "rates.db.gz")
+    db_file = locate_data_file("rates.db.gz")
 
     ratedb = None
     if not flags.usedb or not path.exists(db_file):
