@@ -40,7 +40,7 @@ if __name__ == "__main__":
     print_version()
 
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        exit("Usage: acp <download|compile>")
+        print_error("Missing argument. Usage: acropolis <download|compile>.")
 
     if sys.argv[1] == "download":
         download_db()
