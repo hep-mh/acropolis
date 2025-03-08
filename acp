@@ -1,0 +1,49 @@
+#! /usr/bin/env python3
+
+# os
+import os
+# subprocess
+import subprocess
+# sys
+import sys
+
+# aot
+import acropolis.aot as aot
+# pprint
+from acropolis.pprint import print_info, print_error, print_version
+
+
+def download_db():
+    print_info(
+        "Since v1.1 this operation is no longer needed."
+    )
+
+
+def compile_module(module):
+    aotdir = os.path.dirname( aot.__file__ )
+
+    print_info("Compiling acropolis.aot.pycc_cascade")
+    result = subprocess.run(
+        [sys.executable, f"{aotdir}/{module}"], text=True, capture_output=True
+    )
+
+    if result.returncode != 0:
+        print_error(f"Compilation failed:\n{result.stderr}")
+
+
+if __name__ == "__main__":
+    commands = [
+        "download",
+        "compile"
+    ]
+
+    print_version()
+
+    if len(sys.argv) < 2 or sys.argv[1] not in commands:
+        exit("Usage: acp <download|compile>")
+
+    if sys.argv[1] == "download":
+        download_db()
+
+    elif sys.argv[1] == "compile":
+        compile_module("pycc_cascade.py")

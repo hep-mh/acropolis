@@ -25,6 +25,7 @@ setup(
     license_files=['LICENSE',],
     packages=[
         'acropolis',
+        'acropolis/aot',
         'acropolis/ext'
     ],
     package_data={
@@ -39,11 +40,13 @@ setup(
     include_package_data=True,
     scripts=[
         'decay',
-        'annihilation'
+        'annihilation',
+        'acp'
     ],
     install_requires=[
         'numpy>=1.19.1',
         'scipy>=1.5.2',
-        'numba>=0.51.2'
+        'numba>=0.51.2',
+        'setuptools' # TODO
     ]
 )
