@@ -91,17 +91,6 @@ zeta3 = zeta(3.)
 pi2 = pi**2.
 
 
-# INTERPOLATION-SPECIFIC PARAMETERS #################################
-
-# Boundery values
-Emin_log, Tmin_log = 0, -6
-Emax_log, Tmax_log = 3, -1
-# Number of entries...
-num_pd = 150 # ...per decade
-Enum = (Emax_log - Emin_log)*num_pd
-Tnum = (Tmax_log - Tmin_log)*num_pd
-
-
 # ALGORITHM-SPECIFIC PARAMETERS #####################################
 
 # NOTE: The default parameters below are

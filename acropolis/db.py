@@ -15,9 +15,17 @@ from acropolis.jit import jit
 from acropolis.pprint import print_info
 # flags
 import acropolis.flags as flags
-# params
-from acropolis.params import Emin_log, Emax_log, Enum
-from acropolis.params import Tmin_log, Tmax_log, Tnum
+
+
+# Boundery values
+Emin_log, Tmin_log = 0, -6
+Emax_log, Tmax_log = 3, -1
+
+# Number of entries
+num_pd = 150 # per decade
+# -->
+Enum = (Emax_log - Emin_log)*num_pd
+Tnum = (Tmax_log - Tmin_log)*num_pd
 
 
 def import_data_from_db():

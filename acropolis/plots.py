@@ -161,7 +161,7 @@ def tex_title(**kwargs):
         # of the parameter and its unit
         tex, unit = _tex_data[ key ]
         # If the value is 0, do not print units
-        unit = '\,' + unit if val != 0 else r''
+        unit = r'\,' + unit if val != 0 else r''
 
         title += tex + '=' + val_str + unit + eof
 
