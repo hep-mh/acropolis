@@ -14,4 +14,6 @@ mypy: acropolis
 	mypy $^
 
 clean: acropolis/aot
-	rm -rf $^/*.so
+	find . -type f -name *.so -exec rm -rf {} +
+	find . -type f -name *.pyd -exec rm -rf {} +
+	find . -type d -name "__pycache__" -exec rm -rf {} +
