@@ -39,9 +39,9 @@ setup(
     },
     include_package_data=True,
     scripts=[
-        'decay',
-        'annihilation',
-        'acp'
+        'bin/decay',
+        'bin/annihilation',
+        'bin/acropolis'
     ],
     install_requires=[
         'numpy>=1.19.1',
