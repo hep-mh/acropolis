@@ -1,5 +1,5 @@
 # setuptools
-from setuptools import setup
+from setuptools import setup, find_packages
 # os
 from os import path
 
@@ -23,11 +23,7 @@ setup(
     author=authors,
     license='GPL3',
     license_files=['LICENSE',],
-    packages=[
-        'acropolis',
-        'acropolis/aot',
-        'acropolis/ext'
-    ],
+    packages=find_packages(),
     package_data={
         'acropolis': [
             'data/rates.db.gz',

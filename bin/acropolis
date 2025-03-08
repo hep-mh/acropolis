@@ -22,9 +22,9 @@ def download_db():
 def compile_module(module):
     aotdir = os.path.dirname( aot.__file__ )
 
-    print_info("Compiling acropolis.aot.pycc_cascade")
+    print_info(f"Compiling acropolis.aot.{module}")
     result = subprocess.run(
-        [sys.executable, f"{aotdir}/{module}"], text=True, capture_output=True
+        [sys.executable, f"{aotdir}/{module}.py"], text=True, capture_output=True
     )
 
     if result.returncode != 0:
@@ -32,10 +32,8 @@ def compile_module(module):
 
 
 if __name__ == "__main__":
-    commands = [
-        "download",
-        "compile"
-    ]
+    # Specify the list of available commands
+    commands = ["download", "compile"]
 
     print_version()
 
@@ -46,4 +44,4 @@ if __name__ == "__main__":
         download_db()
 
     elif sys.argv[1] == "compile":
-        compile_module("pycc_cascade.py")
+        compile_module("pycc_cascade")
