@@ -9,10 +9,7 @@ import numpy as np
 
 # acropolis.aot.cascade #######################################################
 
-cascade = CC("cascade")
-
-
-@njit
+@njit(cache=True)
 def _F(Eph, Ee, Ephb, me):
     me2 = me**2.
     
@@ -32,7 +29,7 @@ def _F(Eph, Ee, Ephb, me):
     return 2.*q*log(q) + (1.+2.*q)*(1.-q) + (G*q)**2. * (1.-q)/(2.+2.*G*q)
 
 
-@njit
+@njit(cache=True)
 def _G(Ee, Eph, Ephb, me):
     me2 = me**2.
 
@@ -71,7 +68,7 @@ def _G(Ee, Eph, Ephb, me):
     return sud
 
 
-@cascade.export("ph_rate_pair_creation_ae", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def ph_rate_pair_creation_ae(logy, logx, T, me, re):
     me2 = me**2.
 
@@ -94,7 +91,7 @@ def ph_rate_pair_creation_ae(logy, logx, T, me, re):
     return ( 1./(pi**2) )/( exp(x/T) - 1. ) * y * sig_pc * (x*y)
 
 
-@cascade.export("ph_kernel_inverse_compton", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def ph_kernel_inverse_compton(logx, E, Ep, T, me):
     # Return the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -102,7 +99,7 @@ def ph_kernel_inverse_compton(logx, E, Ep, T, me):
     return _F(E, Ep, x, me)*x/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
 
-@cascade.export("el_kernel_pair_creation_ae", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def el_kernel_pair_creation_ae(logx, E, Ep, T, me):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -110,13 +107,13 @@ def el_kernel_pair_creation_ae(logx, E, Ep, T, me):
     return _G(E, Ep, x, me)/( (pi**2.)*(exp(x/T) - 1.) ) * x
 
 
-@cascade.export("el_rate_inverse_compton", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def el_rate_inverse_compton(y, x, E, T, me):
     # Return the integrand for the 2d-integral; y = Eph, x = Ephb
     return _F(y, E, x, me)*x/( (pi**2.)*(exp(x/T) - 1.) )
 
 
-@cascade.export("el_kernel_inverse_compton", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def el_kernel_inverse_compton(logx, E, Ep, T, me):
     # Define the integrand for the 1d-integral in log-space; x = Ephb
     x = exp(logx)
@@ -124,7 +121,7 @@ def el_kernel_inverse_compton(logx, E, Ep, T, me):
     return _F(Ep+x-E, Ep, x, me)*( x/(pi**2) )/( exp(x/T) - 1. ) * x
 
 
-@cascade.export("dsdE_Z2", "f8(f8, f8, f8, f8, f8)")
+@njit(cache=True)
 def dsdE_Z2(Ee, Eph, me, re, alpha):
     me2 = me**2.
 
@@ -155,7 +152,7 @@ def dsdE_Z2(Ee, Eph, me, re, alpha):
     return pref * sud
 
 
-@cascade.export("solve_cascade_equation", "f8[:,:](f8[:], f8[:,:], f8[:,:,:,:], f8[:], f8[:,:], f8, f8, f8)")
+@njit(cache=True)
 def solve_cascade_equation(E_grid, G, K, S0, SC, T, Emin, approx_zero):
     # Extract the number of particle species...
     NX = len(G)
@@ -217,5 +214,28 @@ def solve_cascade_equation(E_grid, G, K, S0, SC, T, Emin, approx_zero):
 
 
 if __name__ == "__main__":
-    for module in [cascade]:
-        module.compile()
+    cascade = CC("cascade")
+
+    cascade.export("ph_rate_pair_creation_ae", "f8(f8, f8, f8, f8, f8)")(
+        ph_rate_pair_creation_ae
+    )
+    cascade.export("ph_kernel_inverse_compton", "f8(f8, f8, f8, f8, f8)")(
+        ph_kernel_inverse_compton
+    )
+    cascade.export("el_kernel_pair_creation_ae", "f8(f8, f8, f8, f8, f8)")(
+        el_kernel_pair_creation_ae
+    )
+    cascade.export("el_rate_inverse_compton", "f8(f8, f8, f8, f8, f8)")(
+        el_rate_inverse_compton
+    )
+    cascade.export("el_kernel_inverse_compton", "f8(f8, f8, f8, f8, f8)")(
+        el_kernel_inverse_compton
+    )
+    cascade.export("dsdE_Z2", "f8(f8, f8, f8, f8, f8)")(
+        dsdE_Z2
+    )
+    cascade.export("solve_cascade_equation", "f8[:,:](f8[:], f8[:,:], f8[:,:,:,:], f8[:], f8[:,:], f8, f8, f8)")(
+        solve_cascade_equation
+    )
+    
+    cascade.compile()
