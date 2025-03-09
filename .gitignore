@@ -7,6 +7,9 @@
 # .gitkeep files
 !.gitkeep
 
+# .hidden files
+*.hidden
+
 # Example scan files
 /example_scans/_*
 
