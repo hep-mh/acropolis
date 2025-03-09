@@ -12,7 +12,58 @@ import sys
 # acropolis
 import acropolis
 # pprint
-from acropolis.pprint import print_info, print_error, print_version
+from acropolis.pprint import print_info, print_error, print_version, print_Yf
+# models
+from acropolis.models import DecayModel, AnnihilationModel
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog="acropolis")
+    
+    subparsers = parser.add_subparsers(
+        dest="command", required=True, help="Available commands"
+    )
+    
+    # download-db
+    subparsers.add_parser(
+        "download-db", help="Download additional database files"
+    )
+    
+    # compile
+    subparsers.add_parser(
+        "pre-compile", help="Compile some performance-critical functions"
+    )
+
+    # run-decay
+    decay_parser = subparsers.add_parser(
+        "run-decay", help="Run the pre-implemented DecayModel"
+    )
+    # -->
+    decay_parser.add_argument(
+        "mphi", type=float, help="The mass of the decaying particle [in MeV]"
+    )
+    decay_parser.add_argument(
+        "tau", type=float, help="The lifetime of the decaying particle [in s]"
+    )
+    decay_parser.add_argument(
+        "temp0", type=float, help="Some reference temperature T0 [in MeV]"
+    )
+    decay_parser.add_argument(
+        "n0a", type=float, help="The number density of the decaying particle (relative to photons) at T0"
+    )
+    decay_parser.add_argument(
+        "bree", type=float, help="The branching ratio into electron-positron pairs"
+    )
+    decay_parser.add_argument(
+        "braa", type=float, help="The branching ratio into two photons"
+    )
+
+    # run-annih
+    annih_parser = subparsers.add_parser(
+        "run-annih", help="Run the pre-implemented AnnihilationModel"
+    )
+
+    return parser.parse_args()
 
 
 def download_db():
@@ -33,33 +84,36 @@ def compile_module(module):
         print_error(f"Compilation failed:\n{result.stderr}")
 
 
-def run_decay():
-    pass
+def run_decay(mphi, tau, temp0, n0a, bree, braa):
+    Yf = DecayModel(
+        mphi, tau, temp0, n0a, bree, braa
+    ).run_disintegration()
 
-def run_annihilation():
+    print_Yf(Yf)
+
+
+def run_annih(mphi, a, b, tempkd, bree, braa, omegah2):
     pass
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="acropolis")
-    # -->
-    subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands")
-    
-    # download-db
-    subparsers.add_parser("download-db", help="Download additional database files")
-    
-    # compile
-    subparsers.add_parser("compile", help="Compile performance-critical functions")
-
-    # -->
-    args = parser.parse_args()
-
     print_version()
+
+    args = parse_args()
 
     if args.command == "download-db":
         download_db()
-    elif args.command == "compile":
+    
+    elif args.command == "pre-compile":
         compile_module("pycc_cascade")
+    
+    elif args.command == "run-decay":
+        run_decay(
+            args.mphi, args.tau, args.temp0, args.n0a, args.bree, args.braa
+        )
+    
+    elif args.command = "run-annih":
+        run_annih()
 
 
 if __name__ == "__main__":
