@@ -62,6 +62,28 @@ def parse_args():
     annih_parser = subparsers.add_parser(
         "run-annih", help="Run the pre-implemented AnnihilationModel"
     )
+    # -->
+    annih_parser.add_argument(
+        "mchi", type=float, help="The mass of the dark-matter particle [in MeV]"
+    )
+    annih_parser.add_argument(
+        "a", type=float, help="The s-wave constribution to the cross-section [in cm^3/s]"
+    )
+    annih_parser.add_argument(
+        "b", type=float, help="The p-wave constribution to the cross-section [in cm^3/s]"
+    )
+    annih_parser.add_argument(
+        "tempkd", type=float, help="The kinetic decoupling temperature of the dark-matter particle [in MeV]"
+    )
+    annih_parser.add_argument(
+        "bree", type=float, help="The branching ratio into electron-positron pairs"
+    )
+    annih_parser.add_argument(
+        "braa", type=float, help="The branching ratio into two photons"
+    )
+    annih_parser.add_argument(
+        "omegah2", type=float, nargs="?", default=0.12, help="The density parameter of dark-matter (optional, default: 0.12)"
+    )
 
     return parser.parse_args()
 
@@ -92,8 +114,12 @@ def run_decay(mphi, tau, temp0, n0a, bree, braa):
     print_Yf(Yf)
 
 
-def run_annih(mphi, a, b, tempkd, bree, braa, omegah2):
-    pass
+def run_annih(mchi, a, b, tempkd, bree, braa, omegah2):
+    Yf = AnnihilationModel(
+        mchi, a, b, tempkd, bree, braa, omegah2
+    ).run_disintegration()
+
+    print_Yf(Yf)
 
 
 def main():
@@ -112,8 +138,10 @@ def main():
             args.mphi, args.tau, args.temp0, args.n0a, args.bree, args.braa
         )
     
-    elif args.command = "run-annih":
-        run_annih()
+    elif args.command == "run-annih":
+        run_annih(
+            args.mchi, args.a, args.b, args.tempkd, args.bree, args.braa, args.omegah2
+        )
 
 
 if __name__ == "__main__":

@@ -35,8 +35,6 @@ setup(
     },
     include_package_data=True,
     scripts=[
-        'bin/decay',
-        'bin/annihilation',
         'bin/acropolis'
     ],
     install_requires=[
