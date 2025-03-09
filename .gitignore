@@ -8,7 +8,7 @@
 !.gitkeep
 
 # Example scan files
-/examples/_*
+/example_scans/_*
 
 # PDF files
 *.pdf

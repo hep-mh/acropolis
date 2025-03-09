@@ -9,7 +9,10 @@ from acropolis.plots import plot_scan_results, save_figure
 
 
 # Set the data directory
-data_dir = "../examples/data/"
+data_dir = "data"
+
+# Set the plot directory
+plot_dir = "plots"
 
 
 # PLOT 1 ######################################################################
@@ -22,7 +25,7 @@ _, ax1 = plot_scan_results(
 # Plot the reference point for the NE_pd/NT_pd scans
 ax1.plot(1, -24, "*", color="crimson")
 # -->
-save_figure("annih_swave_ee.pdf")
+save_figure(f"{plot_dir}/annih_swave_ee.pdf")
 
 
 
@@ -36,14 +39,14 @@ _, ax2 = plot_scan_results(
 # Set the y-limit
 ax2.set_ylim(-21, -10)
 # -->
-save_figure("annih_pwave_1e0MeV_ee.pdf")
+save_figure(f"{plot_dir}/annih_pwave_1e0MeV_ee.pdf")
 
 
 
 # PLOT 3 ######################################################################
 # decay, n0a vs mphi, tau = 1e7 s #############################################
 plot_scan_results(
-    f"{data_dir}/decay_tau_1e+07s_aa.dat", output_file="decay_1e7s_aa.pdf", xc=0, yc=1,
+    f"{data_dir}/decay_tau_1e+07s_aa.dat", output_file=f"{plot_dir}/decay_1e7s_aa.pdf", xc=0, yc=1,
     title=tex_title(tau=1e7, temp0=10, braa=1), labels=tex_labels("mphi", "n0a")
 )
 
@@ -66,4 +69,4 @@ ax4.text(7.3,  -8.0, r"D/$^1$H high"              , color="tomato"        , font
 ax4.plot(5, -7.5, "*", color="mediumorchid")
 
 # -->
-save_figure("decay_50MeV_aa.pdf")
+save_figure(f"{plot_dir}/decay_50MeV_aa.pdf")
