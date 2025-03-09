@@ -113,10 +113,10 @@ The remarkable agreement between observations of the primordial light element ab
 To install ACROPOLIS from PyPI, first make sure that ``pip`` is installed on your system and afterwards install ACROPOLIS at user-level by executing the command
 
 ```
-python3 -m pip install ACROPOLIS --user
+pip install ACROPOLIS --user
 ```
 
-Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the two executable ``decay`` and ``annihilation`` are copied into your ``PATH`` and that all dependencies are fulfilled.
+Once the installation is completed, the different modules of ACROPOLIS can directly be imported into our own Python code (just like e.g. ``numpy``). Additionally, the installation also ensures that the executable ``acropolis`` is copied into your ``PATH`` and that all dependencies are fulfilled.
 
 If you want to install ACROPOLIS system wide or within a virtual environment, drop the ``--user`` flag in the command above and run with ``sudo`` if necessary.
 
@@ -128,38 +128,39 @@ If any dependencies of ACROPOLIS conflict with those for other programs in your 
 To install ACROPOLIS directly from GitHub, execute the command
 
 ```
-python3 -m pip install git+https://github.com/hep-mh/acropolis.git --user
+pip install git+https://github.com/hep-mh/acropolis.git --user
 ```
 
 # Usage without installation
 
 In case you just want to use ACROPOLIS without any additional installation steps, it is necessary to manually check that all dependencies are fulfilled. As specified in ``setup.py``, ACROPOLIS depends on the following packages (older versions might work, but have not been thoroughly tested)
 
- - NumPy (> 1.19.1)
- - SciPy (>1.5.2)
- - Numba (> 0.51.1)
+ - numpy
+ - scipy
+ - numba
+ - setuptools
 
 The most recent versions of these packages can be collectively installed via the command
 
 ```
-python3 -m pip install numpy, scipy, numba --user
+pip install setuptools, numpy, scipy, numba --user
 ```
 
-Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory (like ``decay`` and ``annihilation``). If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
+Afterwards, you can import the different modules into your own Python code, as long as said code resides in the ``acropolis`` directory. If you instead want to also use the different modules from other directories, please consider using one of the two previously mentioned installation methods.
 
 
 # Using the example models
 
-ACROPOLIS ships with two executables, ``decay`` and ``annihilation``, which wrap the scenarios discussed in section 4.1 and section 4.2 from the manual, respectively. Both of these files need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice without any arguments at all. As an example, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 10<sup>5</sup>s that decays exclusively into photons and has an abundance of 10<sup>-10</sup> relative to photons at a reference temperature of 10MeV (*if you did not install ACROPOLIS via pip, you have to run this command from within the main directory and make sure to append an additional ``./`` to the beginning of the commands*)
+ACROPOLIS ships with the executable, ``acropolis``, which -- among other things -- wraps the scenarios discussed in section 4.1 and section 4.2 from the manual, via the commands ``acropolis run-decay [...]`` and ``acropolis run-annih [...]``. Both of these commands need to be called with six command-line arguments each, a list of which can be obtained by running the command of choice with ``-h``. As an example, the following command runs the process of photodisintegration for an unstable mediator with a mass of 10MeV and a lifetime of 10<sup>5</sup>s that decays exclusively into photons and has an abundance of 10<sup>-10</sup> relative to photons at a reference temperature of 10MeV (*if you did not install ACROPOLIS via pip, you have to run this command from within the main directory and make sure to append an additional ``./bin/`` to the beginning of the commands*)
 
 ```
-decay 10 1e5 10 1e-10 0 1
+acropolis run-decay 10 1e5 10 1e-10 0 1
 ```
 
 On a similar note, the following command runs the process of photodisintegration for residual s-wave annihilations of a dark-matter particle with a mass of 10MeV and a cross-section of 10<sup>-25</sup> cm³/s that annihilates exclusively into photons
 
 ```
-annihilation 10 1e-25 0 0 0 1
+acropolis run-annih 10 1e-25 0 0 0 1
 ```
 
 # Supported platforms
