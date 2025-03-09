@@ -163,6 +163,14 @@ On a similar note, the following command runs the process of photodisintegration
 acropolis run-annih 10 1e-25 0 0 0 1
 ```
 
+# Optional compilation
+
+By default, ACROPOLIS uses just-in-time compilation for some performance critical functions. This method is platform-independent but still comes with certain performance penalties. As an alternative, it is also possible to ahead-of-time compile these functions for your system after installation. To this end, run the command (this only needs to be done once)
+```
+acropolis pre-compile
+```
+Afterwards you can use ACROPOLIS as usual.
+
 # Supported platforms
 
 ACROPOLIS works on any platform that supports ``python3`` and ``clang``, the latter of which is required for ``numba`` to work.
