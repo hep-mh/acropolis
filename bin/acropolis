@@ -24,17 +24,17 @@ def parse_args():
         dest="command", required=True, help="Available commands"
     )
     
-    # download-db
+    # download-db #############################################################
     subparsers.add_parser(
         "download-db", help="Download additional database files"
     )
     
-    # compile
+    # compile #################################################################
     subparsers.add_parser(
         "pre-compile", help="Compile some performance-critical functions"
     )
 
-    # run-decay
+    # run-decay ###############################################################
     decay_parser = subparsers.add_parser(
         "run-decay", help="Run the pre-implemented DecayModel"
     )
@@ -58,7 +58,7 @@ def parse_args():
         "braa", type=float, help="The branching ratio into two photons"
     )
 
-    # run-annih
+    # run-annih ###############################################################
     annih_parser = subparsers.add_parser(
         "run-annih", help="Run the pre-implemented AnnihilationModel"
     )
