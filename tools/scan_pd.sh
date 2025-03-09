@@ -9,7 +9,7 @@ dir=$(basename $PWD)
 cd ..
 
 # Define the data directory
-data="$dir/NX_pd/data"
+data="$dir/data/NX_pd"
 
 # Define the acropolis directory
 acropolis="acropolis"
@@ -89,7 +89,7 @@ for NE_PD in $(cat $data/NE_pd.list); do
     replace $NE_PD 50
 
     # Run ACROPOLIS...
-    result=$(/bin/acropolis run-$@)
+    result=$(./bin/acropolis run-$@)
     # ...and extract the deuterium abundance
     Y2H=$(extract_deuterium "$result")
 
@@ -103,7 +103,7 @@ for NT_PD in $(cat $data/NT_pd.list); do
     replace 150 $NT_PD
 
     # Run ACROPOLIS...
-    result=$(/bin/acropolis run-$@)
+    result=$(./bin/acropolis run-$@)
     # ...and extract the deuterium abundance
     Y2H=$(extract_deuterium "$result")
 
