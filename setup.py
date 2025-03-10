@@ -38,9 +38,9 @@ setup(
         'bin/acropolis'
     ],
     install_requires=[
-        'numpy>=1.19.1',
-        'scipy>=1.5.2',
-        'numba>=0.51.2',
-        'setuptools' # TODO
+        'numpy',
+        'scipy',
+        'numba',
+        'setuptools'
     ]
 )
