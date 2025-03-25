@@ -168,8 +168,8 @@ NE_min = 10
 # the temperature grid, which is used
 # for the interpolation of the nuclear
 # reaction rates
-# Default: 25
-NT_pd = 25
+# Default: 20
+NT_pd = 20
 
 # The number of points per decade for
 # the kinetic energy grid, which is used
